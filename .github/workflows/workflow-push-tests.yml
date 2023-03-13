@@ -1,0 +1,94 @@
+---
+name: cicd-tooling-github-workflow-push-tests
+
+on:
+  push:
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  remote_scripts:
+    uses: ./.github/workflows/.__remote-scripts.yml
+
+  configuration:
+    needs: [remote_scripts]
+    uses: ./.github/workflows/.job-00-cookiecutter.yml
+    with:
+      PATH: ".github/config/cookiecutter.json"
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+  send_notification_test_success:
+    needs: [remote_scripts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.github/actions/action-00-notification
+        with:
+          NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+          NOTIFICATION_MESSAGE: "testing workflow has started!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+  send_notification_test_failure:
+    needs: [remote_scripts, send_notification_test_success]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.github/actions/action-00-notification
+        with:
+          NOTIFICATION_EMOJI: ":heavy_check_mark:"
+          NOTIFICATION_MESSAGE: "local notification script is working!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+          TESTING_MODE: true
+
+  security_test_failure:
+    needs: [configuration, remote_scripts, send_notification_test_success]
+    secrets: inherit
+    uses: ./.github/workflows/.job-10-security.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TESTING_MODE: true
+
+  success:
+    needs: [remote_scripts, security_test_failure]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.github/actions/action-00-notification
+        with:
+          NOTIFICATION_EMOJI: ":checkered_flag:"
+          NOTIFICATION_MESSAGE: "all tests have passed successfully!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+          TESTING_MODE: true

@@ -16,6 +16,7 @@ main() {
   echo "DEBUG: -- ${REMOTE_SCRIPT_NAME} --" >> /dev/stderr
 
   GENERATED_VALUE=$("$@")
+
   echo "DEBUG: the value '${GENERATED_VALUE}' has been created." >> /dev/stderr
 
   {
@@ -29,5 +30,3 @@ main() {
 }
 
 main "$@"
-
-unset main

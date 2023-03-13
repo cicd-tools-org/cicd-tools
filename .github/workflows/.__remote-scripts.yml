@@ -1,0 +1,37 @@
+---
+name: __remote-scripts
+
+# DEVELOPMENT WORKFLOW
+# This workflow is not intended for distribution.
+# It redirects all remote scripts to consume from the branch under development.
+
+on:
+  workflow_call:
+    outputs:
+      REMOTE_SCRIPT_PREFIX:
+        description: "The base path prefix that will be used for all remote scripts."
+        value: ${{ jobs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+jobs:
+
+  remote_scripts:
+    outputs:
+      REMOTE_SCRIPT_PREFIX: ${{ steps.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remote Scripts -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Remote Scripts -- Setup Remote Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Remote Scripts -- Setup Remote Scripts
+        id: remote_scripts
+        run: |
+          {
+            echo "REMOTE_SCRIPT_PREFIX=https://raw.githubusercontent.com/${PROJECT_OWNER}/${PROJECT_NAME}/${BRANCH_OR_TAG}/"
+          } >> "${GITHUB_OUTPUT}"
+        shell: bash

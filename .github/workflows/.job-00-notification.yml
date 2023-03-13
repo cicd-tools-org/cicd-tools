@@ -23,11 +23,21 @@ on:
         description: "The message that will sent as a notification, in the event the job fails."
         required: false
         type: string
+      REMOTE_SCRIPT_PREFIX:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
+        description: "Optional, allows you to specify a base path prefix for all remote scripts."
+        required: false
+        type: string
       REMOTE_SCRIPT_NOTIFICATION:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/scripts/notifications/slack.sh"
+        default: "scripts/notifications/slack.sh"
         description: "Optional, allows you to specify a notification script."
         required: false
         type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
     secrets:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
@@ -45,23 +55,16 @@ jobs:
 
       - name: Notification -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh"
+          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
-      - name: Notification -- Report Job Status on Success
-        env:
+      - name: Notification -- Run Notification Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        with:
+          NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI }}
+          NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}
+          NOTIFICATION_MESSAGE: ${{ inputs.NOTIFICATION_MESSAGE }}
+          NOTIFICATION_MESSAGE_FAILURE: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          # shellcheck source=/dev/null
-          source <(curl --retry 3 --retry-max-time 30 "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}") "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI }} ${{ inputs.NOTIFICATION_MESSAGE }}"
-        shell: bash
-
-      - name: Notification -- Report Job Status on Failure
-        if: failure()
-        env:
-          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          # shellcheck source=/dev/null
-          source <(curl --retry 3 --retry-max-time 30 "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}") "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}"
-          echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
-        shell: bash
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
+          REMOTE_SCRIPT_NOTIFICATION: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}
