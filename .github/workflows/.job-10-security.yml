@@ -1,0 +1,78 @@
+---
+name: job-10-security
+
+on:
+  workflow_call:
+    inputs:
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      EXTRA_BINARY_ARGS:
+        default: ""
+        description: "Extra arguments to pass to the trufflehog binary."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DETERMINE_COMMITS:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/scripts/github/step-determine-pushed-commits.sh"
+        description: "Optional, allows you to specify a notification script."
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 1
+  TEMPLATE_SKIP_PRECOMMIT: 1
+
+jobs:
+
+  run_trufflehog:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Security -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Security -- Setup Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Security -- Determine Pushed Commits
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          # shellcheck source=/dev/null
+          source <(curl --retry 3 --retry-max-time 30 "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}")
+        shell: bash
+
+      - name: Security -- Run Trufflehog
+        uses: trufflesecurity/trufflehog@v3.29.0
+        with:
+          base: ${{ env.PUSHED_COMMIT_START }}
+          extra_args: ${{ inputs.EXTRA_BINARY_ARGS }}
+          head: ${{ env.BRANCH_OR_TAG }}
+          path: .
+
+      - name: Security -- Report Job Status on Success
+        env:
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: ./.github/workflows/.job-00-notification.yml
+        with:
+          NOTIFICATION_MESSAGE: "security checks have succeeded!"
+
+      - name: Security -- Report Job Status on Failure
+        env:
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure()
+        uses: ./.github/workflows/.job-00-notification.yml
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "security checks have failed!"

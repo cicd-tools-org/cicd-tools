@@ -29,10 +29,18 @@ jobs:
       REMOTE_SCRIPT_NOTIFICATION: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/scripts/notifications/slack.sh"
 
   success:
-    needs: [start]
+    needs: [security]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "workflow has completed successfully!"
       REMOTE_SCRIPT_NOTIFICATION: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/scripts/notifications/slack.sh"
+
+  security:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/.job-10-security.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_DETERMINE_COMMITS: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/scripts/github/step-determine-pushed-commits.sh"

@@ -28,6 +28,7 @@ repos:
         name: yaml-lint
         description: "Lint the project's YAML files."
         entry: ./.pre-commit/yaml-lint.sh
+        exclude: "^.github/templates"
         args: ["-c", ".yamllint.yml"]
         files: "^.+\\.(yaml|yml)$"
         language: system
@@ -37,6 +38,7 @@ repos:
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
         entry: actionlint
+        exclude: "^.github/templates"
         files: "^.github/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
