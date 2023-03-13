@@ -1,0 +1,18 @@
+{
+    "_BRANCH_NAME_BASE": "master",
+    "_BRANCH_NAME_DEVELOPMENT": "dev",
+    "_GITHUB_ACTION_CACHE": "actions/cache@v3",
+    "_GITHUB_ACTION_CHECKOUT": "actions/checkout@v3",
+    "_GITHUB_ACTION_MARKDOWN_LINK_CHECK": "gaurav-nelson/github-action-markdown-link-check@v1",
+    "_GITHUB_ACTION_PYTHON": "actions/setup-python@v4",
+    "_GITHUB_ACTION_SCRIPT": "actions/github-script@v6",
+    "_GITHUB_ACTION_TRUFFLEHOG": "trufflesecurity/trufflehog@v3.29.0",
+    "_GITHUB_ACTION_YAMLLINT": "ibiqlik/action-yamllint@v3",
+    "_GITHUB_CI_ACTIONLINT_SCRIPT_URL": "https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash",
+    "_GITHUB_CI_DEFAULT_CONCURRENCY": 4,
+    "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
+    "_GITHUB_CI_DEFAULT_MOLECULE_TEST_PLATFORMS": ["ubuntu-latest"],
+    "_GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX": "^default$|^noci-.*$",
+    "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS": true,
+    "_*DO_NOT_MODIFY_THIS_FILE*": "This file is created to assist with upgrading to future versions of this template."
+}
