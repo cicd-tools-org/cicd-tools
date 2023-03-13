@@ -1,0 +1,44 @@
+---
+repos:
+  - repo: local
+    hooks:
+      - id: commit-lint
+        name: commit-lint
+        description: "Check whether the commit message follows committing rules."
+        entry: ./.pre-commit/commit-lint.sh
+        language: system
+        stages: [commit-msg]
+      - id: shell-lint
+        name: shell-lint
+        description: "Lint the project's shell scripts."
+        entry: shellcheck
+        files: "^.+\\.sh$"
+        language: system
+        pass_filenames: true
+        stages: [commit]
+      - id: toml-lint
+        name: toml-lint
+        description: "Lint the project's TOML files."
+        entry: ./.pre-commit/toml-lint.sh
+        files: "^.+\\.toml$"
+        language: system
+        stages: [commit]
+        pass_filenames: true
+      - id: yaml-lint
+        name: yaml-lint
+        description: "Lint the project's YAML files."
+        entry: ./.pre-commit/yaml-lint.sh
+        args: ["-c", ".yamllint.yml"]
+        files: "^.+\\.(yaml|yml)$"
+        language: system
+        pass_filenames: true
+        stages: [commit]
+      - id: workflow-lint
+        name: workflow-lint
+        description: "Lint the project's GitHub workflow files."
+        entry: actionlint
+        files: "^.github/.+\\.(yaml|yml)$"
+        language: system
+        pass_filenames: false
+        require_serial: true
+        stages: [commit]
