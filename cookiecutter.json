@@ -1,4 +1,7 @@
 {
+    "project_name": "cicd-tool-box",
+    "project_slug": "{{ cookiecutter.project_name|slugify }}",
+    "github_handle": "niall-byrne",
     "_BRANCH_NAME_BASE": "master",
     "_BRANCH_NAME_DEVELOPMENT": "dev",
     "_GITHUB_ACTION_CACHE": "actions/cache@v3",

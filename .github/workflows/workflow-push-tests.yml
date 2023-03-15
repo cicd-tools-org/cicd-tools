@@ -19,7 +19,7 @@ jobs:
     needs: [remote_scripts]
     uses: ./.github/workflows/.job-00-cookiecutter.yml
     with:
-      PATH: ".github/config/cookiecutter.json"
+      PATH: "cookiecutter.json"
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   send_notification_test_success:
@@ -72,8 +72,17 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TESTING_MODE: true
 
+  documentation_test_failure:
+    needs: [configuration, remote_scripts, security_test_failure]
+    secrets: inherit
+    uses: ./.github/workflows/.job-30-documentation.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TESTING_MODE: true
+
   success:
-    needs: [remote_scripts, security_test_failure]
+    needs: [remote_scripts, documentation_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository

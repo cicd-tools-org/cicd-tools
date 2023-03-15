@@ -21,7 +21,7 @@ jobs:
     needs: [remote_scripts]
     uses: ./.github/workflows/.job-00-cookiecutter.yml
     with:
-      PATH: ".github/config/cookiecutter.json"
+      PATH: "cookiecutter.json"
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   start:
@@ -34,7 +34,7 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   success:
-    needs: [remote_scripts, security]
+    needs: [remote_scripts, documentation]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
@@ -46,6 +46,14 @@ jobs:
     needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-10-security.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+  documentation:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    uses: ./.github/workflows/.job-30-documentation.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
