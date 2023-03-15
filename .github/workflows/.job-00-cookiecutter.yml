@@ -19,6 +19,11 @@ on:
         description: "Optional, allows you to specify a workflow set value script."
         required: false
         type: string
+      REMOTE_SCRIPT_SET_VALUE_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
     outputs:
       CONFIGURATION:
         description: "The 'cookiecutter.json' file as a JSON encoded string."
@@ -40,5 +45,6 @@ jobs:
         id: cookiecutter_configuration
         run: |
           # shellcheck source=/dev/null
-          source <(curl --retry 3 --retry-max-time 30 "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_SET_VALUE }}") cat "${{ inputs.PATH }}"
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" "${{ inputs.REMOTE_SCRIPT_SET_VALUE_HASH }}" \
+            cat "${{ inputs.PATH }}"
         shell: bash

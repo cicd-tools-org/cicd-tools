@@ -20,7 +20,12 @@ on:
         type: string
       REMOTE_SCRIPT_DETERMINE_COMMITS:
         default: "scripts/github/step-determine-pushed-commits.sh"
-        description: "Optional, allows you to specify a notification script."
+        description: "Optional, allows you to specify a determine commits script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DETERMINE_COMMITS_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
       TESTING_MODE:
@@ -59,7 +64,7 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           # shellcheck source=/dev/null
-          source <(curl --retry 3 --retry-max-time 30 "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}")
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS_HASH }}"
         shell: bash
 
       - name: Security -- Run Trufflehog
@@ -72,7 +77,7 @@ jobs:
 
       - name: Security -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
         with:
           NOTIFICATION_MESSAGE: "security checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -80,7 +85,7 @@ jobs:
 
       - name: Security -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "security checks have failed!"

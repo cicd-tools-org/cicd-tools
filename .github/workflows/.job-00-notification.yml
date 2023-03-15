@@ -33,6 +33,11 @@ on:
         description: "Optional, allows you to specify a notification script."
         required: false
         type: string
+      REMOTE_SCRIPT_NOTIFICATION_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -59,7 +64,7 @@ jobs:
         shell: bash
 
       - name: Notification -- Run Notification Action
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
         with:
           NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI }}
           NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}
@@ -68,3 +73,4 @@ jobs:
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
           REMOTE_SCRIPT_NOTIFICATION: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}
+          REMOTE_SCRIPT_NOTIFICATION_HASH: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}

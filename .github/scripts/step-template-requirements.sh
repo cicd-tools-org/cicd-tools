@@ -6,7 +6,7 @@
 # Templates implementing this script must install versions of cookiecutter and poetry,
 # plus any other required Python packages.
 
-# CI only script
+# CI only script.
 
 set -eo pipefail
 

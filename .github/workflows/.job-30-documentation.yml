@@ -84,17 +84,19 @@ jobs:
 
       - name: Documentation Test -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
         with:
           NOTIFICATION_MESSAGE: "documentation checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
           REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Documentation Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Versioned Action
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "documentation checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
           REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

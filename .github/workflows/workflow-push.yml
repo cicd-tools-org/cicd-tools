@@ -34,7 +34,7 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   success:
-    needs: [remote_scripts, documentation]
+    needs: [remote_scripts, documentation, security]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
