@@ -123,8 +123,22 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TEMPLATE_SCENARIO: ${{ matrix.scenario }}
 
+  create_release:
+    permissions:
+      contents: write
+    needs: [configuration, commit_lint, documentation, pre-commit, remote_scripts, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
+    secrets: inherit
+    uses: ./.github/workflows/.job-99-create-release.yml
+    with:
+      APPENDED_CONTENT: |
+        ## Deployment Checklist
+        - [ ] Ensure all remote references have been updated
+        - [ ] Ensure master points to new tag
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
   success:
-    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
+    needs: [create_release, configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:

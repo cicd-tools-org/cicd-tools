@@ -1,0 +1,160 @@
+---
+name: job-99-create-release
+
+on:
+  workflow_call:
+    inputs:
+      APPENDED_CONTENT:
+        default: ""
+        description: "Optional, allows you to specify markdown content to append to the changelog in a generated release."
+        required: false
+        type: string
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      REMOTE_SCRIPT_PREFIX:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
+        description: "Optional, allows you to specify a base path prefix for all remote scripts."
+        required: false
+        type: string
+      REMOTE_SCRIPT_GENERATE_CHANGELOG:
+        default: "scripts/github/job-99-generate-changelog.sh"
+        description: "Optional, allows you to specify a changelog generation script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_GENERATE_CHANGELOG_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_GENERATE_RELEASE:
+        default: "scripts/github/job-99-generate-release.js"
+        description: "Optional, allows you to specify a script to generate the actual GitHub release."
+        required: false
+        type: string
+      REMOTE_SCRIPT_GENERATE_RELEASE_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_IDENTIFY_CANDIDATE:
+        default: "scripts/github/job-99-release-candidate.sh"
+        description: "Optional, allows you to specify a filter script for release candidates."
+        required: false
+        type: string
+      REMOTE_SCRIPT_IDENTIFY_CANDIDATE_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "scripts/github/step-use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_USE_POETRY_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  generate_github_release:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Release -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Create Release -- Execute Remote Filter Release Candidates Script
+        id: filter
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE_HASH }}" \
+            "${{ github.event.ref }}"
+        shell: bash
+
+      - name: Create Release -- Checkout Repository (All Commits)
+        if: steps.filter.outputs.release_candidate == 'true'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Create Release -- Setup Environment
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Create Release -- Execute Remote Install Poetry Script
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+            "install-poetry"
+        shell: bash
+
+      - name: Create Release -- Execute Remote Check Version Script
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+            "check-version" "${BRANCH_OR_TAG}"
+        shell: bash
+
+      - name: Create Release -- Execute Remote Generate Changelog Script
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG_HASH }}" \
+            "${BRANCH_OR_TAG}"
+        shell: bash
+
+      - name: Create Release -- Download Remote Generate Release Script
+        env:
+          SCRIPT_DOWNLOAD_NAME: job-99-generate-release.js
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE_HASH }}"
+        shell: bash
+
+      - name: Create Release -- Generate GitHub Release Draft
+        id: create_release
+        env:
+          APPENDED_CONTENT: ${{ inputs.APPENDED_CONTENT }}
+        if: steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == false
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const script = require('./job-99-generate-release.js');
+            const body = process.env.CHANGE_LOG_CONTENT + "\n" + process.env.APPENDED_CONTENT;
+            const tag = process.env.BRANCH_OR_TAG;
+            await script({ body, context, core, github, tag })
+
+      - name: Create Release -- Report Job Status on Success
+        if: steps.filter.outputs.release_candidate == 'true'
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: |
+            automated release has been created!
+            https://github.com/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}/releases
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
+
+      - name: Create Release -- Report Job Status on Failure
+        if: failure() || (steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == true)
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "automated release creation has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
