@@ -96,8 +96,26 @@ jobs:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
+  yaml_lint:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - scenario: 0.toml_linting-0.workflow_linting
+          - scenario: 0.toml_linting-1.workflow_linting
+          - scenario: 1.toml_linting-0.workflow_linting
+          - scenario: 1.toml_linting-1.workflow_linting
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/.job-80-yaml-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TEMPLATE_SCENARIO: ${{ matrix.scenario }}
+
   success:
-    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, toml_lint, workflow_lint]
+    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:

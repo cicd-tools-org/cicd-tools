@@ -30,7 +30,7 @@ repos:
         description: "Lint the project's YAML files."
         entry: ./{{cookiecutter.project_slug}}/.pre-commit/yaml-lint.sh
         exclude: "^{{cookiecutter.project_slug}}/.+$"
-        args: ["-c", ".yamllint.yml"]
+        args: ["-c", "./{{cookiecutter.project_slug}}/.yamllint.yml"]
         files: "^.+\\.(yaml|yml)$"
         language: system
         pass_filenames: true
