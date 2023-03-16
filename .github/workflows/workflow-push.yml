@@ -80,8 +80,16 @@ jobs:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
+  toml_lint:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-toml-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
   success:
-    needs: [remote_scripts, commit_lint, documentation, pre-commit, security]
+    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, toml_lint]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
