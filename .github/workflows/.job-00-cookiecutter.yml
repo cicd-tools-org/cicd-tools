@@ -44,7 +44,6 @@ jobs:
       - name: Create Configuration -- Set Cookiecutter Configuration as Output
         id: cookiecutter_configuration
         run: |
-          # shellcheck source=/dev/null
           source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" "${{ inputs.REMOTE_SCRIPT_SET_VALUE_HASH }}" \
             cat "${{ inputs.PATH }}"
         shell: bash

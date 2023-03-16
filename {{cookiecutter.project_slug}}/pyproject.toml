@@ -1,0 +1,23 @@
+
+[build-system]
+  build-backend = "poetry.core.masonry.api"
+  requires = ["poetry-core"]
+
+[tool]
+
+  [tool.poetry]
+    authors = ["Niall Byrne <niall@niallbyrne.ca>"]
+    description = "An example project consuming cicd-tools."
+    license = "MPL-2.0"
+    name = "{{cookiecutter.project_slug}}"
+    readme = "README.md"
+    version = "0.1.0"
+
+    [tool.poetry.dependencies]
+      python = "^3.8"
+
+    [tool.poetry.dev-dependencies]
+      commitizen = "^2.42.1"
+      cookiecutter = "^2.1.1"
+      pre-commit = "^3.1.1"
+      yamllint = "^1.29.0"

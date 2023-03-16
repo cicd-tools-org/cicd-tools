@@ -5,43 +5,35 @@ repos:
       - id: commit-lint
         name: commit-lint
         description: "Check whether the commit message follows committing rules."
-        entry: ./{{cookiecutter.project_slug}}/.pre-commit/commit-lint.sh
+        entry: ./.pre-commit/commit-lint.sh
         language: system
         stages: [commit-msg]
       - id: shell-lint
         name: shell-lint
         description: "Lint the project's shell scripts."
         entry: shellcheck -x
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.+\\.sh$"
         language: system
         pass_filenames: true
         stages: [commit]
+{%- if cookiecutter.optional_toml_linting == 'true' %}
       - id: toml-lint
         name: toml-lint
         description: "Lint the project's TOML files."
-        entry: ./{{cookiecutter.project_slug}}/.pre-commit/toml-lint.sh
+        entry: ./.pre-commit/toml-lint.sh
         files: "^.+\\.toml$"
         language: system
         stages: [commit]
         pass_filenames: true
-      - id: yaml-lint
-        name: yaml-lint
-        description: "Lint the project's YAML files."
-        entry: ./{{cookiecutter.project_slug}}/.pre-commit/yaml-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
-        args: ["-c", ".yamllint.yml"]
-        files: "^.+\\.(yaml|yml)$"
-        language: system
-        pass_filenames: true
-        stages: [commit]
+{%- endif %}
+{%- if cookiecutter.optional_workflow_linting == 'true' %}
       - id: workflow-lint
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
         entry: actionlint
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.github/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
         require_serial: true
         stages: [commit]
+{%- endif %}

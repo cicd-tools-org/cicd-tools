@@ -56,7 +56,7 @@ jobs:
 
       - name: Documentation Test -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-template-requirements.sh"
+          source "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
       - name: Documentation Test -- Render Template

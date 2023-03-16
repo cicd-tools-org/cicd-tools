@@ -33,15 +33,6 @@ jobs:
       NOTIFICATION_MESSAGE: "workflow has started!"
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
-  success:
-    needs: [remote_scripts, documentation, security]
-    secrets: inherit
-    uses: ./.github/workflows/.job-00-notification.yml
-    with:
-      NOTIFICATION_EMOJI: ":checkered_flag:"
-      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
-
   security:
     needs: [configuration, remote_scripts]
     secrets: inherit
@@ -56,4 +47,36 @@ jobs:
     uses: ./.github/workflows/.job-30-documentation.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+  # Implementation Notes:
+  #
+  # It's very likely the template you are creating has its own mixture of pre-commit hooks.
+  # Please use this as a guide, and create your own .job-50-precommit.yml file.
+
+  pre-commit:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - scenario: 0.toml_linting-0.workflow_linting
+          - scenario: 0.toml_linting-1.workflow_linting
+          - scenario: 1.toml_linting-0.workflow_linting
+          - scenario: 1.toml_linting-1.workflow_linting
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/.job-50-precommit.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TEMPLATE_SCENARIO: ${{ matrix.scenario }}
+
+  success:
+    needs: [remote_scripts, documentation, pre-commit, security]
+    secrets: inherit
+    uses: ./.github/workflows/.job-00-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}

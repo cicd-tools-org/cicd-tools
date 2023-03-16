@@ -63,7 +63,6 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          # shellcheck source=/dev/null
           source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS_HASH }}"
         shell: bash
 

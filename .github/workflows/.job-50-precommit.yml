@@ -1,0 +1,130 @@
+---
+name: job-50-precommit
+
+on:
+  workflow_call:
+    inputs:
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      REMOTE_SCRIPT_PREFIX:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
+        description: "Optional, allows you to specify a base path prefix for all remote scripts."
+        required: false
+        type: string
+      TEMPLATE_SCENARIO:
+        description: "An 'cookiecutter.json' file variant, with options selected to test as a separate scenario."
+        required: true
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_PRECOMMIT: 0
+
+jobs:
+
+  precommit_hook_tests:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS }}
+      max-parallel: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+
+    steps:
+      - name: Pre-Commit Test -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: 'template'
+
+      - name: Pre-Commit Test -- Setup Environment
+        run: |
+          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Pre-Commit Test -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Pre-Commit Test -- Install Template Requirements
+        run: |
+          source "./template/.github/scripts/step-requirements-template.sh"
+        shell: bash
+
+      - name: Pre-Commit Test -- Install Binaries
+        env:
+          ACTIONLINT_SCRIPT_URL: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}
+          ACTIONLINT_SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
+        run: |
+          source "./template/.github/scripts/step-requirements-precommit.sh"
+        shell: bash
+
+      - name: Pre-Commit -- Initialize Cache Locations
+        run: |
+          mkdir -p ~/.cache/pypoetry/virtualenvs
+        shell: bash
+
+      - name: Pre-Commit Test -- Mount Poetry Cache
+        uses: actions/cache@v3
+        with:
+          key: poetry-${{ hashFiles('./template/{{cookiecutter.project_slug}}/pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+          path: ~/.cache/pypoetry/virtualenvs
+
+      - name: Pre-Commit Test -- Render Template
+        run: |
+          source "./template/.github/scripts/step-render-template.sh" "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Commit Lint -- Expect Failure
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
+        if: contains(inputs.TEMPLATE_SCENARIO, '1.toml_linting') == true
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
+        if: contains(inputs.TEMPLATE_SCENARIO, '1.toml_linting') == true
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
+        if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Report Job Status on Success
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
+
+      - name: Pre-Commit Test -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

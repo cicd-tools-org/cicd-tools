@@ -53,7 +53,6 @@ runs:
       env:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
       run: |
-        # shellcheck source=/dev/null
         source "${{ inputs.PROJECT_ROOT_PATH }}/.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}" \
           "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI }} ${{ inputs.NOTIFICATION_MESSAGE }}"
       shell: bash
@@ -63,7 +62,6 @@ runs:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
       if: failure() || inputs.TESTING_MODE == true
       run: |
-        # shellcheck source=/dev/null
         source "${{ inputs.PROJECT_ROOT_PATH }}/.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}" \
           "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}"
         echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr

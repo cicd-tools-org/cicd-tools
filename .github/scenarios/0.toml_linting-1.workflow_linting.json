@@ -1,5 +1,5 @@
 {
-    "optional_toml_linting": ["true", "false"],
+    "optional_toml_linting": ["false", "true"],
     "optional_workflow_linting": ["true", "false"],
     "project_name": "cicd-tool-box",
     "project_slug": "{{ cookiecutter.project_name|slugify }}",
