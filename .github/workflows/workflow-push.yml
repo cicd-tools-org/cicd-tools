@@ -72,8 +72,16 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TEMPLATE_SCENARIO: ${{ matrix.scenario }}
 
+  commit_lint:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-commit-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
   success:
-    needs: [remote_scripts, documentation, pre-commit, security]
+    needs: [remote_scripts, commit_lint, documentation, pre-commit, security]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:

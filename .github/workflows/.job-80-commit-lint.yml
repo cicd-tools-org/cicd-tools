@@ -1,0 +1,128 @@
+---
+name: job-80-commit-lint
+
+on:
+  workflow_call:
+    inputs:
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      REMOTE_SCRIPT_PREFIX:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
+        description: "Optional, allows you to specify a base path prefix for all remote scripts."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DETERMINE_COMMITS:
+        default: "scripts/github/step-determine-pushed-commits.sh"
+        description: "Optional, allows you to specify a determine commits script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DETERMINE_COMMITS_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "scripts/github/step-use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_USE_POETRY_HASH: # Release: update with a valid sha
+        default: ""
+        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_SKIP_PRECOMMIT: 1
+  PUSH_FALLBACK_REV_RANGE: "HEAD"
+
+jobs:
+
+  run_commitizen:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS }}
+      max-parallel: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+
+    steps:
+      - name: Commit Linting -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Commit Linting -- Setup Environment
+        run: |
+          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Commit Linting -- Determine Pushed Commits
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS_HASH }}"
+        shell: bash
+
+      - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Commit Linting -- Install Poetry
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+            "install-poetry"
+        shell: bash
+
+      - name: Commit Linting -- Initialize Cache Locations
+        run: |
+          mkdir -p ~/.cache/pypoetry/virtualenvs
+        shell: bash
+
+      - name: Commit Linting -- Mount Poetry Cache
+        uses: actions/cache@v3
+        with:
+          key: poetry-${{ hashFiles('./pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+          path: ~/.cache/pypoetry/virtualenvs
+
+      - name: Commit Linting -- Install Poetry
+        run: |
+          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+            "install-project"
+        shell: bash
+
+      - name: Commit Linting -- Lint Pushed Commits
+        run: |
+          poetry run cz check --rev-range "${PUSHED_COMMIT_REV_RANGE}"
+        shell: bash
+
+      - name: Commit Linting -- Report Job Status on Success
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "commit lint checks have succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
+
+      - name: Commit Linting -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "commit lint checks have failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

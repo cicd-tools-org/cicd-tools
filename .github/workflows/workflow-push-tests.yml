@@ -91,8 +91,17 @@ jobs:
       TEMPLATE_SCENARIO: "0.toml_linting-0.workflow_linting"
       TESTING_MODE: true
 
+  commit_lint_test_failure:
+    needs: [configuration, remote_scripts, pre-commit_test_failure]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-commit-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TESTING_MODE: true
+
   success:
-    needs: [remote_scripts, pre-commit_test_failure]
+    needs: [remote_scripts, commit_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
