@@ -31,7 +31,7 @@ repos:
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
         entry: actionlint
-        files: "^.github/.+\\.(yaml|yml)$"
+        files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
         require_serial: true

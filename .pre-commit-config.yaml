@@ -40,7 +40,7 @@ repos:
         description: "Lint the project's GitHub workflow files."
         entry: actionlint
         exclude: "^{{cookiecutter.project_slug}}/.+$"
-        files: "^.github/.+\\.(yaml|yml)$"
+        files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
         require_serial: true

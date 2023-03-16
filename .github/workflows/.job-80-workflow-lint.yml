@@ -1,0 +1,101 @@
+---
+name: job-80-workflow-lint
+
+on:
+  workflow_call:
+    inputs:
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      REMOTE_SCRIPT_PREFIX:
+        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
+        description: "Optional, allows you to specify a base path prefix for all remote scripts."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 1
+  TEMPLATE_SKIP_PRECOMMIT: 1
+
+jobs:
+
+  run_actionlint:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS }}
+      max-parallel: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+
+    steps:
+      - name: Workflow Lint -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: 'template'
+
+      - name: Workflow Lint -- Setup Environment
+        run: |
+          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Workflow Lint -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Workflow Lint -- Install Template Requirements
+        run: |
+          source "./template/.github/scripts/step-requirements-template.sh"
+        shell: bash
+
+      - name: Workflow Lint -- Install actionlint Binary
+        run: |
+          bash <(curl "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}")
+        shell: bash
+
+      - name: Workflow Lint -- Render Template
+        run: |
+          source "./template/.github/scripts/step-render-template.sh"
+        shell: bash
+
+      - name: Workflow Lint -- Run Linter (Template)
+        run: |
+          cd template
+          ../actionlint -color
+        shell: bash
+
+      - name: Workflow Lint -- Run Linter (Rendered Template)
+        run: |
+          cd "${TEST_PROJECT_NAME}"
+          ../actionlint -color
+        shell: bash
+
+      - name: Workflow Lint -- Report Job Status on Success
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "GitHub workflow lint checks have succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
+
+      - name: Workflow Lint -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "GitHub workflow lint checks have failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

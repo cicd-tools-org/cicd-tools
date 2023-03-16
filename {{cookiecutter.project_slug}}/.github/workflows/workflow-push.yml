@@ -1,0 +1,32 @@
+---
+name: {{ cookiecutter.project_slug }}-github-workflow-push
+
+on:
+  push:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  start:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Place Holder Step
+        run: |
+          echo "A placeholder step."
+
+  success:
+    needs: [start]
+    secrets: inherit
+    uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "placeholder workflow has completed successfully!"

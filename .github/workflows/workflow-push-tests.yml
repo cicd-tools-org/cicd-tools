@@ -109,8 +109,17 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TESTING_MODE: true
 
+  workflow_lint_test_failure:
+    needs: [configuration, remote_scripts, toml_lint_test_failure]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-workflow-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TESTING_MODE: true
+
   success:
-    needs: [remote_scripts, toml_lint_test_failure]
+    needs: [remote_scripts, workflow_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
