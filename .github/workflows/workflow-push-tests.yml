@@ -100,8 +100,17 @@ jobs:
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TESTING_MODE: true
 
-  toml_lint_test_failure:
+  shell_lint_test_failure:
     needs: [configuration, remote_scripts, commit_lint_test_failure]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-shell-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+      TESTING_MODE: true
+
+  toml_lint_test_failure:
+    needs: [configuration, remote_scripts, shell_lint_test_failure]
     secrets: inherit
     uses: ./.github/workflows/.job-80-toml-lint.yml
     with:

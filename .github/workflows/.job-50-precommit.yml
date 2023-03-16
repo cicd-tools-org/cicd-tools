@@ -104,6 +104,11 @@ jobs:
           source "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
         shell: bash
 
+      - name: Pre-Commit Test -- Test Shell Lint -- Expect Failure
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_lint_fails"
+        shell: bash
+
       - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
         if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
         run: |

@@ -80,6 +80,15 @@ jobs:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
       REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
+  shell_lint:
+    needs: [configuration, remote_scripts]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-shell-lint.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
+
+
   toml_lint:
     needs: [configuration, remote_scripts]
     secrets: inherit
@@ -115,7 +124,7 @@ jobs:
       TEMPLATE_SCENARIO: ${{ matrix.scenario }}
 
   success:
-    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, toml_lint, workflow_lint, yaml_lint]
+    needs: [remote_scripts, commit_lint, documentation, pre-commit, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
