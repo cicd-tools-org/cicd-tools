@@ -58,6 +58,14 @@ scenario() {
     util "fail"
   }
 
+  test_workflow_header_lint_fails() {
+    util "git_reset"
+    sed -i.bak 's,-github-workflow-push,-github-wrong-name,g' .github/workflows/workflow-push.yml
+    git stage .github
+    git commit -m 'test(PRE-COMMIT): fail due to workflow header lint' || exit 0
+    util "fail"
+  }
+
   "$@"
 
 }

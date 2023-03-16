@@ -72,24 +72,15 @@ jobs:
       - name: Shell Linting -- Run shellcheck (Template)
         run: |
           cd template
-          while read -r SHELLFILE; do shellcheck -x "${SHELLFILE}"; done < \
-            <(
-                find . -name "*.bash" -or                             \
-                       -name "*.sh"                                   \
-                       -type f                                        \
-                       -not -path "./{{cookiecutter.project_slug}}/*"
-            )
+          find . \( -name "*.bash" -or -name "*.sh" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
+            xargs -0 shellcheck -x
         shell: bash
 
       - name: Shell Linting -- Run shellcheck (Rendered Template)
         run: |
           cd "${TEST_PROJECT_NAME}"
-          while read -r SHELLFILE; do shellcheck -x "${SHELLFILE}"; done < \
-            <(
-              find . -name "*.bash" -or                               \
-                     -name "*.sh"                                     \
-                     -type f
-            )
+          find . \( -name "*.bash" -or -name "*.sh" -type f \) -print0 | \
+            xargs -0 shellcheck -x
         shell: bash
 
       - name: Shell Linting -- Report Job Status on Success

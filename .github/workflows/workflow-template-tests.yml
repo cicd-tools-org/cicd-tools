@@ -1,5 +1,5 @@
 ---
-name: cicd-tooling-github-workflow-push
+name: cicd-tooling-github-workflow-template-tests
 
 on:
   push:

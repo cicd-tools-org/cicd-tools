@@ -63,15 +63,20 @@ jobs:
           source "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
-      - name: Pre-Commit Test -- Install Binaries
+      - name: Pre-Commit Test -- Install actionlint Binary
         env:
-          ACTIONLINT_SCRIPT_URL: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}
-          ACTIONLINT_SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
+          SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
+        run: |
+          source "./template/.github/cicd-tools/remote-script.sh" "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}"
+          sudo mv actionlint /usr/local/bin
+        shell: bash
+
+      - name: Pre-Commit Test -- Install Pre-Commit Requirements
         run: |
           source "./template/.github/scripts/step-requirements-precommit.sh"
         shell: bash
 
-      - name: Pre-Commit -- Initialize Cache Locations
+      - name: Pre-Commit Test -- Initialize Cache Locations
         run: |
           mkdir -p ~/.cache/pypoetry/virtualenvs
         shell: bash
@@ -113,6 +118,12 @@ jobs:
         if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
         run: |
           source "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Workflow Headers Lint -- Expect Failure
+        if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
+        run: |
+          source "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_header_lint_fails"
         shell: bash
 
       - name: Pre-Commit Test -- Report Job Status on Success

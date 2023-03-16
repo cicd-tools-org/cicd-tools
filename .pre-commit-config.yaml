@@ -13,7 +13,7 @@ repos:
         description: "Lint the project's shell scripts."
         entry: shellcheck -x
         exclude: "^{{cookiecutter.project_slug}}/.+$"
-        files: "^.+\\.sh$"
+        files: "^.+\\.(bash|sh)$"
         language: system
         pass_filenames: true
         stages: [commit]
@@ -44,4 +44,13 @@ repos:
         language: system
         pass_filenames: false
         require_serial: true
+        stages: [commit]
+      - id: workflow-header-lint
+        name: workflow-header-lint
+        description: "Lint the headers of the project's GitHub workflow files."
+        entry: ./{{cookiecutter.project_slug}}/.pre-commit/workflow-header-lint.sh
+        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        files: "^.github/workflows/.+\\.(yaml|yml)$"
+        language: system
+        pass_filenames: true
         stages: [commit]
