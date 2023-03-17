@@ -43,7 +43,7 @@ jobs:
           REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   send_notification_test_failure:
-    needs: [remote_scripts, send_notification_test_success]
+    needs: [remote_scripts]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
@@ -64,7 +64,7 @@ jobs:
           TESTING_MODE: true
 
   security_test_failure:
-    needs: [configuration, remote_scripts, send_notification_test_success]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-10-security.yml
     with:
@@ -73,7 +73,7 @@ jobs:
       TESTING_MODE: true
 
   documentation_test_failure:
-    needs: [configuration, remote_scripts, security_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-30-documentation.yml
     with:
@@ -82,7 +82,7 @@ jobs:
       TESTING_MODE: true
 
   pre-commit_test_failure:
-    needs: [configuration, remote_scripts, documentation_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-50-precommit.yml
     with:
@@ -92,7 +92,7 @@ jobs:
       TESTING_MODE: true
 
   commit_lint_test_failure:
-    needs: [configuration, remote_scripts, pre-commit_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-80-commit-lint.yml
     with:
@@ -101,7 +101,7 @@ jobs:
       TESTING_MODE: true
 
   shell_lint_test_failure:
-    needs: [configuration, remote_scripts, commit_lint_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-80-shell-lint.yml
     with:
@@ -110,7 +110,7 @@ jobs:
       TESTING_MODE: true
 
   toml_lint_test_failure:
-    needs: [configuration, remote_scripts, shell_lint_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-80-toml-lint.yml
     with:
@@ -119,7 +119,7 @@ jobs:
       TESTING_MODE: true
 
   workflow_lint_test_failure:
-    needs: [configuration, remote_scripts, toml_lint_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-80-workflow-lint.yml
     with:
@@ -128,7 +128,7 @@ jobs:
       TESTING_MODE: true
 
   yaml_lint_test_failure:
-    needs: [configuration, remote_scripts, workflow_lint_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-80-yaml-lint.yml
     with:
@@ -138,7 +138,7 @@ jobs:
       TESTING_MODE: true
 
   create_release_test_failure:
-    needs: [configuration, remote_scripts, yaml_lint_test_failure]
+    needs: [configuration, remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-99-create-release.yml
     with:
@@ -147,7 +147,7 @@ jobs:
       TESTING_MODE: true
 
   success:
-    needs: [remote_scripts, create_release_test_failure]
+    needs: [commit_lint_test_failure, create_release_test_failure, documentation_test_failure, pre-commit_test_failure, remote_scripts, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository

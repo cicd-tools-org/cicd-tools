@@ -8,7 +8,7 @@
 
 set -eo pipefail
 
-main () {
+main() {
 
   for WORKFLOW_FILE_PATH in "$@"; do
 
