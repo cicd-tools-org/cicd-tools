@@ -19,7 +19,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_DETERMINE_COMMITS:
-        default: "scripts/github/step-determine-pushed-commits.sh"
+        default: "remote-execute/github/step-determine-pushed-commits.sh"
         description: "Optional, allows you to specify a determine commits script."
         required: false
         type: string

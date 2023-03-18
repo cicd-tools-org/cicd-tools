@@ -29,7 +29,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_NOTIFICATION:
-        default: "scripts/notifications/slack.sh"
+        default: "remote-execute/notifications/slack.sh"
         description: "Optional, allows you to specify a notification script."
         required: false
         type: string

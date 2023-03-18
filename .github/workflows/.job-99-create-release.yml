@@ -19,7 +19,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
-        default: "scripts/github/job-99-generate-changelog.sh"
+        default: "remote-execute/github/job-99-generate-changelog.sh"
         description: "Optional, allows you to specify a changelog generation script."
         required: false
         type: string
@@ -29,7 +29,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_GENERATE_RELEASE:
-        default: "scripts/github/job-99-generate-release.js"
+        default: "remote-execute/github/job-99-generate-release.js"
         description: "Optional, allows you to specify a script to generate the actual GitHub release."
         required: false
         type: string
@@ -39,7 +39,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_IDENTIFY_CANDIDATE:
-        default: "scripts/github/job-99-release-candidate.sh"
+        default: "remote-execute/github/job-99-release-candidate.sh"
         description: "Optional, allows you to specify a filter script for release candidates."
         required: false
         type: string
@@ -49,7 +49,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_USE_POETRY:
-        default: "scripts/github/step-use-poetry.sh"
+        default: "remote-execute/generic/use-poetry.sh"
         description: "Optional, allows you to specify a use poetry script."
         required: false
         type: string

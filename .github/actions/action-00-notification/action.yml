@@ -33,7 +33,7 @@ inputs:
     description: "Optional, allows you to specify a base path prefix for all remote scripts."
     required: false
   REMOTE_SCRIPT_NOTIFICATION:
-    default: "scripts/notifications/slack.sh"
+    default: "remote-execute/notifications/slack.sh"
     description: "Optional, allows you to specify a notification script."
     required: false
   REMOTE_SCRIPT_NOTIFICATION_HASH: # Release: update with a valid sha
