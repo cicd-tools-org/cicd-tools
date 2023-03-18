@@ -24,6 +24,77 @@ env:
 
 jobs:
 
+  run_shfmt:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS }}
+      max-parallel: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+
+    steps:
+      - name: Shell Formatting -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: 'template'
+
+      - name: Shell Formatting -- Setup Environment
+        run: |
+          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Shell Formatting -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Shell Formatting -- Install Template Requirements
+        run: |
+          source "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Shell Formatting -- Install shfmt Binary
+        run: |
+          sudo apt-get install -y shfmt
+        shell: bash
+
+      - name: Shell Formatting -- Render Template
+        run: |
+          source "./template/.github/scripts/step-render-template.sh"
+        shell: bash
+
+      - name: Shell Formatting -- Run shfmt (Template)
+        run: |
+          cd template
+          find . \( -name "*.bash" -or -name "*.sh" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
+            xargs -0 shfmt -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+        shell: bash
+
+      - name: Shell Formatting -- Run shfmt (Rendered Template)
+        run: |
+          cd "${TEST_PROJECT_NAME}"
+          find . \( -name "*.bash" -or -name "*.sh" -type f \) -print0 | \
+            xargs -0 shfmt -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+        shell: bash
+
+      - name: Shell Formatting -- Report Job Status on Success
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "shellcheck formatting checks have succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Shell Formatting -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "shellcheck formatting checks have failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
   run_shellcheck:
 
     runs-on: ubuntu-latest

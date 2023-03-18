@@ -11,7 +11,7 @@ set -eo pipefail
 
 main() {
 
-  sudo apt-get install -y golang-github-pelletier-go-toml shellcheck
+  sudo apt-get install -y golang-github-pelletier-go-toml shellcheck shfmt
 
 }
 

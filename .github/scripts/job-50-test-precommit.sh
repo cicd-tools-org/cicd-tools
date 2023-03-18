@@ -50,6 +50,15 @@ scenario() {
     util "fail"
   }
 
+  test_shell_format_fails() {
+    util "git_reset"
+    TEMP_FILE=$(util "create_tmp")
+    echo -e "#!/bin/bash\nls bash_scripts;ls shell_scripts" > "${TEMP_FILE}.sh"
+    git stage "${TEMP_FILE}.sh"
+    git commit -m 'test(PRE-COMMIT): fail due to shfmt' || exit 0
+    util "fail"
+  }
+
   test_workflow_lint_fails() {
     util "git_reset"
     find .github -type f -name '*.yml' -exec sed -i.bak 's/ubuntu-latest/non-existent-os/g' {} \;

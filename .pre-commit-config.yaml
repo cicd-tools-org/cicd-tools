@@ -8,6 +8,15 @@ repos:
         entry: ./{{cookiecutter.project_slug}}/.pre-commit/commit-lint.sh
         language: system
         stages: [commit-msg]
+      - id: shell-fmt
+        name: shell-fmt
+        description: "Format the project's shell scripts."
+        entry: ./{{cookiecutter.project_slug}}/.pre-commit/shell-fmt.sh
+        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        files: "^.+\\.(bash|sh)$"
+        language: system
+        pass_filenames: true
+        stages: [commit]
       - id: shell-lint
         name: shell-lint
         description: "Lint the project's shell scripts."
