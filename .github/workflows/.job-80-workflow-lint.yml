@@ -41,7 +41,7 @@ jobs:
 
       - name: Workflow Lint -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Workflow Lint -- Set up Python ${{ matrix.python-version }}
@@ -51,20 +51,20 @@ jobs:
 
       - name: Workflow Lint -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh"
+          "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
       - name: Workflow Lint -- Install actionlint Binary
         env:
           SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
         run: |
-          source "./template/.github/cicd-tools/remote-script.sh" "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}"
+          "./template/.github/cicd-tools/remote-script.sh" "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}"
           sudo mv actionlint /usr/local/bin
         shell: bash
 
       - name: Workflow Lint -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh"
+          "./template/.github/scripts/step-render-template.sh"
         shell: bash
 
       - name: Workflow Lint -- Run Linter (Template)

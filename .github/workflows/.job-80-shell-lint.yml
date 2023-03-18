@@ -41,7 +41,7 @@ jobs:
 
       - name: Shell Formatting -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Shell Formatting -- Set up Python ${{ matrix.python-version }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Shell Formatting -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Shell Formatting -- Install shfmt Binary
@@ -61,7 +61,7 @@ jobs:
 
       - name: Shell Formatting -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh"
+          "./template/.github/scripts/step-render-template.sh"
         shell: bash
 
       - name: Shell Formatting -- Run shfmt (Template)
@@ -112,7 +112,7 @@ jobs:
 
       - name: Shell Linting -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Shell Linting -- Set up Python ${{ matrix.python-version }}
@@ -122,7 +122,7 @@ jobs:
 
       - name: Shell Linting -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Shell Linting -- Install shellcheck Binary
@@ -132,7 +132,7 @@ jobs:
 
       - name: Shell Linting -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh"
+          "./template/.github/scripts/step-render-template.sh"
         shell: bash
 
       - name: Shell Linting -- Run shellcheck (Template)

@@ -34,6 +34,6 @@ jobs:
       - name: Create Configuration -- Set Cookiecutter Configuration as Output
         id: cookiecutter_configuration
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_SET_VALUE }}"  \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
             cat "${{ inputs.PATH }}"
         shell: bash

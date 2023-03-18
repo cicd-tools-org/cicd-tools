@@ -41,7 +41,7 @@ jobs:
 
       - name: Documentation Test -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Documentation Test -- Set up Python ${{ matrix.python-version }}
@@ -51,12 +51,12 @@ jobs:
 
       - name: Documentation Test -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh"
+          "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
       - name: Documentation Test -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh"
+          "./template/.github/scripts/step-render-template.sh"
         shell: bash
 
       - name: Documentation Test -- Check Markdown Links For Template

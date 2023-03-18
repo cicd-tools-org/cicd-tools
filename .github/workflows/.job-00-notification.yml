@@ -50,7 +50,7 @@ jobs:
 
       - name: Notification -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+           "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Notification -- Run Notification Action

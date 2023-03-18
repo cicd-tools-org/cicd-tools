@@ -6,18 +6,15 @@
 # @:                      An array of arguments to pass to the remote script. (The script will be sourced, with these arguments.)
 # REMOTE_SCRIPT_RETRIES:  Optionally sets the number of fetch attempts.
 # REMOTE_RETRY_MAX_TIME:  Optionally sets the maximum retry time.
-# SCRIPT_DOWNLOAD_NAME:   Optionally sets a name for scripts other than shell and bash to be saved to.
+# SCRIPT_DOWNLOAD_NAME:   Optionally set a filename to download to, rather than execute.  (Especially useful for non-shell scripts.)
 # SCRIPT_HASH:            Optionally sets a sha256sum for the remote file.  (The manifest will not be used to lookup hashes.)
 
 # CI bootstrap script.
 
 set -eo pipefail
 
-export REMOTE_SCRIPT_NAME
-
-REMOTE_RETRY_MAX_TIME="${REMOTE_RETRY_MAX_TIME-30}"
 REMOTE_SCRIPT_RETRIES="${REMOTE_SCRIPT_RETRIES-3}"
-SCRIPT_DOWNLOAD_NAME="${SCRIPT_DOWNLOAD_NAME-downloaded.script}"
+REMOTE_RETRY_MAX_TIME="${REMOTE_RETRY_MAX_TIME-30}"
 SCRIPT_HASH="${SCRIPT_HASH-""}"
 
 cache() {
@@ -116,6 +113,10 @@ remote() {
     [[ "${SCRIPT_URL}" == *.sh ]] || [[ "${SCRIPT_URL}" == *.bash ]]
   }
 
+  is_download() {
+    test "${SCRIPT_DOWNLOAD_NAME}" != ""
+  }
+
   is_url() {
     [[ "${SCRIPT_URL}" == https:* ]]
   }
@@ -161,14 +162,23 @@ main() {
     cache "load"
   fi
 
-  if remote "is_bash_script"; then
-    echo "DEBUG: executing '${SCRIPT_URL}'" >> /dev/stderr
-    # shellcheck source=/dev/null
-    source "${TEMP_FILE}" "$@"
-  else
-    echo "DEBUG: saving non-shell script '${SCRIPT_URL}'" >> /dev/stderr
-    cp "${TEMP_FILE}" "${SCRIPT_DOWNLOAD_NAME}"
+  if remote "is_bash_script" && ! remote "is_download"; then
+    echo "DEBUG: executing remote script '${SCRIPT_URL}'" >> /dev/stderr
+    chmod +x "${TEMP_FILE}"
+    REMOTE_SCRIPT_NAME="${REMOTE_SCRIPT_NAME}" "${TEMP_FILE}" "$@"
+    exit $?
   fi
+
+  if remote "is_download"; then
+    echo "DEBUG: saving remote script '${SCRIPT_URL}'" >> /dev/stderr
+    echo "DEBUG: local filename '${SCRIPT_DOWNLOAD_NAME}'" >> /dev/stderr
+    cp "${TEMP_FILE}" "${SCRIPT_DOWNLOAD_NAME}"
+    exit $?
+  fi
+
+  echo "ERROR: only executing scripts that end in '.bash' or '.sh'."
+  echo "ERROR: set SCRIPT_DOWNLOAD_NAME environment variable to download the remote script without executing."
+  exit 127
 
 }
 

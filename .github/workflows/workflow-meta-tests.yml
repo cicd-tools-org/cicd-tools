@@ -25,7 +25,7 @@ jobs:
 
       - name: Notification (Local Action Test) -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
@@ -43,7 +43,7 @@ jobs:
 
       - name: Notification (Local Action Test) -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
@@ -137,7 +137,7 @@ jobs:
 
       - name: Notification (Local Action Test) -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)

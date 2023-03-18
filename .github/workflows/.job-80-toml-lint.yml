@@ -41,7 +41,7 @@ jobs:
 
       - name: Toml Linting -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Toml Linting -- Set up Python ${{ matrix.python-version }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Toml Linting -- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh"
+          "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
       - name: Toml Linting -- Install tomll Binary
@@ -61,7 +61,7 @@ jobs:
 
       - name: Toml Linting -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh"
+          "./template/.github/scripts/step-render-template.sh"
         shell: bash
 
       - name: Toml Linting -- Run Linter (Template)

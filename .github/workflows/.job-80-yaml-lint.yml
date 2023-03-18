@@ -45,7 +45,7 @@ jobs:
 
       - name: Yaml Linting -- Setup Environment
         run: |
-          source "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Yaml Linting -- Set up Python ${{ matrix.python-version }}
@@ -55,12 +55,12 @@ jobs:
 
       - name: Yaml Lint Test-- Install Template Requirements
         run: |
-          source "./template/.github/scripts/step-requirements-template.sh"
+          "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
       - name: Yaml Linting -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh" \
+          "./template/.github/scripts/step-render-template.sh" \
             "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
         shell: bash
 

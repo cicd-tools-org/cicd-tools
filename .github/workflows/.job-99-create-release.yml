@@ -56,7 +56,7 @@ jobs:
       - name: Create Release -- Execute Remote Filter Release Candidates Script
         id: filter
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" \
             "${{ github.event.ref }}"
         shell: bash
 
@@ -69,27 +69,27 @@ jobs:
       - name: Create Release -- Setup Environment
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Create Release -- Execute Remote Install Poetry Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
       - name: Create Release -- Execute Remote Check Version Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "check-version" "${BRANCH_OR_TAG}"
         shell: bash
 
       - name: Create Release -- Execute Remote Generate Changelog Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
             "${BRANCH_OR_TAG}"
         shell: bash
 
@@ -98,7 +98,7 @@ jobs:
           SCRIPT_DOWNLOAD_NAME: job-99-generate-release.js
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}"
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}"
         shell: bash
 
       - name: Create Release -- Generate GitHub Release Draft

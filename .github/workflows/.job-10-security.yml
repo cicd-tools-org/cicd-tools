@@ -46,14 +46,14 @@ jobs:
 
       - name: Security -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Security -- Determine Pushed Commits
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash
 
       - name: Security -- Run Trufflehog

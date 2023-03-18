@@ -52,14 +52,14 @@ jobs:
 
       - name: Commit Linting -- Setup Environment
         run: |
-          source "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Commit Linting -- Determine Pushed Commits
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash
 
       - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: Commit Linting -- Install Poetry
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Commit Linting -- Install Poetry
         run: |
-          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-project"
         shell: bash
 

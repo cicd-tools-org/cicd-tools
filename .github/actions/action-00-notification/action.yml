@@ -43,7 +43,7 @@ runs:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
       run: |
         cd "${{ inputs.PROJECT_ROOT_PATH }}"
-        source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
+        "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
           "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI }} ${{ inputs.NOTIFICATION_MESSAGE }}"
       shell: bash
 
@@ -53,7 +53,8 @@ runs:
       if: failure() || inputs.TESTING_MODE == true
       run: |
         cd "${{ inputs.PROJECT_ROOT_PATH }}"
-        source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
-          "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}"
-        echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
+        "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
+          "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" || \
+          echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
+        exit 127
       shell: bash
