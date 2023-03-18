@@ -8,11 +8,6 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -90,7 +85,6 @@ jobs:
           NOTIFICATION_MESSAGE: "TOML lint checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Toml Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
@@ -100,4 +94,3 @@ jobs:
           NOTIFICATION_MESSAGE: "TOML lint checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

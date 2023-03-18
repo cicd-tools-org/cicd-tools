@@ -22,29 +22,18 @@ inputs:
   NOTIFICATION_WEBHOOK_URL:
     description: "The webhook url to that will be posted to, in order to generate notifications."
     required: true
-    type: string
   PROJECT_ROOT_PATH:
     default: "."
     description: "Optional, allows you to specify a path to the project's root."
-    required: false
-    type: string
-  REMOTE_SCRIPT_PREFIX:
-    default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-    description: "Optional, allows you to specify a base path prefix for all remote scripts."
     required: false
   REMOTE_SCRIPT_NOTIFICATION:
     default: "remote-execute/notifications/slack.sh"
     description: "Optional, allows you to specify a notification script."
     required: false
-  REMOTE_SCRIPT_NOTIFICATION_HASH: # Release: update with a valid sha
-    default: ""
-    description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
-    required: false
   TESTING_MODE:
-    default: false
+    default: "false"
     description: "Optional, allows you to test a workflow failure."
     required: false
-    type: boolean
 
 runs:
   using: "composite"
@@ -53,7 +42,8 @@ runs:
       env:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
       run: |
-        source "${{ inputs.PROJECT_ROOT_PATH }}/.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}" \
+        cd "${{ inputs.PROJECT_ROOT_PATH }}"
+        source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
           "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI }} ${{ inputs.NOTIFICATION_MESSAGE }}"
       shell: bash
 
@@ -62,7 +52,8 @@ runs:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
       if: failure() || inputs.TESTING_MODE == true
       run: |
-        source "${{ inputs.PROJECT_ROOT_PATH }}/.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}" \
+        cd "${{ inputs.PROJECT_ROOT_PATH }}"
+        source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
           "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}"
         echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
       shell: bash

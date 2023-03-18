@@ -23,19 +23,9 @@ on:
         description: "The message that will sent as a notification, in the event the job fails."
         required: false
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       REMOTE_SCRIPT_NOTIFICATION:
         default: "remote-execute/notifications/slack.sh"
         description: "Optional, allows you to specify a notification script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_NOTIFICATION_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
       TESTING_MODE:
@@ -71,6 +61,4 @@ jobs:
           NOTIFICATION_MESSAGE: ${{ inputs.NOTIFICATION_MESSAGE }}
           NOTIFICATION_MESSAGE_FAILURE: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
           REMOTE_SCRIPT_NOTIFICATION: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}
-          REMOTE_SCRIPT_NOTIFICATION_HASH: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION_HASH }}

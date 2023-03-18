@@ -8,11 +8,6 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       TEMPLATE_SCENARIO:
         description: "An 'cookiecutter.json' file variant, with options selected to test as a separate scenario."
         required: true
@@ -65,7 +60,8 @@ jobs:
 
       - name: Yaml Linting -- Render Template
         run: |
-          source "./template/.github/scripts/step-render-template.sh" "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
+          source "./template/.github/scripts/step-render-template.sh" \
+            "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
         shell: bash
 
       - name: Yaml Linting -- Run Linter (Template)
@@ -89,7 +85,6 @@ jobs:
           NOTIFICATION_MESSAGE: "YAML lint (${{ inputs.TEMPLATE_SCENARIO }}) checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Yaml Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
@@ -99,4 +94,3 @@ jobs:
           NOTIFICATION_MESSAGE: "YAML lint (${{ inputs.TEMPLATE_SCENARIO }}) checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

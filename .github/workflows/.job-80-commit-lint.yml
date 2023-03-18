@@ -8,29 +8,14 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       REMOTE_SCRIPT_DETERMINE_COMMITS:
         default: "remote-execute/github/step-determine-pushed-commits.sh"
         description: "Optional, allows you to specify a determine commits script."
         required: false
         type: string
-      REMOTE_SCRIPT_DETERMINE_COMMITS_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
-        required: false
-        type: string
       REMOTE_SCRIPT_USE_POETRY:
         default: "remote-execute/generic/use-poetry.sh"
         description: "Optional, allows you to specify a use poetry script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_USE_POETRY_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
       TESTING_MODE:
@@ -74,7 +59,7 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS_HASH }}"
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash
 
       - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
@@ -84,7 +69,7 @@ jobs:
 
       - name: Commit Linting -- Install Poetry
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
@@ -101,7 +86,7 @@ jobs:
 
       - name: Commit Linting -- Install Poetry
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-project"
         shell: bash
 
@@ -116,7 +101,6 @@ jobs:
         with:
           NOTIFICATION_MESSAGE: "commit lint checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Commit Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
@@ -125,4 +109,3 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "commit lint checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

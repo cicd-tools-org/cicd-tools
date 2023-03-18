@@ -13,19 +13,9 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
         default: "remote-execute/github/job-99-generate-changelog.sh"
         description: "Optional, allows you to specify a changelog generation script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_GENERATE_CHANGELOG_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
       REMOTE_SCRIPT_GENERATE_RELEASE:
@@ -33,29 +23,14 @@ on:
         description: "Optional, allows you to specify a script to generate the actual GitHub release."
         required: false
         type: string
-      REMOTE_SCRIPT_GENERATE_RELEASE_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
-        required: false
-        type: string
       REMOTE_SCRIPT_IDENTIFY_CANDIDATE:
         default: "remote-execute/github/job-99-release-candidate.sh"
         description: "Optional, allows you to specify a filter script for release candidates."
         required: false
         type: string
-      REMOTE_SCRIPT_IDENTIFY_CANDIDATE_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
-        required: false
-        type: string
       REMOTE_SCRIPT_USE_POETRY:
         default: "remote-execute/generic/use-poetry.sh"
         description: "Optional, allows you to specify a use poetry script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_USE_POETRY_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
       TESTING_MODE:
@@ -81,7 +56,7 @@ jobs:
       - name: Create Release -- Execute Remote Filter Release Candidates Script
         id: filter
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" \
             "${{ github.event.ref }}"
         shell: bash
 
@@ -100,21 +75,21 @@ jobs:
       - name: Create Release -- Execute Remote Install Poetry Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
       - name: Create Release -- Execute Remote Check Version Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" "${{ inputs.REMOTE_SCRIPT_USE_POETRY_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "check-version" "${BRANCH_OR_TAG}"
         shell: bash
 
       - name: Create Release -- Execute Remote Generate Changelog Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
             "${BRANCH_OR_TAG}"
         shell: bash
 
@@ -123,7 +98,7 @@ jobs:
           SCRIPT_DOWNLOAD_NAME: job-99-generate-release.js
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE_HASH }}"
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}"
         shell: bash
 
       - name: Create Release -- Generate GitHub Release Draft
@@ -148,7 +123,6 @@ jobs:
             automated release has been created!
             https://github.com/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}/releases
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Create Release -- Report Job Status on Failure
         if: failure() || (steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == true)
@@ -157,4 +131,3 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "automated release creation has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

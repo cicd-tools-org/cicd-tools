@@ -9,19 +9,9 @@ on:
         description: "Optional, allows you to specify the path to the 'cookiecutter.json' file."
         required: false
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       REMOTE_SCRIPT_SET_VALUE:
         default: "remote-execute/github/step-set-value.sh"
         description: "Optional, allows you to specify a workflow set value script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_SET_VALUE_HASH: # Release: update with a valid sha
-        default: ""
-        description: "Optional, (but recommended) allows you to specify a sha256sum for the remote script."
         required: false
         type: string
     outputs:
@@ -44,6 +34,6 @@ jobs:
       - name: Create Configuration -- Set Cookiecutter Configuration as Output
         id: cookiecutter_configuration
         run: |
-          source "./.github/bootstrap/step-remote-script.sh" "${{ inputs.REMOTE_SCRIPT_PREFIX }}${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" "${{ inputs.REMOTE_SCRIPT_SET_VALUE_HASH }}" \
+          source "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_SET_VALUE }}"  \
             cat "${{ inputs.PATH }}"
         shell: bash

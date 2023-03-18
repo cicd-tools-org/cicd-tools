@@ -8,11 +8,6 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
-      REMOTE_SCRIPT_PREFIX:
-        default: "https://raw.githubusercontent.com/niall-byrne/cicd-tools/master/"
-        description: "Optional, allows you to specify a base path prefix for all remote scripts."
-        required: false
-        type: string
       TEMPLATE_SCENARIO:
         description: "An 'cookiecutter.json' file variant, with options selected to test as a separate scenario."
         required: true
@@ -133,7 +128,6 @@ jobs:
           NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}
 
       - name: Pre-Commit Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
@@ -143,4 +137,3 @@ jobs:
           NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
-          REMOTE_SCRIPT_PREFIX: ${{ inputs.REMOTE_SCRIPT_PREFIX }}

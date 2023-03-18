@@ -14,40 +14,31 @@ on:
 
 jobs:
 
-  remote_scripts:
-    uses: ./.github/workflows/.__remote-scripts.yml
-
   configuration:
-    needs: [remote_scripts]
     uses: ./.github/workflows/.job-00-cookiecutter.yml
     with:
       PATH: "cookiecutter.json"
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   start:
-    needs: [remote_scripts]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
       NOTIFICATION_MESSAGE: "workflow has started!"
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   security:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-10-security.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   documentation:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-30-documentation.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   # Implementation Notes:
   #
@@ -55,7 +46,7 @@ jobs:
   # Please use this as a guide, and create your own .job-50-precommit.yml file.
 
   pre-commit:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     strategy:
       fail-fast: true
@@ -69,44 +60,38 @@ jobs:
     uses: ./.github/workflows/.job-50-precommit.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TEMPLATE_SCENARIO: ${{ matrix.scenario }}
 
   commit_lint:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-80-commit-lint.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   shell_lint:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-80-shell-lint.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
-
 
   toml_lint:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-80-toml-lint.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   workflow_lint:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-80-workflow-lint.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   yaml_lint:
-    needs: [configuration, remote_scripts]
+    needs: [configuration]
     secrets: inherit
     strategy:
       fail-fast: true
@@ -120,13 +105,12 @@ jobs:
     uses: ./.github/workflows/.job-80-yaml-lint.yml
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
       TEMPLATE_SCENARIO: ${{ matrix.scenario }}
 
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, documentation, pre-commit, remote_scripts, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
+    needs: [configuration, commit_lint, documentation, pre-commit, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/.job-99-create-release.yml
     with:
@@ -135,13 +119,11 @@ jobs:
         - [ ] Ensure all remote references have been updated
         - [ ] Ensure master points to new tag
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
 
   success:
-    needs: [create_release, configuration, remote_scripts]
+    needs: [create_release, configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-00-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "workflow has completed successfully!"
-      REMOTE_SCRIPT_PREFIX: ${{ needs.remote_scripts.outputs.REMOTE_SCRIPT_PREFIX }}
