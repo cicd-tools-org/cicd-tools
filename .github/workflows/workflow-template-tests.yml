@@ -15,6 +15,7 @@ on:
 jobs:
 
   configuration:
+    secrets: inherit
     uses: ./.github/workflows/.job-00-cookiecutter.yml
     with:
       PATH: "cookiecutter.json"
@@ -69,12 +70,19 @@ jobs:
     with:
       CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
 
+  json_schema_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-json-schema.yml
+    with:
+      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+
   shell_lint:
     needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/.job-80-shell-lint.yml
     with:
-      CONFIGURATION: ${{ needs.configuration.outputs.configuration }}
+      CONFIGURATION: ${{ needs.configuration.outputs.CONFIGURATION }}
 
   toml_lint:
     needs: [configuration]
@@ -110,7 +118,7 @@ jobs:
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, documentation, pre-commit, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
+    needs: [configuration, commit_lint, documentation, json_schema_lint, pre-commit, security, shell_lint, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/.job-99-create-release.yml
     with:

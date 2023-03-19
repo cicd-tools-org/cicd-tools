@@ -19,8 +19,8 @@ repos:
       - id: shell-fmt
         name: shell-fmt
         description: "Format the project's shell scripts."
-        entry: ./.pre-commit/shell-fmt.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-fmt.sh
+        exclude: "^{{cookiecutter.project_slug}}/.+$|^\\.cicd-tools/ci/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
         pass_filenames: true
@@ -28,8 +28,8 @@ repos:
       - id: shell-lint
         name: shell-lint
         description: "Lint the project's shell scripts."
-        entry: ./.pre-commit/shell-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-lint.sh
+        exclude: "^{{cookiecutter.project_slug}}/.+$|^\\.cicd-tools/ci/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
         pass_filenames: true
@@ -38,7 +38,7 @@ repos:
       - id: toml-lint
         name: toml-lint
         description: "Lint the project's TOML files."
-        entry: ./.pre-commit/toml-lint.sh
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/toml-lint.sh
         files: "^.+\\.toml$"
         language: system
         stages: [commit]
@@ -48,7 +48,7 @@ repos:
       - id: workflow-lint
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
-        entry: ./.pre-commit/workflow-lint.sh
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-lint.sh
         files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
@@ -56,7 +56,7 @@ repos:
       - id: workflow-header-lint
         name: workflow-header-lint
         description: "Lint the headers of the project's GitHub workflow files."
-        entry: ./.pre-commit/workflow-header-lint.sh
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-header-lint.sh
         files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: true

@@ -4,7 +4,7 @@
 
 # 1:  Scenario filename. (Provide basename only, the path is implied.)
 
-# Development only script.
+# CICD-Tools Development script.
 
 set -eo pipefail
 

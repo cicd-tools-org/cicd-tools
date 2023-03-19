@@ -8,6 +8,11 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -19,8 +24,8 @@ on:
         required: false
 
 env:
-  TEMPLATE_SKIP_POETRY: 1
-  TEMPLATE_SKIP_PRECOMMIT: 1
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
 
@@ -49,44 +54,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Shell Formatting -- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
-        shell: bash
+      - name: Shell Formatting -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Shell Formatting -- Install shfmt Binary
-        run: |
-          sudo apt-get install -y shfmt
-        shell: bash
+      - name: Shell Formatting -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Shell Formatting -- Render Template
+      - name: Shell Formatting -- (Template) Install pre-commit
         run: |
-          "./template/.github/scripts/step-render-template.sh"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-project"
         shell: bash
+        working-directory: template
 
-      - name: Shell Formatting -- Run shfmt (Template)
+      - name: Shell Formatting -- (Template) Run shfmt via pre-commit
         run: |
-          cd template
-          find . \( -name "*.bash" -or -name "*.sh" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
-            xargs -0 \
-              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
-              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_SHFMT }}" \
-            -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+          poetry run pre-commit run shell-fmt --all-files
         shell: bash
+        working-directory: template
 
-      - name: Shell Formatting -- Run shfmt (Rendered Template)
+      - name: Shell Formatting -- (Rendered Template) Run shfmt via pre-commit
         run: |
-          cd "${TEST_PROJECT_NAME}"
-          find . \( -name "*.bash" -or -name "*.sh" -type f \) -print0 | \
-            xargs -0 \
-              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
-              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_SHFMT }}" \
-            -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+          poetry run pre-commit run shell-fmt --all-files
         shell: bash
+        working-directory: ${{ env.TEST_PROJECT_NAME }}
 
       - name: Shell Formatting -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "shellcheck formatting checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -94,7 +93,7 @@ jobs:
 
       - name: Shell Formatting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "shellcheck formatting checks have failed!"
@@ -126,38 +125,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Shell Linting -- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh" "${{ inputs.TESTING_MODE }}"
-        shell: bash
+      - name: Shell Linting -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Shell Linting -- Install shellcheck Binary
-        run: |
-          sudo apt-get install -y shellcheck
-        shell: bash
+      - name: Shell Linting -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Shell Linting -- Render Template
+      - name: Shell Linting -- (Template) Install pre-commit
         run: |
-          "./template/.github/scripts/step-render-template.sh"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-project"
         shell: bash
+        working-directory: template
 
-      - name: Shell Linting -- Run shellcheck (Template)
+      - name: Shell Linting -- (Template) Run shellcheck via pre-commit
         run: |
-          cd template
-          find . \( -name "*.bash" -or -name "*.sh" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
-            xargs -0 shellcheck -x
+          poetry run pre-commit run shell-lint --all-files
         shell: bash
+        working-directory: template
 
-      - name: Shell Linting -- Run shellcheck (Rendered Template)
+      - name: Shell Linting -- (Rendered Template) Run shellcheck via pre-commit
         run: |
-          cd "${TEST_PROJECT_NAME}"
-          find . \( -name "*.bash" -or -name "*.sh" -type f \) -print0 | \
-            xargs -0 shellcheck -x
+          poetry run pre-commit run shell-lint --all-files
         shell: bash
+        working-directory: ${{ env.TEST_PROJECT_NAME }}
 
       - name: Shell Linting -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "shellcheck lint checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -165,7 +164,7 @@ jobs:
 
       - name: Shell Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "shellcheck lint checks have failed!"

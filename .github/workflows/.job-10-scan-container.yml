@@ -4,6 +4,11 @@ name: job-10-scan-container
 on:
   workflow_call:
     inputs:
+      CONTEXT:
+        default: "."
+        description: "Optional, allows you define where the build context is located."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -21,41 +26,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Dockerfile Scan -- Checkout Repository
+      - name: Container Scan -- Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Dockerfile Scan -- Setup Environment
+      - name: Container Scan -- Setup Environment
         run: |
           "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Dockerfile Scan -- Build Container
-        run: |
-          docker build . --file "Dockerfile" --tag test:latest
-        working-directory: "{{cookiecutter.project_slug}}"
+      - name: Container Scan -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
 
-      - name: Dockerfile Scan -- Run Anchore Scan
+      - name: Container Scan -- Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Container Scan -- Build Container
+        uses: docker/build-push-action@v4
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: ${{ inputs.CONTEXT }}
+          load: true
+          tags: |
+            ghcr.io/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}:${{ env.BRANCH_OR_TAG }}
+            localbuild/test:${{ env.BRANCH_OR_TAG }}
+
+      - name: Container Scan -- Run Anchore Scan
         id: scan
         uses: anchore/scan-action@v3
         with:
           fail-build: false
-          image: "test:latest"
+          image: localbuild/test:${{ env.BRANCH_OR_TAG }}
           severity-cutoff: critical
 
-      - name: Dockerfile Scan -- Upload SARIF Report
+      - name: Container Scan -- Upload SARIF Report
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
 
-      - name: Dockerfile Scan -- Report Job Status on Success
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+      - name: Container Scan -- Report Job Status on Success
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "container security scan has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Dockerfile Scan -- Report Job Status on Failure
+      - name: Container Scan -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "container security scan has failed!"

@@ -19,8 +19,9 @@ version = '0.1.0'
 [tool.poetry.dependencies]
 python = '^3.8'
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group]
+[tool.poetry.group.dev]
+[tool.poetry.group.dev.dependencies]
+check-jsonschema = '^0.22.0'
 commitizen = '^2.42.1'
-cookiecutter = '^2.1.1'
 pre-commit = '^3.1.1'
-yamllint = '^1.29.0'

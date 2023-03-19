@@ -8,6 +8,11 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -19,8 +24,8 @@ on:
         required: false
 
 env:
-  TEMPLATE_SKIP_POETRY: 1
-  TEMPLATE_SKIP_PRECOMMIT: 1
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
 
@@ -49,41 +54,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Toml Linting -- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh"
-        shell: bash
+      - name: Toml Linting -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Toml Linting -- Render Template
-        run: |
-          "./template/.github/scripts/step-render-template.sh"
-        shell: bash
+      - name: Toml Linting -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Toml Linting -- Run Linter (Template)
+      - name: Toml Linting -- (Template) Install pre-commit
         run: |
-          cd template
-          find . \( -name "*.toml" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
-            xargs -0 \
-              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
-              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_TOMLL }}" \
-              tomll
-          git diff --exit-code
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-project"
         shell: bash
+        working-directory: template
 
-      - name: Toml Linting -- Run Linter (Rendered Template)
+      - name: Toml Linting -- (Template) Run tomll via pre-commit
         run: |
-          cd "${TEST_PROJECT_NAME}"
-          find . \( -name "*.toml" -type f \) -print0 | \
-            xargs -0 \
-              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
-              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_TOMLL }}" \
-              tomll
-          git diff --exit-code
+          poetry run pre-commit run toml-lint --all-files
         shell: bash
+        working-directory: template
+
+      - name: Toml Linting -- (Rendered Template) Run tomll via pre-commit
+        run: |
+          poetry run pre-commit run toml-lint --all-files
+        shell: bash
+        working-directory: ${{ env.TEST_PROJECT_NAME }}
 
       - name: Toml Linting -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "TOML lint checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -91,7 +93,7 @@ jobs:
 
       - name: Toml Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "TOML lint checks have failed!"

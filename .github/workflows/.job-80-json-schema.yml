@@ -1,0 +1,75 @@
+---
+name: job-80-json-schema
+
+on:
+  workflow_call:
+    inputs:
+      CONFIGURATION:
+        description: "The 'cookiecutter.json' file as a configuration object."
+        required: true
+        type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  run_check-jsonschema:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS }}
+      max-parallel: ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+
+    steps:
+      - name: JSON Schema Validation -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: JSON Schema Validation -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: JSON Schema Validation -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: JSON Schema Validation -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: JSON Schema Validation -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-dependencies-poetry
+
+      - name: JSON Schema Validation -- Run check-metaschema via pre-commit
+        run: |
+          poetry run pre-commit run check-metaschema --all-files
+        shell: bash
+
+      - name: JSON Schema Validation -- Report Job Status on Success
+        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        with:
+          NOTIFICATION_MESSAGE: "JSON schema validation has succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: JSON Schema Validation -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "JSON schema validation has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

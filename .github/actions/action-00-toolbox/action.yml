@@ -1,0 +1,58 @@
+---
+name: action-00-toolbox
+description: "Fetches the specified remote toolbox."
+author: niall@niallbyrne.ca
+
+inputs:
+  CICD_TOOLS_GPG_KEY:
+    default: "F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
+    description: "Optional, allows you to specify the public key used to sign the remote CICD-tools manifest."
+    required: false
+  CICD_TOOLS_GPG_KEYSERVER_PRIMARY:
+    default: "keys.openpgp.org"
+    description: "Optional, allows you to specify a keyserver being used to host the public GPG key."
+    required: false
+  CICD_TOOLS_GPG_KEYSERVER_SECONDARY:
+    default: "keyserver.ubuntu.com"
+    description: "Optional, allows you to specify a keyserver being used to host the public GPG key."
+    required: false
+  CICD_TOOLS_REMOTE_MANIFEST:
+    default: "https://gist.github.com/niall-byrne/3e88cf22901e2a5eac2ede71c5606331/raw/manifest.json.asc"
+    description: "Optional, allows you to specify the URL of the remote manifest used to coordinate CICD-tools toolbox installs."
+    required: false
+  CICD_TOOLS_TOOLBOX_VERSION:
+    default: "0.1.0"
+    description: "Optional, allows you to specify a toolbox version to fetch from the manifest."
+    required: false
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Toolbox -- Import GPG Key
+      run: |
+        gpg \
+          --keyserver "${{ inputs.CICD_TOOLS_GPG_KEYSERVER_PRIMARY }}" \
+          --recv-key "${{ inputs.CICD_TOOLS_GPG_KEY }}" ||
+        gpg \
+          --keyserver "${{ inputs.CICD_TOOLS_GPG_KEYSERVER_SECONDARY }}" \
+          --recv-key "${{ inputs.CICD_TOOLS_GPG_KEY }}"
+      shell: bash
+
+    - name: Toolbox -- Verify Imported Key
+      run: |
+        ./.cicd-tools/bin/verify.sh \
+          -k "${{ inputs.CICD_TOOLS_GPG_KEY }}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Toolbox -- Install CICD-Tools Toolbox Version '${{ inputs.VERSION }}'
+      run: |
+        ./.cicd-tools/bin/toolbox.sh \
+          -b "${{ inputs.CICD_TOOLS_TOOLBOX_VERSION }}" \
+          -m "${{ inputs.CICD_TOOLS_REMOTE_MANIFEST }}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

@@ -6,10 +6,8 @@ on:
     paths:
       - ".github/workflows/workflow-docker.yml"
       - ".github/workflows/.job-95-build-container.yml"
-      - "{{cookiecutter.project_slug}}/assets/Dockerfile"
-      - "{{cookiecutter.project_slug}}/.pre-commit/**"
-      - "{{cookiecutter.project_slug}}/.pre-commit-config.yaml"
-      - ".pre-commit-config.yaml"
+      - ".cicd-tools/containers/Dockerfile"
+      - ".cicd-tools/containers/Dockerfile.sha256"
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -33,10 +31,14 @@ jobs:
       security-events: write
     secrets: inherit
     uses: ./.github/workflows/.job-10-scan-container.yml
+    with:
+      CONTEXT: .cicd-tools/container
 
   lint:
     secrets: inherit
-    uses: ./.github/workflows/.job-80-lint-container.yml
+    uses: ./.github/workflows/.job-80-lint-dockerfile.yml
+    with:
+      DOCKERFILE: .cicd-tools/container/Dockerfile
 
   push:
     needs: [lint, scan]
@@ -44,6 +46,8 @@ jobs:
       packages: write
     secrets: inherit
     uses: ./.github/workflows/.job-95-push-container.yml
+    with:
+      CONTEXT: .cicd-tools/container
 
   success:
     needs: [push]
