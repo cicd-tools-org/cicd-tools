@@ -11,15 +11,12 @@ set -eo pipefail
 
 main() {
 
-  IMAGE="${1}"
-  shift
-
-  # shellcheck source=.pre-commit/.template.sh
-  source "$(dirname -- "${BASH_SOURCE[0]}")/.template.sh"
+  # shellcheck source=.pre-commit/.docker-shim.sh
+  source "$(dirname -- "${BASH_SOURCE[0]}")/.docker-shim.sh"
 
   for TOML_FILE in "$@"; do
 
-    diff "${TOML_FILE}" <(docker run -i --rm "${IMAGE}" tomll < "${TOML_FILE}")
+    diff "${TOML_FILE}" <(docker run -i --rm "$(docker_interface "get_image")" /bin/tomll < "${TOML_FILE}")
 
   done
 

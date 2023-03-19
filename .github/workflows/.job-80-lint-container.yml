@@ -1,0 +1,50 @@
+---
+name: job-80-lint-container
+
+on:
+  workflow_call:
+    inputs:
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+  run_hadolint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dockerfile Lint -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Dockerfile Lint -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Dockerfile Lint -- Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "./{{cookiecutter.project_slug}}/Dockerfile"
+          failure-threshold: error
+          config: "./{{cookiecutter.project_slug}}/.hadolint.yml"
+
+      - name: Dockerfile Lint -- Report Job Status on Success
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "Dockerfile linting has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Dockerfile Lint -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "Dockerfile linting has has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

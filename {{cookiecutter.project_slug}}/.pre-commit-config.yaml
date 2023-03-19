@@ -20,7 +20,6 @@ repos:
         name: shell-fmt
         description: "Format the project's shell scripts."
         entry: ./.pre-commit/shell-fmt.sh
-        args: ["{{ cookiecutter._DOCKER_DEFAULT_SHFMT }}"]
         exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
@@ -30,7 +29,6 @@ repos:
         name: shell-lint
         description: "Lint the project's shell scripts."
         entry: ./.pre-commit/shell-lint.sh
-        args: ["{{ cookiecutter._DOCKER_DEFAULT_SHELLCHECK }}"]
         exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
@@ -41,7 +39,6 @@ repos:
         name: toml-lint
         description: "Lint the project's TOML files."
         entry: ./.pre-commit/toml-lint.sh
-        args: ["{{ cookiecutter._DOCKER_DEFAULT_TOMLL }}"]
         files: "^.+\\.toml$"
         language: system
         stages: [commit]
@@ -52,7 +49,6 @@ repos:
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
         entry: ./.pre-commit/workflow-lint.sh
-        args: ["{{ cookiecutter._DOCKER_DEFAULT_ACTIONLINT }}"]
         files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false

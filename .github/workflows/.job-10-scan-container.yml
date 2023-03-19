@@ -1,0 +1,62 @@
+---
+name: job-10-scan-container
+
+on:
+  workflow_call:
+    inputs:
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  run_anchore:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dockerfile Scan -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Dockerfile Scan -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Dockerfile Scan -- Build Container
+        run: |
+          docker build . --file "Dockerfile" --tag test:latest
+        working-directory: "{{cookiecutter.project_slug}}"
+
+      - name: Dockerfile Scan -- Run Anchore Scan
+        id: scan
+        uses: anchore/scan-action@v3
+        with:
+          fail-build: false
+          image: "test:latest"
+          severity-cutoff: critical
+
+      - name: Dockerfile Scan -- Upload SARIF Report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+
+      - name: Dockerfile Scan -- Report Job Status on Success
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_MESSAGE: "container security scan has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Dockerfile Scan -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "container security scan has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

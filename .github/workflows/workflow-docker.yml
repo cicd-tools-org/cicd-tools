@@ -1,0 +1,54 @@
+---
+name: cicd-tooling-github-workflow-docker
+
+on:
+  push:
+    paths:
+      - ".github/workflows/workflow-docker.yml"
+      - ".github/workflows/.job-95-build-container.yml"
+      - "{{cookiecutter.project_slug}}/assets/Dockerfile"
+      - "{{cookiecutter.project_slug}}/.pre-commit/**"
+      - "{{cookiecutter.project_slug}}/.pre-commit-config.yaml"
+      - ".pre-commit-config.yaml"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  start:
+    secrets: inherit
+    uses: ./.github/workflows/.job-00-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "docker build has started!"
+
+  scan:
+    permissions:
+      security-events: write
+    secrets: inherit
+    uses: ./.github/workflows/.job-10-scan-container.yml
+
+  lint:
+    secrets: inherit
+    uses: ./.github/workflows/.job-80-lint-container.yml
+
+  push:
+    needs: [lint, scan]
+    permissions:
+      packages: write
+    secrets: inherit
+    uses: ./.github/workflows/.job-95-push-container.yml
+
+  success:
+    needs: [push]
+    secrets: inherit
+    uses: ./.github/workflows/.job-00-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "docker build has completed successfully!"
