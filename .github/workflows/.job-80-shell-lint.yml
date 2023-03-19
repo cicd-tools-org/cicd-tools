@@ -68,14 +68,20 @@ jobs:
         run: |
           cd template
           find . \( -name "*.bash" -or -name "*.sh" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
-            xargs -0 shfmt -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+            xargs -0 \
+              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
+              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_SHFMT }}" \
+            -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
         shell: bash
 
       - name: Shell Formatting -- Run shfmt (Rendered Template)
         run: |
           cd "${TEST_PROJECT_NAME}"
           find . \( -name "*.bash" -or -name "*.sh" -type f \) -print0 | \
-            xargs -0 shfmt -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
+            xargs -0 \
+              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
+              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_SHFMT }}" \
+            -d ${{ fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_SHFMT_OPTIONS }}
         shell: bash
 
       - name: Shell Formatting -- Report Job Status on Success

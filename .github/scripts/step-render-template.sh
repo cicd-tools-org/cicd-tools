@@ -24,6 +24,9 @@ is_scenario_present() {
 
 setup_scenario() {
   cp "./template/.github/scenarios/${SCENARIO}.json" ./template/cookiecutter.json
+  pushd template >> /dev/null
+  git diff cookiecutter.json
+  popd >> /dev/null
 }
 
 main() {

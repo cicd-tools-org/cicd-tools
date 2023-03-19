@@ -42,7 +42,7 @@ initialize_poetry() {
 initialize_precommit() {
 
   if [[ "${TEMPLATE_SKIP_PRECOMMIT}" != "1" ]]; then
-    poetry run pre-commit install -t pre-commit -t commit-msg
+    poetry run pre-commit install
   fi
 
 }

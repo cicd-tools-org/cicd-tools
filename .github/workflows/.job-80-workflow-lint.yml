@@ -54,14 +54,6 @@ jobs:
           "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
-      - name: Workflow Lint -- Install actionlint Binary
-        env:
-          SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
-        run: |
-          "./template/.github/cicd-tools/remote-script.sh" "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}"
-          sudo mv actionlint /usr/local/bin
-        shell: bash
-
       - name: Workflow Lint -- Render Template
         run: |
           "./template/.github/scripts/step-render-template.sh"
@@ -69,8 +61,9 @@ jobs:
 
       - name: Workflow Lint -- Run Linter (Template)
         run: |
-          cd template
-          actionlint -color
+          docker run -t --rm -v "$(pwd)/template:/mnt" -w "/mnt" \
+            "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_ACTIONLINT }}" \
+            -color
         shell: bash
 
       - name: Workflow Lint -- Check Headers (Template)
@@ -81,10 +74,11 @@ jobs:
             xargs -0 "./{{cookiecutter.project_slug}}/.pre-commit/workflow-header-lint.sh"
         shell: bash
 
-      - name: Workflow Lint -- Run Linter (Rendered Template)
+      - name: Workflow Lint -- Run Linter (Template)
         run: |
-          cd "${TEST_PROJECT_NAME}"
-          actionlint -color
+          docker run -t --rm -v "$(pwd)/${TEST_PROJECT_NAME}:/mnt" -w "/mnt" \
+            "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_ACTIONLINT }}" \
+            -color
         shell: bash
 
       - name: Workflow Lint -- Check Headers (Rendered Template)

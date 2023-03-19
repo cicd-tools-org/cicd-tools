@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Runs tomll on the specified files and then runs diff to detect changes.
+# Runs shellcheck on the specified files.
 
 # 1:  The Docker image and tag to use.
-# @:  An array of toml files to lint.
+# @:  An array of shell files to check.
 
 # pre-commit script.
 
@@ -17,11 +17,7 @@ main() {
   # shellcheck source=.pre-commit/.template.sh
   source "$(dirname -- "${BASH_SOURCE[0]}")/.template.sh"
 
-  for TOML_FILE in "$@"; do
-
-    diff "${TOML_FILE}" <(docker run -i --rm "${IMAGE}" tomll < "${TOML_FILE}")
-
-  done
+  docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" "${IMAGE}" "-x" "--exclude" "SC2317" "$@"
 
 }
 

@@ -58,19 +58,6 @@ jobs:
           "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
-      - name: Pre-Commit Test -- Install actionlint Binary
-        env:
-          SCRIPT_HASH: ${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_HASH }}
-        run: |
-          "./template/.github/cicd-tools/remote-script.sh" "${{ fromJson(inputs.CONFIGURATION)._GITHUB_CI_ACTIONLINT_SCRIPT_URL }}"
-          sudo mv actionlint /usr/local/bin
-        shell: bash
-
-      - name: Pre-Commit Test -- Install Pre-Commit Requirements
-        run: |
-           "./template/.github/scripts/step-requirements-precommit.sh"
-        shell: bash
-
       - name: Pre-Commit Test -- Initialize Cache Locations
         run: |
           mkdir -p ~/.cache/pypoetry/virtualenvs

@@ -1,17 +1,27 @@
 ---
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
 repos:
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.42.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.29.0
+    hooks:
+      - id: yamllint
+        args: ["-c", "./{{cookiecutter.project_slug}}/.yamllint.yml"]
+        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        stages: [commit]
   - repo: local
     hooks:
-      - id: commit-lint
-        name: commit-lint
-        description: "Check whether the commit message follows committing rules."
-        entry: ./{{cookiecutter.project_slug}}/.pre-commit/commit-lint.sh
-        language: system
-        stages: [commit-msg]
       - id: shell-fmt
         name: shell-fmt
         description: "Format the project's shell scripts."
         entry: ./{{cookiecutter.project_slug}}/.pre-commit/shell-fmt.sh
+        args: ["_DOCKER_DEFAULT_SHFMT"]
         exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
@@ -20,7 +30,8 @@ repos:
       - id: shell-lint
         name: shell-lint
         description: "Lint the project's shell scripts."
-        entry: shellcheck -x
+        entry: ./{{cookiecutter.project_slug}}/.pre-commit/shell-lint.sh
+        args: ["_DOCKER_DEFAULT_SHELLCHECK"]
         exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
@@ -30,29 +41,20 @@ repos:
         name: toml-lint
         description: "Lint the project's TOML files."
         entry: ./{{cookiecutter.project_slug}}/.pre-commit/toml-lint.sh
+        args: ["_DOCKER_DEFAULT_TOMLL"]
         files: "^.+\\.toml$"
         language: system
         stages: [commit]
         pass_filenames: true
-      - id: yaml-lint
-        name: yaml-lint
-        description: "Lint the project's YAML files."
-        entry: ./{{cookiecutter.project_slug}}/.pre-commit/yaml-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
-        args: ["-c", "./{{cookiecutter.project_slug}}/.yamllint.yml"]
-        files: "^.+\\.(yaml|yml)$"
-        language: system
-        pass_filenames: true
-        stages: [commit]
       - id: workflow-lint
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
-        entry: actionlint
+        entry: ./{{cookiecutter.project_slug}}/.pre-commit/workflow-lint.sh
+        args: ["_DOCKER_DEFAULT_ACTIONLINT"]
         exclude: "^{{cookiecutter.project_slug}}/.+$"
         files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
-        require_serial: true
         stages: [commit]
       - id: workflow-header-lint
         name: workflow-header-lint

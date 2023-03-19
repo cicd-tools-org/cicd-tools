@@ -1,23 +1,26 @@
-
 [build-system]
-  build-backend = "poetry.core.masonry.api"
-  requires = ["poetry-core"]
+build-backend = 'poetry.core.masonry.api'
+requires = ['poetry-core']
 
 [tool]
+[tool.commitizen]
+bump_message = 'bump(RELEASE): $current_version → $new_version'
+version = '0.1.0'
+version_files = ['pyproject.toml:version']
 
-  [tool.poetry]
-    authors = ["Niall Byrne <niall@niallbyrne.ca>"]
-    description = "Reusable CI/CD components."
-    license = "MPL-2.0"
-    name = "cicd-tools"
-    readme = "README.md"
-    version = "0.1.0"
+[tool.poetry]
+authors = ['Niall Byrne <niall@niallbyrne.ca>']
+description = 'Reusable CI/CD components.'
+license = 'MPL-2.0'
+name = 'cicd-tools'
+readme = 'README.md'
+version = '0.1.0'
 
-    [tool.poetry.dependencies]
-      python = "^3.8"
+[tool.poetry.dependencies]
+python = '^3.8'
 
-    [tool.poetry.dev-dependencies]
-      commitizen = "^2.42.1"
-      cookiecutter = "^2.1.1"
-      pre-commit = "^3.1.1"
-      yamllint = "^1.29.0"
+[tool.poetry.dev-dependencies]
+commitizen = '^2.42.1'
+cookiecutter = '^2.1.1'
+pre-commit = '^3.1.1'
+yamllint = '^1.29.0'

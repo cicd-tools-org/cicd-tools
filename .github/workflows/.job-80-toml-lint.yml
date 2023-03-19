@@ -54,11 +54,6 @@ jobs:
           "./template/.github/scripts/step-requirements-template.sh"
         shell: bash
 
-      - name: Toml Linting -- Install tomll Binary
-        run: |
-          sudo apt-get install -y golang-github-pelletier-go-toml
-        shell: bash
-
       - name: Toml Linting -- Render Template
         run: |
           "./template/.github/scripts/step-render-template.sh"
@@ -67,14 +62,22 @@ jobs:
       - name: Toml Linting -- Run Linter (Template)
         run: |
           cd template
-          find . -type f -name "*.toml" -exec tomll "{}" \;
+          find . \( -name "*.toml" -type f -not -path "./{{cookiecutter.project_slug}}/*" \) -print0 | \
+            xargs -0 \
+              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
+              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_TOMLL }}" \
+              tomll
           git diff --exit-code
         shell: bash
 
       - name: Toml Linting -- Run Linter (Rendered Template)
         run: |
           cd "${TEST_PROJECT_NAME}"
-          find . -type f -name "*.toml" -exec tomll "{}" \;
+          find . \( -name "*.toml" -type f \) -print0 | \
+            xargs -0 \
+              docker run -t --rm -v "$(pwd):/mnt" -w "/mnt" \
+              "${{ fromJSON(inputs.CONFIGURATION)._DOCKER_DEFAULT_TOMLL }}" \
+              tomll
           git diff --exit-code
         shell: bash
 
