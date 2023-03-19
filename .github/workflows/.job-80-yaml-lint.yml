@@ -8,6 +8,11 @@ on:
         description: "The 'cookiecutter.json' file as a configuration object."
         required: true
         type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
       TEMPLATE_SCENARIO:
         description: "An 'cookiecutter.json' file variant, with options selected to test as a separate scenario."
         required: true
@@ -23,8 +28,8 @@ on:
         required: false
 
 env:
-  TEMPLATE_SKIP_POETRY: 1
-  TEMPLATE_SKIP_PRECOMMIT: 1
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
 
@@ -53,34 +58,39 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Yaml Lint Test-- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh"
-        shell: bash
-
-      - name: Yaml Linting -- Render Template
-        run: |
-          "./template/.github/scripts/step-render-template.sh" \
-            "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
-        shell: bash
-
-      - name: Yaml Linting -- Run Linter (Template)
-        uses: ibiqlik/action-yamllint@v3
+      - name: Yaml Linting -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
         with:
-          format: standard
-          file_or_dir: ./template/.github/workflows
-          config_file: ./${{ env.TEST_PROJECT_NAME }}/.yamllint.yml
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Yaml Linting -- Run Linter (Rendered Template)
-        uses: ibiqlik/action-yamllint@v3
+      - name: Yaml Linting -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
         with:
-          format: standard
-          file_or_dir: ./${{ env.TEST_PROJECT_NAME }}/.github/workflows/*.yml -c ./${{ env.TEST_PROJECT_NAME }}/.yamllint.yml
-          config_file: ./${{ env.TEST_PROJECT_NAME }}/.yamllint.yml
+          PROJECT_ROOT_PATH: "template"
+          SCENARIO: ${{ inputs.TEMPLATE_SCENARIO }}
+
+      - name: Yaml Linting -- (Template) Install pre-commit
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-project"
+        shell: bash
+        working-directory: template
+
+      - name: Yaml Linting -- (Template) Run yamllint via pre-commit
+        run: |
+          poetry run pre-commit run yamllint --all-files
+        shell: bash
+        working-directory: template
+
+      - name: Yaml Linting -- (Rendered Template) Run yamllint via pre-commit
+        run: |
+          poetry run pre-commit run yamllint --all-files
+        shell: bash
+        working-directory: ${{ env.TEST_PROJECT_NAME }}
 
       - name: Yaml Linting -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "YAML lint (${{ inputs.TEMPLATE_SCENARIO }}) checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -88,7 +98,7 @@ jobs:
 
       - name: Yaml Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "YAML lint (${{ inputs.TEMPLATE_SCENARIO }}) checks have failed!"

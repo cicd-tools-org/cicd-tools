@@ -9,13 +9,8 @@ on:
         required: true
         type: string
       REMOTE_SCRIPT_DETERMINE_COMMITS:
-        default: "remote-execute/github/step-determine-pushed-commits.sh"
+        default: "ci/github/scripts/step-determine-pushed-commits.sh"
         description: "Optional, allows you to specify a determine commits script."
-        required: false
-        type: string
-      REMOTE_SCRIPT_USE_POETRY:
-        default: "remote-execute/generic/use-poetry.sh"
-        description: "Optional, allows you to specify a use poetry script."
         required: false
         type: string
       TESTING_MODE:
@@ -29,8 +24,6 @@ on:
         required: false
 
 env:
-  TEMPLATE_SKIP_POETRY: 0
-  TEMPLATE_SKIP_PRECOMMIT: 1
   PUSH_FALLBACK_REV_RANGE: "HEAD"
 
 jobs:
@@ -55,39 +48,22 @@ jobs:
           "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
-      - name: Commit Linting -- Determine Pushed Commits
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
-        shell: bash
-
       - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Commit Linting -- Install Poetry
-        run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
-            "install-poetry"
-        shell: bash
+      - name: Commit Linting -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
 
-      - name: Commit Linting -- Initialize Cache Locations
-        run: |
-          mkdir -p ~/.cache/pypoetry/virtualenvs
-        shell: bash
+      - name: Commit Linting -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-dependencies-poetry
 
-      - name: Commit Linting -- Mount Poetry Cache
-        uses: actions/cache@v3
-        with:
-          key: poetry-${{ hashFiles('./pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
-          path: ~/.cache/pypoetry/virtualenvs
-
-      - name: Commit Linting -- Install Poetry
+      - name: Commit Linting -- Determine Pushed Commits
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
-            "install-project"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash
 
       - name: Commit Linting -- Lint Pushed Commits
@@ -97,14 +73,14 @@ jobs:
 
       - name: Commit Linting -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "commit lint checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Commit Linting -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "commit lint checks have failed!"

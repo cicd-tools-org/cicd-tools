@@ -13,6 +13,7 @@ on:
 jobs:
 
   configuration:
+    secrets: inherit
     uses: ./.github/workflows/.job-00-cookiecutter.yml
     with:
       PATH: "cookiecutter.json"
@@ -28,8 +29,11 @@ jobs:
           "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
-        uses: ./.github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":vertical_traffic_light:"
           NOTIFICATION_MESSAGE: "testing workflow has started!"
@@ -46,8 +50,11 @@ jobs:
           "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
-        uses: ./.github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":heavy_check_mark:"
           NOTIFICATION_MESSAGE: "local notification script is working!"
@@ -140,8 +147,11 @@ jobs:
           "./.github/scripts/step-setup-environment.sh" "true"
         shell: bash
 
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
-        uses: ./.github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":checkered_flag:"
           NOTIFICATION_MESSAGE: "all tests have passed successfully!"

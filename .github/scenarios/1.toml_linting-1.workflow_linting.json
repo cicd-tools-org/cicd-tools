@@ -6,10 +6,9 @@
     "github_handle": "niall-byrne",
     "_BRANCH_NAME_BASE": "master",
     "_BRANCH_NAME_DEVELOPMENT": "dev",
-    "_DOCKER_DEFAULT_ACTIONLINT": "rhysd/actionlint:1.6.23@sha256:02ccb6d91e4cb4a7b21eb99d5274d257e81ae667688d730e89d7ea0d6d35db91",
-    "_DOCKER_DEFAULT_SHFMT": "mvdan/shfmt:v3.6.0@sha256:b68b0e33bf799f393aec27f72da64ec1d84476c8cfa9a2a7bfd0cbbdbfc8d534",
-    "_DOCKER_DEFAULT_SHELLCHECK": "koalaman/shellcheck:v0.9.0@sha256:a527e2077f11f28c1c1ad1dc784b5bc966baeb3e34ef304a0ffa72699b01ad9c",
-    "_DOCKER_DEFAULT_TOMLL": "ghcr.io/pelletier/go-toml:v2.0.7@sha256:31a4914ce328b8c7db0e7ce2ec3baf7a8f1ddb5ba430aab81754caf3ed66a2df",
+    "_CONFIG_DEFAULT_SHFMT_OPTIONS": "-i 2 -ci -sr",
+    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS": "-e SC2317 -P SCRIPTDIR",
+    "_DOCKER_DEFAULT_CONTAINER": "ghcr.io/niall-byrne/cicd-tools:master",
     "_GITHUB_ACTION_CACHE": "actions/cache@v3",
     "_GITHUB_ACTION_CHECKOUT": "actions/checkout@v3",
     "_GITHUB_ACTION_MARKDOWN_LINK_CHECK": "gaurav-nelson/github-action-markdown-link-check@v1",
@@ -17,13 +16,14 @@
     "_GITHUB_ACTION_SCRIPT": "actions/github-script@v6",
     "_GITHUB_ACTION_TRUFFLEHOG": "trufflesecurity/trufflehog@v3.29.0",
     "_GITHUB_ACTION_YAMLLINT": "ibiqlik/action-yamllint@v3",
-    "_GITHUB_CI_ACTIONLINT_SCRIPT_URL": "https://raw.githubusercontent.com/rhysd/actionlint/v1.6.23/scripts/download-actionlint.bash",
-    "_GITHUB_CI_ACTIONLINT_SCRIPT_HASH": "0bfdbdff20d552e36b3fa86fc9e55c190b75048ac18217cc7319b7dada25988f",
     "_GITHUB_CI_DEFAULT_CONCURRENCY": 4,
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
-    "_GITHUB_CI_DEFAULT_SHFMT_OPTIONS": "-i 2 -ci -sr",
     "_GITHUB_CI_DEFAULT_MOLECULE_TEST_PLATFORMS": ["ubuntu-latest"],
     "_GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX": "^default$|^noci-.*$",
     "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS": true,
-    "_*DO_NOT_MODIFY_THIS_FILE*": "This file is created to assist with upgrading to future versions of this template."
+    "_*DO_NOT_MODIFY_THIS_FILE*": "This file is created to assist with upgrading to future versions of this template.",
+    "_copy_without_render": [
+        ".cicd-tools/boxes/bootstrap/libraries/environment.sh",
+        ".github/actions"
+    ]
 }

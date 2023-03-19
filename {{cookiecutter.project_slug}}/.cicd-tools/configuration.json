@@ -1,0 +1,5 @@
+{
+  "SHFMT_OPTIONS": "{{ cookiecutter._CONFIG_DEFAULT_SHFMT_OPTIONS }}",
+  "SHELLCHECK_OPTIONS": "{{ cookiecutter._CONFIG_DEFAULT_SHELLCHECK_OPTIONS }}",
+  "CONTAINER": "{{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}"
+}

@@ -53,61 +53,51 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Pre-Commit Test -- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh"
-        shell: bash
-
-      - name: Pre-Commit Test -- Initialize Cache Locations
-        run: |
-          mkdir -p ~/.cache/pypoetry/virtualenvs
-        shell: bash
-
-      - name: Pre-Commit Test -- Mount Poetry Cache
-        uses: actions/cache@v3
+      - name: Pre-Commit Test -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
         with:
-          key: poetry-${{ hashFiles('./template/{{cookiecutter.project_slug}}/pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
-          path: ~/.cache/pypoetry/virtualenvs
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Pre-Commit Test -- Render Template
-        run: |
-          "./template/.github/scripts/step-render-template.sh" "${{ inputs.TEMPLATE_SCENARIO }}" "GitHub Action" "action@github.com"
-        shell: bash
+      - name: Pre-Commit Test -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
+        with:
+          PROJECT_ROOT_PATH: "template"
+          SCENARIO: ${{ inputs.TEMPLATE_SCENARIO }}
 
-      - name: Pre-Commit Test -- Test Commit Lint -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Commit Lint -- Expect Failure
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Failure
         if: contains(inputs.TEMPLATE_SCENARIO, '1.toml_linting') == true
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
+      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Success
         if: contains(inputs.TEMPLATE_SCENARIO, '1.toml_linting') == true
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Shell Lint -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Shell Lint -- Expect Failure
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_lint_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Shell Format -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Shell Format -- Expect Failure
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Workflow Lint -- Expect Failure
         if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Workflow Headers Lint -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Workflow Headers Lint -- Expect Failure
         if: contains(inputs.TEMPLATE_SCENARIO, '1.workflow_linting') == true
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_header_lint_fails"
@@ -115,7 +105,7 @@ jobs:
 
       - name: Pre-Commit Test -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -123,7 +113,7 @@ jobs:
 
       - name: Pre-Commit Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "pre-commit (${{ inputs.TEMPLATE_SCENARIO }}) hook test has failed!"

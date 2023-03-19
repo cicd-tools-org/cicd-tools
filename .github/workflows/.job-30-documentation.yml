@@ -49,17 +49,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Documentation Test -- Install Template Requirements
-        run: |
-          "./template/.github/scripts/step-requirements-template.sh"
-        shell: bash
+      - name: Documentation Test -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Documentation Test -- Render Template
-        run: |
-          "./template/.github/scripts/step-render-template.sh"
-        shell: bash
+      - name: Documentation Test -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-render-cookiecutter
+        with:
+          PROJECT_ROOT_PATH: "template"
 
-      - name: Documentation Test -- Check Markdown Links For Template
+      - name: Documentation Test -- (Template) Check Markdown Links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           config-file: 'template/{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json'
@@ -68,7 +68,7 @@ jobs:
           folder-path: 'template'
           max-depth: 1
 
-      - name: Documentation Test -- Check Markdown Links For Rendered Template
+      - name: Documentation Test -- (Rendered Template) Check Markdown Links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           config-file: 'template/{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json'
@@ -79,7 +79,7 @@ jobs:
 
       - name: Documentation Test -- Report Job Status on Success
         if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: "documentation checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
@@ -87,7 +87,7 @@ jobs:
 
       - name: Documentation Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "documentation checks have failed!"

@@ -24,7 +24,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_NOTIFICATION:
-        default: "remote-execute/notifications/slack.sh"
+        default: "ci/notifications/scripts/slack.sh"
         description: "Optional, allows you to specify a notification script."
         required: false
         type: string
@@ -53,8 +53,11 @@ jobs:
           "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
+      - name: Notification -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Notification -- Run Notification Action
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI }}
           NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}

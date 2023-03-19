@@ -10,7 +10,7 @@ on:
         required: false
         type: string
       REMOTE_SCRIPT_SET_VALUE:
-        default: "remote-execute/github/step-set-value.sh"
+        default: "ci/github/scripts/step-set-value.sh"
         description: "Optional, allows you to specify a workflow set value script."
         required: false
         type: string
@@ -24,6 +24,8 @@ jobs:
   configuration:
 
     runs-on: ubuntu-latest
+    env:
+      CICD_TOOLS_COLOUR_DISABLE: 1
     outputs:
       CONFIGURATION: ${{ steps.cookiecutter_configuration.outputs.value }}
 
@@ -31,9 +33,12 @@ jobs:
       - name: Create Configuration -- Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Create Configuration -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Create Configuration -- Set Cookiecutter Configuration as Output
         id: cookiecutter_configuration
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
             cat "${{ inputs.PATH }}"
         shell: bash

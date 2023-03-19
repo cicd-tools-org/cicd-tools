@@ -14,22 +14,22 @@ on:
         required: true
         type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
-        default: "remote-execute/github/job-99-generate-changelog.sh"
+        default: "ci/github/scripts/job-99-generate-changelog.sh"
         description: "Optional, allows you to specify a changelog generation script."
         required: false
         type: string
       REMOTE_SCRIPT_GENERATE_RELEASE:
-        default: "remote-execute/github/job-99-generate-release.js"
+        default: "ci/github/scripts/job-99-generate-release.js"
         description: "Optional, allows you to specify a script to generate the actual GitHub release."
         required: false
         type: string
       REMOTE_SCRIPT_IDENTIFY_CANDIDATE:
-        default: "remote-execute/github/job-99-release-candidate.sh"
+        default: "ci/github/scripts/job-99-release-candidate.sh"
         description: "Optional, allows you to specify a filter script for release candidates."
         required: false
         type: string
       REMOTE_SCRIPT_USE_POETRY:
-        default: "remote-execute/generic/use-poetry.sh"
+        default: "ci/generic/scripts/use-poetry.sh"
         description: "Optional, allows you to specify a use poetry script."
         required: false
         type: string
@@ -53,11 +53,20 @@ jobs:
       - name: Create Release -- Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Create Release -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
       - name: Create Release -- Execute Remote Filter Release Candidates Script
         id: filter
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_IDENTIFY_CANDIDATE }}" \
             "${{ github.event.ref }}"
+        shell: bash
+
+      - name: Create Release -- Stash Toolbox
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          mv .cicd-tools/boxes/ ..
         shell: bash
 
       - name: Create Release -- Checkout Repository (All Commits)
@@ -65,6 +74,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Create Release -- Retrieve Stashed Toolbox
+        if: steps.filter.outputs.release_candidate == 'true'
+        run: |
+          mv ../boxes .cicd-tools/
+        shell: bash
 
       - name: Create Release -- Setup Environment
         if: steps.filter.outputs.release_candidate == 'true'
@@ -75,30 +90,22 @@ jobs:
       - name: Create Release -- Execute Remote Install Poetry Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
       - name: Create Release -- Execute Remote Check Version Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "check-version" "${BRANCH_OR_TAG}"
         shell: bash
 
       - name: Create Release -- Execute Remote Generate Changelog Script
         if: steps.filter.outputs.release_candidate == 'true'
         run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
             "${BRANCH_OR_TAG}"
-        shell: bash
-
-      - name: Create Release -- Download Remote Generate Release Script
-        env:
-          SCRIPT_DOWNLOAD_NAME: job-99-generate-release.js
-        if: steps.filter.outputs.release_candidate == 'true'
-        run: |
-          "./.github/cicd-tools/remote-script.sh" "${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}"
         shell: bash
 
       - name: Create Release -- Generate GitHub Release Draft
@@ -110,14 +117,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const script = require('./job-99-generate-release.js');
+            const script = require('./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}');
             const body = process.env.CHANGE_LOG_CONTENT + "\n" + process.env.APPENDED_CONTENT;
             const tag = process.env.BRANCH_OR_TAG;
             await script({ body, context, core, github, tag })
 
       - name: Create Release -- Report Job Status on Success
         if: steps.filter.outputs.release_candidate == 'true'
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_MESSAGE: |
             automated release has been created!
@@ -126,7 +133,7 @@ jobs:
 
       - name: Create Release -- Report Job Status on Failure
         if: failure() || (steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == true)
-        uses: niall-byrne/cicd-tools/.github/actions/action-00-notification@master # Release: update with a valid sha
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "automated release creation has failed!"

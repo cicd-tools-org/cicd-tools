@@ -7,7 +7,7 @@
 #
 # BRANCH_OR_TAG:                    The current branch or tag being tested.
 # CACHE_TTL:                        A unique CACHE value that determines the cache's TTL.  (Default strategy: day of the month.)
-# NOTIFICATION:                     Consumed by the notification script to provide a clickable link to the workflow run in GitHub.
+# NOTIFICATION_LINK:                Consumed by the notification script to provide a clickable link to the workflow run in GitHub.
 # PROJECT_NAME:                     The slugified name of the template project.  Should match the GitHub repository name.
 # PROJECT_OWNER:                    The GitHub owner of the project.
 # TEMPLATE_BRANCH_NAME_BASE:        The name of the templated repository's default branch name.  (Defaults to 'master'.)
@@ -34,7 +34,7 @@ main() {
   {
     echo "BRANCH_OR_TAG=${BRANCH_OR_TAG}"
     echo "CACHE_TTL=$(date +%d)"
-    echo "NOTIFICATION=${PROJECT_NAME}${TESTING_CONTEXT} [<${WORKFLOW_URL}|${BRANCH_OR_TAG}>]"
+    echo "NOTIFICATION_LINK=${PROJECT_NAME}${TESTING_CONTEXT} [<${WORKFLOW_URL}|${BRANCH_OR_TAG}>]"
     echo "PROJECT_NAME=${PROJECT_NAME}"
     echo "PROJECT_OWNER=${PROJECT_OWNER}"
     echo "TEMPLATE_BRANCH_NAME_BASE=${TEMPLATE_BRANCH_NAME_BASE-master}"
