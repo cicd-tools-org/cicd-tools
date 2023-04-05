@@ -1,5 +1,5 @@
 ---
-name: job-00-notification
+name: job-00-generic-notification
 
 on:
   workflow_call:
@@ -57,7 +57,7 @@ jobs:
         uses: ./.github/actions/action-00-toolbox
 
       - name: Notification -- Run Notification Action
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI }}
           NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}

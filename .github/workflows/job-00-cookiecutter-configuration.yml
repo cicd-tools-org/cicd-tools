@@ -1,10 +1,10 @@
 ---
-name: job-00-cookiecutter
+name: job-00-cookiecutter-configuration
 
 on:
   workflow_call:
     inputs:
-      PATH:
+      CONFIGURATION_PATH:
         default: "cookiecutter.json"
         description: "Optional, allows you to specify the path to the 'cookiecutter.json' file."
         required: false
@@ -14,20 +14,27 @@ on:
         description: "Optional, allows you to specify a workflow set value script."
         required: false
         type: string
+      SCENARIOS_PATH:
+        default: ".github/scenarios"
+        description: "Optional, allows you to specify the path to the 'cookiecutter.json' scenario variants."
+        required: false
+        type: string
     outputs:
-      CONFIGURATION:
+      COOKIECUTTER_CONFIGURATION:
         description: "The 'cookiecutter.json' file as a JSON encoded string."
         value: ${{ jobs.configuration.outputs.CONFIGURATION }}
+      COOKIECUTTER_ALL_SCENARIOS:
+        description: "A string encoded JSON array of 'cookiecutter.json' variants for testing scenarios."
+        value: ${{ jobs.configuration.outputs.SCENARIOS }}
 
 jobs:
 
   configuration:
 
     runs-on: ubuntu-latest
-    env:
-      CICD_TOOLS_COLOUR_DISABLE: 1
     outputs:
       CONFIGURATION: ${{ steps.cookiecutter_configuration.outputs.value }}
+      SCENARIOS: ${{ steps.cookiecutter_scenarios.outputs.value }}
 
     steps:
       - name: Create Configuration -- Checkout Repository
@@ -40,5 +47,12 @@ jobs:
         id: cookiecutter_configuration
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
-            cat "${{ inputs.PATH }}"
+            cat "${{ inputs.CONFIGURATION_PATH }}"
+        shell: bash
+
+      - name: Create Configuration -- Set Scenarios as Output
+        id: cookiecutter_scenarios
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+            python -c 'import os, json, pathlib; print(json.dumps([pathlib.Path(x).stem for x in os.listdir("${{ inputs.SCENARIOS_PATH }}")]))'
         shell: bash
