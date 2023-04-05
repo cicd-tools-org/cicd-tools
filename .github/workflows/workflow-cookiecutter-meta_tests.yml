@@ -1,0 +1,196 @@
+---
+name: cicd-tooling-github-workflow-cookiecutter-meta_tests
+
+on:
+  push:
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  configuration:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  send_notification_test_success:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+          NOTIFICATION_MESSAGE: "testing workflow has started!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  send_notification_test_failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":heavy_check_mark:"
+          NOTIFICATION_MESSAGE: "local notification script is working!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: true
+
+  security_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-10-generic-security.yml
+    with:
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  markdown_links_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-30-cookiecutter-documentation.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      CONFIG_FILE: "{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  pre-commit_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-50-cookiecutter-precommit.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TEMPLATE_SCENARIOS: '["0.toml_linting-0.workflow_linting"]'
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  commit_lint_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-poetry-commit_lint.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  shell_lint_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        hook:
+          - id: "shell-fmt"
+            name: "Shell Formatting"
+          - id: "shell-lint"
+            name: "Shell Linting"
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
+      PRECOMMIT_HOOK_NAME: ${{ matrix.hook.name }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  toml_lint_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "toml-lint"
+      PRECOMMIT_HOOK_NAME: "TOML Linting"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  workflow_lint_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        hook:
+          - id: "workflow-lint"
+            name: "Workflow Linting"
+          - id: "workflow-header-lint"
+            name: "Workflow Header Linting"
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
+      PRECOMMIT_HOOK_NAME: ${{ matrix.hook.name }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  yaml_lint_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "yamllint"
+      PRECOMMIT_HOOK_NAME: "YAML Linting"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TEMPLATE_SCENARIOS: '["0.toml_linting-0.workflow_linting"]'
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  create_release_test_failure:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-99-poetry-create_release.yml
+    with:
+      TESTING_MODE: true
+
+  success:
+    needs: [commit_lint_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_test_failure, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notification (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notification (Local Action Test) -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh" "true"
+        shell: bash
+
+      - name: Notification (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Notification (Local Action Test) -- Run Notification Action (Testing Locally)
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":checkered_flag:"
+          NOTIFICATION_MESSAGE: "all tests have passed successfully!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: true

@@ -1,5 +1,5 @@
 ---
-name: action-05-render-cookiecutter
+name: action-05-cookiecutter-render
 description: "Renders a cookiecutter project for CI."
 author: niall@niallbyrne.ca
 
@@ -32,20 +32,22 @@ runs:
       if: env.TEMPLATE_SKIP_POETRY != '1'
       uses: actions/cache@v3
       with:
-        key: poetry-${{ hashFiles('./template/{{cookiecutter.project_slug}}/pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+        key: poetry-${{ hashFiles(format('{0}/{{{{cookiecutter.project_slug}}}}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: ~/.cache/pypoetry/virtualenvs
 
     - name: Cookiecutter -- Render Template (SCENARIO > default)
       if: inputs.SCENARIO == 'default'
       run: |
-        "./${{ inputs.PROJECT_ROOT_PATH }}/.github/scripts/step-render-template.sh"
+        "./.github/scripts/step-render-template.sh"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
 
     - name: Cookiecutter -- Render Template (SCENARIO > ${{ inputs.SCENARIO }})
       if: inputs.SCENARIO != 'default'
       run: |
-        "./${{ inputs.PROJECT_ROOT_PATH }}/.github/scripts/step-render-template.sh" \
+        "./.github/scripts/step-render-template.sh" \
           "${{ inputs.SCENARIO }}" \
           "GitHub Action" \
           "action@github.com"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

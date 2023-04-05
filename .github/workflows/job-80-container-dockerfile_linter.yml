@@ -1,5 +1,5 @@
 ---
-name: job-80-lint-dockerfile
+name: job-80-container-dockerfile_linter
 
 on:
   workflow_call:
@@ -12,6 +12,11 @@ on:
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
         required: false
         type: boolean
     secrets:
@@ -33,7 +38,7 @@ jobs:
           "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Pre-Commit Test -- Install Toolbox
+      - name: Dockerfile Lint -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
       - name: Dockerfile Lint -- Run hadolint
@@ -44,14 +49,15 @@ jobs:
           config: "./.hadolint.yml"
 
       - name: Dockerfile Lint -- Report Job Status on Success
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "Dockerfile linting has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Dockerfile Lint -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "Dockerfile linting has has failed!"

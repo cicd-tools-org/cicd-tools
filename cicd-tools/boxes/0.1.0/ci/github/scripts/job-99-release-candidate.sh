@@ -33,9 +33,9 @@ main() {
     log "INFO" "'${1}' is NOT a release candidate (${MATCH})."
   fi
 
-  echo "release_candidate=${MATCH}" >> "${GITHUB_OUTPUT}"
+  echo "RELEASE_CANDIDATE=${MATCH}" >> "${GITHUB_OUTPUT}"
 
-  log "DEBUG" "The value '${MATCH}' has now set to the output 'release_candidate' for this step."
+  log "DEBUG" "The value '${MATCH}' has now set to the output 'RELEASE_CANDIDATE' for this step."
 }
 
 main "$@"

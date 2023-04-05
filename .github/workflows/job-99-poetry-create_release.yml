@@ -1,5 +1,5 @@
 ---
-name: job-99-create-release
+name: job-99-poetry-create_release
 
 on:
   workflow_call:
@@ -8,10 +8,6 @@ on:
         default: ""
         description: "Optional, allows you to specify markdown content to append to the changelog in a generated release."
         required: false
-        type: string
-      CONFIGURATION:
-        description: "The 'cookiecutter.json' file as a configuration object."
-        required: true
         type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
         default: "ci/github/scripts/job-99-generate-changelog.sh"
@@ -64,45 +60,45 @@ jobs:
         shell: bash
 
       - name: Create Release -- Stash Toolbox
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
-          mv .cicd-tools/boxes/ ..
+          cp -rv .cicd-tools/boxes/ ..
         shell: bash
 
       - name: Create Release -- Checkout Repository (All Commits)
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Create Release -- Retrieve Stashed Toolbox
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
-          mv ../boxes .cicd-tools/
+          cp -rv ../boxes .cicd-tools/
         shell: bash
 
       - name: Create Release -- Setup Environment
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
           "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
         shell: bash
 
       - name: Create Release -- Execute Remote Install Poetry Script
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
       - name: Create Release -- Execute Remote Check Version Script
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "check-version" "${BRANCH_OR_TAG}"
         shell: bash
 
       - name: Create Release -- Execute Remote Generate Changelog Script
-        if: steps.filter.outputs.release_candidate == 'true'
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_GENERATE_CHANGELOG }}" \
             "${BRANCH_OR_TAG}"
@@ -112,7 +108,7 @@ jobs:
         id: create_release
         env:
           APPENDED_CONTENT: ${{ inputs.APPENDED_CONTENT }}
-        if: steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == false
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true' && inputs.TESTING_MODE == false
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -123,8 +119,8 @@ jobs:
             await script({ body, context, core, github, tag })
 
       - name: Create Release -- Report Job Status on Success
-        if: steps.filter.outputs.release_candidate == 'true'
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: |
             automated release has been created!
@@ -132,8 +128,8 @@ jobs:
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Create Release -- Report Job Status on Failure
-        if: failure() || (steps.filter.outputs.release_candidate == 'true' && inputs.TESTING_MODE == true)
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        if: failure() || (steps.filter.outputs.RELEASE_CANDIDATE == 'true' && inputs.TESTING_MODE == true)
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "automated release creation has failed!"

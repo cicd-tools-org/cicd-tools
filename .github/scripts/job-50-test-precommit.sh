@@ -36,7 +36,7 @@ scenario() {
 
   test_toml_lint_passes() {
     util "git_reset"
-    sed -i.bak "s/python = '^3.8/python = '>=3.8.0,<4.0/g" pyproject.toml
+    sed -i.bak "s/python = '^3.9/python = '>=3.10.0,<4.0/g" pyproject.toml
     git stage pyproject.toml
     git commit -m 'test(PRE-COMMIT): upgrade python without issue'
   }
@@ -61,7 +61,7 @@ scenario() {
 
   test_workflow_lint_fails() {
     util "git_reset"
-    find .github -type f -name '*.yml' -exec sed -i.bak 's/ubuntu-latest/non-existent-os/g' {} \;
+    find .github/workflows -type f -name '*.yml' -exec sed -i.bak 's/uses:/illegal-yaml-key:/g' {} \;
     git stage .github
     git commit -m 'test(PRE-COMMIT): fail due to actionlint' || exit 0
     util "fail"
@@ -81,22 +81,37 @@ scenario() {
 
 util() {
 
-  create_tmp() {
+  local COMMAND
+  local PREFIX
+
+  _util_create_tmp() {
     mktemp tmp.XXXXXXX
   }
 
-  fail() {
+  _util_fail() {
     echo "This commit should have failed."
     exit 127
   }
 
-  git_reset() {
+  _util_git_reset() {
     git reset HEAD
     git clean -fd
     git checkout .
   }
 
-  "$@"
+  _util_unknown_command() {
+    echo "Unknown utility command: '${COMMAND}'"
+    exit 127
+  }
+
+  PREFIX="_util"
+  COMMAND="${PREFIX}_${1}"
+  if [[ $(type -t "${COMMAND}") == function ]]; then
+    shift
+    "${COMMAND}" "$@"
+  else
+    "${PREFIX}_unknown_command"
+  fi
 
 }
 

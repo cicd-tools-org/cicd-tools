@@ -1,5 +1,5 @@
 ---
-name: action-05-dependencies-poetry
+name: action-05-poetry-dependencies
 description: "Installs a Python project's Poetry dependencies for CI."
 author: niall@niallbyrne.ca
 
@@ -21,6 +21,7 @@ runs:
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
           "install-poetry"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
 
     - name: Dependencies (Python) -- Initialize Cache Locations
       run: |
@@ -30,7 +31,7 @@ runs:
     - name: Dependencies (Python) -- Mount Poetry Cache
       uses: actions/cache@v3
       with:
-        key: poetry-${{ hashFiles('./pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+        key: poetry-${{ hashFiles(format('{0}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: ~/.cache/pypoetry/virtualenvs
 
     - name: Dependencies (Python) -- Install Project Dependencies
@@ -38,3 +39,4 @@ runs:
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
           "install-project"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

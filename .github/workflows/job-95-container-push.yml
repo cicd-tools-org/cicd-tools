@@ -1,0 +1,128 @@
+---
+name: job-95-container-push
+
+on:
+  workflow_call:
+    inputs:
+      CONTEXT:
+        default: "."
+        description: "Optional, allows you define where the build context is located."
+        required: false
+        type: string
+      DOCKERFILE:
+        default: "./Dockerfile"
+        description: "Optional, allows you define where the Dockerfile is located with respect to the context."
+        required: false
+        type: string
+      REGISTRY:
+        default: "ghcr.io"
+        description: "Optional, allows you to specify a Docker registry to use."
+        required: false
+        type: string
+      REGISTRY_USERNAME:
+        default: ""
+        description: "Optional, sets the username that will be used to login to to the registry.  Default: github.actor"
+        required: false
+        type: string
+      REGISTRY_PASSWORD:
+        default: ""
+        description: "Optional, sets the password that will be used to login to the registry.  Default: secrets.GITHUB_TOKEN"
+        required: false
+        type: string
+      IMAGE_NAME:
+        default: ""
+        description: "Optional, allows you to specify the image and tag name, otherwise the configured script will generate one."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DEFAULT_SETTER:
+        default: "ci/github/scripts/step-set-value-with-default.sh"
+        description: "Optional, allows you to specify different default value creation script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  run_docker_push:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Push Container -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Push Container -- Setup Environment
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Push Container -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Push Container -- Configure Registry
+        id: registry
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "IMAGE_NAME" \
+            -d "${{ inputs.REGISTRY }}/${PROJECT_OWNER}/${PROJECT_NAME}:${BRANCH_OR_TAG}" \
+            -s "${{ inputs.IMAGE_NAME }}"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "REGISTRY_USERNAME" \
+            -d "${{ github.actor }}" \
+            -s "${{ inputs.REGISTRY_USERNAME }}"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "REGISTRY_PASSWORD" \
+            -d "${{ secrets.GITHUB_TOKEN }}" \
+            -s "${{ inputs.REGISTRY_USERNAME }}"
+        shell: bash
+
+      - name: Push Container -- Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Push Container -- Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.REGISTRY }}
+          username: ${{ steps.registry.outputs.REGISTRY_USERNAME }}
+          password: ${{ steps.registry.outputs.REGISTRY_PASSWORD }}
+
+      - name: Push Container -- Build and Push
+        uses: docker/build-push-action@v4
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: ${{ inputs.CONTEXT }}
+          file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
+          push: true
+          tags: |
+            ${{ steps.registry.outputs.IMAGE_NAME }}
+
+      - name: Push Container -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: |
+            docker container has been built and pushed!
+            Pushed Image: ${{ steps.registry.outputs.IMAGE_NAME }}
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Push Container -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "docker container build/push has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
