@@ -1,5 +1,5 @@
 ---
-name: job-10-scan-container
+name: job-10-container-security
 
 on:
   workflow_call:
@@ -9,9 +9,34 @@ on:
         description: "Optional, allows you define where the build context is located."
         required: false
         type: string
+      DOCKERFILE:
+        default: "./Dockerfile"
+        description: "Optional, allows you define where the Dockerfile is located with respect to the context."
+        required: false
+        type: string
+      IMAGE_NAME:
+        default: ""
+        description: "Optional, allows you to specify the image and tag name.  A default value is constructed if none is passed."
+        required: false
+        type: string
+      REGISTRY:
+        default: "ghcr.io"
+        description: "Optional, allows you to specify a Docker registry to use."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DEFAULT_SETTER:
+        default: "ci/github/scripts/step-set-value-with-default.sh"
+        description: "Optional, allows you to specify different default value creation script."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
         required: false
         type: boolean
     secrets:
@@ -37,6 +62,15 @@ jobs:
       - name: Container Scan -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
+      - name: Container Scan -- Configure Registry
+        id: registry
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "IMAGE_NAME" \
+            -d "${{ inputs.REGISTRY }}/${PROJECT_OWNER}/${PROJECT_NAME}:${BRANCH_OR_TAG}" \
+            -s "${{ inputs.IMAGE_NAME }}"
+        shell: bash
+
       - name: Container Scan -- Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -46,10 +80,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           context: ${{ inputs.CONTEXT }}
+          file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
           load: true
           tags: |
-            ghcr.io/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}:${{ env.BRANCH_OR_TAG }}
             localbuild/test:${{ env.BRANCH_OR_TAG }}
+            ${{ steps.registry.outputs.IMAGE_NAME }}
 
       - name: Container Scan -- Run Anchore Scan
         id: scan
@@ -65,14 +100,15 @@ jobs:
           sarif_file: ${{ steps.scan.outputs.sarif }}
 
       - name: Container Scan -- Report Job Status on Success
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "container security scan has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Container Scan -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "container security scan has failed!"

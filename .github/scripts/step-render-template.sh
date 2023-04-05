@@ -3,7 +3,7 @@
 # Perform automated templating.
 
 # Implementation:
-# Templates implementing this script must output the cookiecutter template found in the folder "template".
+# Templates implementing this script should be designed to work from inside a cloned copy of the repository.
 # To test various template "scenarios", make a copy of the 'cookiecutter.json' file and copy to the .github/scenarios folder.
 
 # 1:  Scenario filename. (Provide basename only, the path is implied.)
@@ -23,10 +23,8 @@ is_scenario_present() {
 }
 
 setup_scenario() {
-  cp "./template/.github/scenarios/${SCENARIO}.json" ./template/cookiecutter.json
-  pushd template >> /dev/null
+  cp "./.github/scenarios/${SCENARIO}.json" ./cookiecutter.json
   git diff cookiecutter.json
-  popd >> /dev/null
 }
 
 main() {
@@ -38,7 +36,7 @@ main() {
     setup_scenario
   fi
 
-  cookiecutter --no-input template/
+  cookiecutter --no-input -o .. .
 
 }
 

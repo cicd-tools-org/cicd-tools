@@ -1,0 +1,74 @@
+---
+name: cicd-tooling-github-workflow-container
+
+on:
+  push:
+    paths:
+      - ".github/workflows/workflow-container.yml"
+      - ".github/workflows/job-*-container-*.yml"
+      - ".cicd-tools/container/Dockerfile"
+      - ".cicd-tools/container/Dockerfile.sha256"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  start:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "docker build has started!"
+
+  configuration:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  security:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-10-generic-security.yml
+    with:
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  scan:
+    permissions:
+      security-events: write
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-10-container-security.yml
+    with:
+      CONTEXT: .cicd-tools/container
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-container-dockerfile_linter.yml
+    with:
+      DOCKERFILE: .cicd-tools/container/Dockerfile
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  push:
+    needs: [configuration, lint, scan, security, start]
+    permissions:
+      packages: write
+    secrets: inherit
+    uses: ./.github/workflows/job-95-container-push.yml
+    with:
+      CONTEXT: .cicd-tools/container
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  success:
+    needs: [push]
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "docker build has completed successfully!"

@@ -1,13 +1,9 @@
 ---
-name: job-10-security
+name: job-10-generic-security
 
 on:
   workflow_call:
     inputs:
-      CONFIGURATION:
-        description: "The 'cookiecutter.json' file as a configuration object."
-        required: true
-        type: string
       EXTRA_BINARY_ARGS:
         default: ""
         description: "Extra arguments to pass to the trufflehog binary."
@@ -21,6 +17,11 @@ on:
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
         required: false
         type: boolean
     secrets:
@@ -68,15 +69,15 @@ jobs:
           path: .
 
       - name: Security -- Report Job Status on Success
-        if: fromJSON(inputs.CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS == true
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "security checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Security -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "security checks have failed!"

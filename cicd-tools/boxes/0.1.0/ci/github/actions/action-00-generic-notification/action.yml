@@ -1,5 +1,5 @@
 ---
-name: action-00-notification
+name: action-00-generic-notification
 description: "Sends notifications via the selected notification script."
 author: niall@niallbyrne.ca
 
@@ -38,18 +38,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Notification -- Install Toolbox (repository)
-      if: inputs.PROJECT_ROOT_PATH == '.'
-      uses: ./.github/actions/action-00-toolbox
-      with:
-        PROJECT_ROOT_PATH: ${{ inputs.PROJECT_ROOT_PATH }}
-
-    - name: Notification -- Install Toolbox (template)
-      if: inputs.PROJECT_ROOT_PATH == 'template'
-      uses: ./template/.github/actions/action-00-toolbox
-      with:
-        PROJECT_ROOT_PATH: ${{ inputs.PROJECT_ROOT_PATH }}
-
     - name: Notification -- Report Job Status on Success
       env:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}

@@ -1,5 +1,5 @@
 ---
-name: action-05-dependencies-poetry
+name: action-05-poetry-dependencies
 description: "Installs a Python project's Poetry dependencies for CI."
 author: niall@niallbyrne.ca
 
@@ -7,6 +7,10 @@ inputs:
   PROJECT_ROOT_PATH:
     default: "."
     description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  REMOTE_SCRIPT_SET_VALUE:
+    default: "ci/github/scripts/step-set-value.sh"
+    description: "Optional, allows you to specify a workflow set value script."
     required: false
   REMOTE_SCRIPT_USE_POETRY:
     default: "ci/generic/scripts/use-poetry.sh"
@@ -21,6 +25,15 @@ runs:
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
           "install-poetry"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Dependencies (Python) -- Identify Full Python Version
+      id: poetry_python_version
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+          echo "$(poetry run python --version | cut -d" " -f2)"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
 
     - name: Dependencies (Python) -- Initialize Cache Locations
       run: |
@@ -30,7 +43,7 @@ runs:
     - name: Dependencies (Python) -- Mount Poetry Cache
       uses: actions/cache@v3
       with:
-        key: poetry-${{ hashFiles('./pyproject.toml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+        key: poetry-py-${{ steps.poetry_python_version.outputs.value }}-${{ hashFiles(format('{0}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: ~/.cache/pypoetry/virtualenvs
 
     - name: Dependencies (Python) -- Install Project Dependencies
@@ -38,3 +51,4 @@ runs:
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
           "install-project"
       shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

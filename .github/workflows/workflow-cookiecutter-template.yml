@@ -1,0 +1,161 @@
+---
+name: cicd-tooling-github-workflow-cookiecutter-template
+
+on:
+  push:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  configuration:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  start:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "workflow has started!"
+
+  security:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-10-generic-security.yml
+    with:
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  markdown_links:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-30-cookiecutter-documentation.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      CONFIG_FILE: "{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  # Implementation Notes:
+  #
+  # It's very likely the template you are creating has its own mixture of pre-commit hooks.
+  # Please use this as a guide, and create your own .job-50-precommit.yml file.
+
+  pre-commit:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-50-cookiecutter-precommit.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TEMPLATE_SCENARIOS: ${{ needs.configuration.outputs.COOKIECUTTER_ALL_SCENARIOS }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  commit_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-poetry-commit_lint.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  json_schema_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-poetry-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "check-metaschema"
+      PRECOMMIT_HOOK_NAME: "JSON Schema Linter"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  shell_lint:
+    needs: [configuration]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        hook:
+          - id: "shell-fmt"
+            name: "Shell Formatting"
+          - id: "shell-lint"
+            name: "Shell Linting"
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
+      PRECOMMIT_HOOK_NAME: ${{ matrix.hook.name }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  toml_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "toml-lint"
+      PRECOMMIT_HOOK_NAME: "TOML Linting"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  workflow_lint:
+    needs: [configuration]
+    secrets: inherit
+    strategy:
+      fail-fast: true
+      matrix:
+        hook:
+          - id: "workflow-lint"
+            name: "Workflow Linting"
+          - id: "workflow-header-lint"
+            name: "Workflow Header Linting"
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
+      PRECOMMIT_HOOK_NAME: ${{ matrix.hook.name }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  yaml_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "yamllint"
+      PRECOMMIT_HOOK_NAME: "YAML Linting"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TEMPLATE_SCENARIOS: ${{ needs.configuration.outputs.COOKIECUTTER_ALL_SCENARIOS }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  create_release:
+    permissions:
+      contents: write
+    needs: [configuration, commit_lint, json_schema_lint, markdown_links, pre-commit, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
+    secrets: inherit
+    uses: ./.github/workflows/job-99-poetry-create_release.yml
+    with:
+      APPENDED_CONTENT: |
+        ## Release Checklist
+        - [ ] Ensure all remote references have been updated.
+        - [ ] Ensure master is synchronized with the release tag.
+
+  success:
+    needs: [create_release, configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
