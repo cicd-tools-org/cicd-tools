@@ -1,0 +1,50 @@
+---
+name: action-05-generic-conditional_file_hash
+description: "Calculate a file hash, with or without a path prefix."
+author: niall@niallbyrne.ca
+
+inputs:
+  FILE_NAME:
+    description: "The name of the file that you wish to calculate the hash for."
+    required: true
+  FILE_PREFIX:
+    default: "."
+    description: "Optional, allows you to insert a relative path before the file inside the repository."
+    required: true
+  FILE_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  REMOTE_SCRIPT_SET_VALUE:
+    default: "ci/github/scripts/step-set-value.sh"
+    description: "Optional, allows you to specify a workflow set value script."
+    required: false
+  TESTING_MODE:
+    default: "false"
+    description: "Optional, allows you to test a workflow failure."
+    required: false
+outputs:
+  HASH:
+    description: "The calculated hash value."
+    value: ${{ steps.hash.outputs.value }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Calculate Hash -- Assemble and Resolve the Target Filepath
+      id: resolved_file_path
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+          realpath --relative-to="." "${{ inputs.FILE_ROOT_PATH }}/${{ inputs.FILE_PREFIX }}/${{ inputs.FILE_NAME }}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Calculate Hash -- Set Output to the Cache Key
+      id: hash
+      run: |
+        echo "value=${{ hashFiles(format('{0}/{1}', inputs.PROJECT_ROOT_PATH, steps.resolved_file_path.outputs.value)) }}" >> "${GITHUB_OUTPUT}"
+      shell: bash

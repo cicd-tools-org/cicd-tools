@@ -26,7 +26,7 @@ initialize_git() {
     git symbolic-ref HEAD "refs/heads/${TEMPLATE_BRANCH_NAME_BASE}"
     git checkout -b "${TEMPLATE_BRANCH_NAME_DEVELOPMENT}"
     git checkout "${TEMPLATE_BRANCH_NAME_BASE}"
-    mkdir -p files templates
+    mkdir -p templates
   fi
 
 }
@@ -43,6 +43,9 @@ initialize_precommit() {
 
   if [[ "${TEMPLATE_SKIP_PRECOMMIT}" != "1" ]]; then
     poetry run pre-commit install
+    pushd ansible_role >> /dev/null
+    poetry run molecule dependency
+    popd >> /dev/null
   fi
 
 }

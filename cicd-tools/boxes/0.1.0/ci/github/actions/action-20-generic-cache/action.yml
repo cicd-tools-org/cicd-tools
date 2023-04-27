@@ -5,8 +5,6 @@ author: niall@niallbyrne.ca
 
 inputs:
   CACHE_FOLDERS:
-    default: |
-      /home/runner/.cache
     description: "A newline separated list of paths to symlink to the GitHub cache."
     required: true
   CACHE_KEY:
@@ -30,14 +28,13 @@ runs:
   steps:
     - name: Generic Cache -- Initialize Cache Symlinks
       run: |
-        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SETUP_CACHE }}" \
-            "$(pwd)/${{ inputs.CACHE_NAME }}"                                     \
+        bash "./${{ inputs.PROJECT_ROOT_PATH }}/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SETUP_CACHE }}" \
+            ".github/cache/${{ inputs.CACHE_NAME }}"                                                              \
             "${{ inputs.CACHE_FOLDERS }}"
       shell: bash
-      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
 
     - name: Generic Cache -- Mount Cache
       uses: actions/cache@v3
       with:
         key: ${{ inputs.CACHE_KEY }}
-        path: ${{ inputs.CACHE_NAME }}
+        path: .github/cache/${{ inputs.CACHE_NAME }}

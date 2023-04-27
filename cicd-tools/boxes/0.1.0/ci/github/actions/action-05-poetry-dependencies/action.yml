@@ -8,6 +8,10 @@ inputs:
     default: "."
     description: "Optional, allows you to specify a path to the project's root."
     required: false
+  REMOTE_SCRIPT_POETRY_VENV_LOCATION:
+    default: "ci/github/scripts/step-determine-poetry-venv-location.sh"
+    description: "Optional, allows you to specify a Poetry venv locator script."
+    required: false
   REMOTE_SCRIPT_SET_VALUE:
     default: "ci/github/scripts/step-set-value.sh"
     description: "Optional, allows you to specify a workflow set value script."
@@ -27,6 +31,14 @@ runs:
       shell: bash
       working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
 
+    - name: Dependencies (Python) -- Identify Poetry Venv Storage Path
+      id: poetry_venv_path
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_POETRY_VENV_LOCATION }}" \
+          "${{ runner.os }}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
     - name: Dependencies (Python) -- Identify Full Python Version
       id: poetry_python_version
       run: |
@@ -37,14 +49,14 @@ runs:
 
     - name: Dependencies (Python) -- Initialize Cache Locations
       run: |
-        mkdir -p ~/.cache/pypoetry/virtualenvs
+        mkdir -p "${{ steps.poetry_venv_path.outputs.POETRY_LOCATION }}"
       shell: bash
 
     - name: Dependencies (Python) -- Mount Poetry Cache
       uses: actions/cache@v3
       with:
         key: poetry-py-${{ steps.poetry_python_version.outputs.value }}-${{ hashFiles(format('{0}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
-        path: ~/.cache/pypoetry/virtualenvs
+        path: ${{ steps.poetry_venv_path.outputs.POETRY_LOCATION }}
 
     - name: Dependencies (Python) -- Install Project Dependencies
       run: |

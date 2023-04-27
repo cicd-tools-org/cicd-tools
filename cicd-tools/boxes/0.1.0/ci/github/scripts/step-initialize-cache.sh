@@ -16,17 +16,24 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/logging.sh"
 
 main() {
 
+  log "DEBUG" "${BASH_SOURCE[0]} '$*'"
+
   local ACCESS_FOLDERS
   local ENCODED_NAME
   local MOUNT_FOLDER
 
-  MOUNT_FOLDER="${1}"
-  IFS=$'\n' read -ar ACCESS_FOLDERS <<< "${2}"
+  MOUNT_FOLDER="$(pwd)/${1}"
+  IFS=$'\n' read -r -a ACCESS_FOLDERS -d '' <<< "${2}" || true
+
+  log "INFO" "CACHE > Mount: ${MOUNT_FOLDER}"
+  log "INFO" "CACHE > Access: '${ACCESS_FOLDERS[*]}'"
+
+  _cache_mkpath "${MOUNT_FOLDER}"
 
   for ACCESS_FOLDER in "${ACCESS_FOLDERS[@]}"; do
     ENCODED_NAME="$(tr '/' '-' <<< "${ACCESS_FOLDER}")"
-    _cache_mkpath -p "${MOUNT_FOLDER}/${ENCODED_NAME}"
-    _cache_mkpath -p "${ACCESS_FOLDER}"
+    _cache_mkpath "${MOUNT_FOLDER}/${ENCODED_NAME}"
+    _cache_mkpath "$(dirname "${ACCESS_FOLDER}")"
     _cache_mklink "${MOUNT_FOLDER}/${ENCODED_NAME}" "${ACCESS_FOLDER}"
   done
 
@@ -42,7 +49,7 @@ _cache_mklink() {
   # 1: The source path
   # 2: The link path
   log "DEBUG" "CACHE > link ${1} -> ${2}"
-  mkdir -p "${1}" "${2}"
+  ln -s "${1}" "${2}"
 }
 
 main "$@"

@@ -1,0 +1,29 @@
+---
+name: action-05-generic-platform_homefolder
+description: "Identifies the home folder on each supported OS platform."
+author: niall@niallbyrne.ca
+
+inputs:
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  REMOTE_SCRIPT_SET_VALUE:
+    default: "ci/github/scripts/step-set-value.sh"
+    description: "Optional, allows you to specify a workflow set value script."
+    required: false
+outputs:
+  HOME:
+    description: "The resolved home directory on this platform."
+    value: ${{ steps.platform_home_folder.outputs.value }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Platform Homefolder (Python) -- Identify Home Folder
+      id: platform_home_folder
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+          echo "${HOME}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
