@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: "Include test.ansible_role"
+      ansible.builtin.include_role:
+        name: "test.ansible_role"

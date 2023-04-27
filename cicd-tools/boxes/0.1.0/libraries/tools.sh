@@ -44,6 +44,16 @@ _cicd_tools_config_value() {
   fi
 }
 
+_cicd_tools_poetry() {
+  # @: A command and arguments to run in either directly, or through Poetry.
+
+  if [[ "${POETRY_ACTIVE}" == "1" ]]; then
+    "$@"
+  else
+    poetry run "$@"
+  fi
+}
+
 _cicd_tools_usage() {
   log "ERROR" "tools.sh -- CICD-tools project helpers."
   log "ERROR" "USAGE: tools.sh [COMMAND]"

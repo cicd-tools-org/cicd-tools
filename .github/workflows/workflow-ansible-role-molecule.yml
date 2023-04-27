@@ -1,0 +1,55 @@
+---
+name: cicd-tooling-github-workflow-ansible-role-molecule.yml
+
+on:
+  push:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  configuration:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  start:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "workflow has started!"
+
+  ansible_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-40-cookiecutter-ansible-lint.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      ROLE_PATH: "ansible_role"
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  molecule_test:
+    needs: [configuration, ansible_lint]
+    secrets: inherit
+    uses: ./.github/workflows/job-40-cookiecutter-molecule-role.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      MOLECULE_COMMAND: "test"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      ROLE_PATH: "ansible_role"
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  success:
+    needs: [configuration, molecule_test, start]
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
