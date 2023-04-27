@@ -16,6 +16,15 @@ repos:
         stages: [commit]
   - repo: local
     hooks:
+      - id: ansible-lint
+        name: ansible-lint
+        description: "Check the profile for Ansible best practices."
+        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/ansible-lint.sh
+        args: ["ansible_role"]
+        files: "^ansible_role/.+\\.(yaml|yml)$|^ansible_role/.ansible-lint$"
+        language: system
+        pass_filenames: false
+        stages: [commit]
       - id: shell-fmt
         name: shell-fmt
         description: "Format the project's shell scripts."

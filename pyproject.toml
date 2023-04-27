@@ -5,8 +5,10 @@ requires = ['poetry-core']
 [tool]
 [tool.commitizen]
 bump_message = 'bump(RELEASE): $current_version → $new_version'
+pre_bump_hooks = ['.cicd-tools/boxes/bootstrap/commitizen/pre_bump.sh']
 version = '0.1.0'
 version_files = ['pyproject.toml:version']
+version_provider = 'poetry'
 
 [tool.poetry]
 authors = ['Niall Byrne <niall@niallbyrne.ca>']
@@ -17,11 +19,21 @@ readme = 'README.md'
 version = '0.1.0'
 
 [tool.poetry.dependencies]
-python = '^3.8'
+python = '^3.9'
 
 [tool.poetry.group]
 [tool.poetry.group.dev]
 [tool.poetry.group.dev.dependencies]
+ansible = '^7.5.0'
 check-jsonschema = '^0.22.0'
-commitizen = '^2.42.1'
+commitizen = '^3.0.0'
+molecule = '^5.0.0'
 pre-commit = '^3.1.1'
+
+[tool.poetry.group.dev.dependencies.ansible-lint]
+markers = "platform_system != 'Windows'"
+version = '^6.12.2'
+
+[tool.poetry.group.dev.dependencies.molecule-plugins]
+extras = ['docker']
+version = '^23.4.1'

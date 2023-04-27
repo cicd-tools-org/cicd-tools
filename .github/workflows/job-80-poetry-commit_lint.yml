@@ -8,6 +8,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      LINTED_REV_RANGE:
+        default: "HEAD"
+        description: "Optional, allows you to specify a rev range (i.e. last_non_linted_commit_hash..HEAD) where linted commit messages start.  The default value HEAD covers ALL commits."
+        required: false
+        type: string
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -31,9 +36,6 @@ on:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
         required: false
-
-env:
-  PUSH_FALLBACK_REV_RANGE: "HEAD"
 
 jobs:
 
@@ -71,6 +73,7 @@ jobs:
       - name: Commit Linting -- Determine Pushed Commits
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
+          PUSH_FALLBACK_REV_RANGE: ${{ inputs.LINTED_REV_RANGE }}
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash

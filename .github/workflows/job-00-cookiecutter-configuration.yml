@@ -53,6 +53,7 @@ jobs:
       - name: Create Configuration -- Set Scenarios as Output
         id: cookiecutter_scenarios
         run: |
+          mkdir -p ${{ inputs.SCENARIOS_PATH }}
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
             python -c 'import os, json, pathlib; print(json.dumps([pathlib.Path(x).stem for x in os.listdir("${{ inputs.SCENARIOS_PATH }}")]))'
         shell: bash

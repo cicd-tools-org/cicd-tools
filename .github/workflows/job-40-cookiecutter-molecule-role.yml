@@ -1,0 +1,165 @@
+---
+name: job-40-cookiecutter-molecule-role
+
+on:
+  workflow_call:
+    inputs:
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      MOLECULE_COMMAND:
+        description: "The molecule command to execute on this scenario (ie. lint, test)."
+        required: true
+        type: string
+      MOLECULE_DOCKER:
+        default: false
+        description: "Optional, allows you to specify that Docker should be installed prior to using molecule."
+        required: false
+        type: boolean
+      MOLECULE_SCENARIO:
+        default: "default"
+        description: "Optional, allows you to specify the molecule scenario to use."
+        required: false
+        type: string
+      PLATFORM:
+        default: "ubuntu-latest"
+        description: "Optional, allows you to specify the OS platform that will be used to run the molecule command."
+        required: false
+        type: string
+      ROLE_PATH:
+        default: "."
+        description: "Optional, allows you to specify a relative path, within the template, to the role that is being analyzed."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 0
+  TEMPLATE_SKIP_PRECOMMIT: 0
+
+jobs:
+
+  run_molecule:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: 'template'
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Setup Environment
+        run: |
+          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Calculate Platform Independent Home Folder
+        id: platform_homefolder
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
+        with:
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Calculate Cache Key
+        id: hash
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
+        with:
+          FILE_NAME: "requirements.yml"
+          FILE_PREFIX: ${{ inputs.ROLE_PATH }}
+          FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
+        with:
+          CACHE_FOLDERS: |
+            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
+            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/molecule
+          CACHE_KEY: ansible-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_cache"
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Configure The Role Name
+        run: |
+          bash ./template/.cicd-tools/boxes/active/ci/github/scripts/job-40-generic-ansible_role_name.sh \
+            "${{ inputs.ROLE_PATH }}"
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Molecule Scenario Folders
+        run: |
+          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/default
+          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize the Dependency Cache
+        run: |
+          mkdir -p ~/.cache/molecule/__CACHED_DEPENDENCIES
+          rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
+        with:
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Use "default" Scenario Dependencies for the Dependency Cache
+        run: |
+          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/__CACHED_DEPENDENCIES
+          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Run 'molecule ${{ inputs.MOLECULE_COMMAND }}' on the '${{ inputs.MOLECULE_SCENARIO }}' Scenario
+        run: |
+          poetry run molecule ${{ inputs.MOLECULE_COMMAND }} -s ${{ inputs.MOLECULE_SCENARIO }}
+        shell: bash
+        working-directory: ${{ env.TEST_PROJECT_NAME }}/${{ inputs.ROLE_PATH }}
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
