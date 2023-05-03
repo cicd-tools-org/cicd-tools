@@ -19,16 +19,17 @@ on:
 
 jobs:
 
+  configuration:
+    secrets: inherit
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
   start:
     secrets: inherit
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
       NOTIFICATION_MESSAGE: "docker build has started!"
-
-  configuration:
-    secrets: inherit
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+      WORKFLOW_NAME: "container"
 
   security:
     needs: [configuration]
@@ -36,6 +37,7 @@ jobs:
     uses: ./.github/workflows/job-10-generic-security.yml
     with:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "container"
 
   scan:
     permissions:
@@ -46,6 +48,7 @@ jobs:
     with:
       CONTEXT: .cicd-tools/container
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "container"
 
   lint:
     needs: [configuration]
@@ -54,6 +57,7 @@ jobs:
     with:
       DOCKERFILE: .cicd-tools/container/Dockerfile
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "container"
 
   push:
     needs: [configuration, lint, scan, security, start]
@@ -64,6 +68,7 @@ jobs:
     with:
       CONTEXT: .cicd-tools/container
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "container"
 
   success:
     needs: [push]
@@ -72,3 +77,4 @@ jobs:
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "docker build has completed successfully!"
+      WORKFLOW_NAME: "container"
