@@ -95,7 +95,7 @@ _manifest_build() {
   log "DEBUG" "MANIFEST > Manifest has been written."
   poetry run check-jsonschema \
     .cicd-tools/manifest.json \
-    --schemafile .cicd-tools/boxes/bootstrap/schema.json
+    --schemafile .cicd-tools/boxes/bootstrap/schemas/manifest.json
   log "DEBUG" "MANIFEST > Manifest has passed JSON schema validation."
 }
 
