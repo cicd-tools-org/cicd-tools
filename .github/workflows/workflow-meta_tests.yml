@@ -1,5 +1,5 @@
 ---
-name: cicd-tooling-github-workflow-cookiecutter-meta_tests
+name: cicd-tooling-github-workflow-meta_tests
 
 on:
   push:
@@ -23,8 +23,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Notification (Local Action Test) -- Setup Environment
+        env:
+          WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
@@ -44,8 +46,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Notification (Local Action Test) -- Setup Environment
+        env:
+          WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
@@ -66,6 +70,7 @@ jobs:
     with:
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   markdown_links_test_failure:
     needs: [configuration]
@@ -77,6 +82,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   pre-commit_test_failure:
     needs: [configuration]
@@ -88,6 +94,7 @@ jobs:
       TEMPLATE_SCENARIOS: '["0.toml_linting-0.workflow_linting"]'
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   commit_lint_test_failure:
     needs: [configuration]
@@ -98,6 +105,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   shell_lint_test_failure:
     needs: [configuration]
@@ -119,6 +127,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   toml_lint_test_failure:
     needs: [configuration]
@@ -131,6 +140,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   workflow_lint_test_failure:
     needs: [configuration]
@@ -152,6 +162,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   yaml_lint_test_failure:
     needs: [configuration]
@@ -164,6 +175,7 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TEMPLATE_SCENARIOS: '["0.toml_linting-0.workflow_linting"]'
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "test"
 
   create_release_test_failure:
     needs: [configuration]
@@ -171,6 +183,7 @@ jobs:
     uses: ./.github/workflows/job-99-poetry-create_release.yml
     with:
       TESTING_MODE: true
+      WORKFLOW_NAME: "test"
 
   success:
     needs: [commit_lint_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_test_failure, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
@@ -180,8 +193,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Notification (Local Action Test) -- Setup Environment
+        env:
+          WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh" "true"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
