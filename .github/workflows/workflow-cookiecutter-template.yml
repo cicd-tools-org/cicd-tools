@@ -66,14 +66,25 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
 
-  json_schema_lint:
+  json_metaschema_lint:
     needs: [configuration]
     secrets: inherit
     uses: ./.github/workflows/job-80-poetry-precommit_linter.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: "check-metaschema"
-      PRECOMMIT_HOOK_NAME: "JSON Schema Linter"
+      PRECOMMIT_HOOK_NAME: "JSON Schema Metaschema Linter"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
+  json_schema_lint:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-80-poetry-precommit_linter.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "check-jsonschema"
+      PRECOMMIT_HOOK_NAME: "Cookiecutter JSON Schema Linter"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
 
@@ -143,7 +154,7 @@ jobs:
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, json_schema_lint, markdown_links, pre-commit, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
+    needs: [configuration, commit_lint, json_metaschema_lint, json_schema_lint, markdown_links, pre-commit, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/job-99-poetry-create_release.yml
     with:
