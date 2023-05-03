@@ -15,7 +15,6 @@
     "_GITHUB_ACTION_PYTHON": "actions/setup-python@v4",
     "_GITHUB_ACTION_SCRIPT": "actions/github-script@v6",
     "_GITHUB_ACTION_TRUFFLEHOG": "trufflesecurity/trufflehog@v3.29.0",
-    "_GITHUB_ACTION_YAMLLINT": "ibiqlik/action-yamllint@v3",
     "_GITHUB_CI_DEFAULT_CONCURRENCY": 4,
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
     "_GITHUB_CI_DEFAULT_MOLECULE_TEST_PLATFORMS": ["ubuntu-latest"],

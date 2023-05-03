@@ -13,14 +13,19 @@ repos:
     hooks:
       - id: check-metaschema
         name: check-schema
-        files: "^cicd-tools/boxes/[\\d\\.]+/schema.json$"
+        files: "^cicd-tools/boxes/[\\d\\.]+/schemas/.*\\.json$"
+        stages: [commit]
+      - id: check-jsonschema
+        name: check-cookiecutter-schema
+        files: "^(cookiecutter\\.json|\\.github/scenarios/.*\\.json)$"
+        args: ["--schemafile", ".cicd-tools/boxes/bootstrap/schemas/cookiecutter.json"]
         stages: [commit]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.29.0
     hooks:
       - id: yamllint
         args: ["-c", "./{{cookiecutter.project_slug}}/.yamllint.yml"]
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
         stages: [commit]
   - repo: local
     hooks:
@@ -28,7 +33,7 @@ repos:
         name: shell-fmt
         description: "Format the project's shell scripts."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-fmt.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
         pass_filenames: true
@@ -37,7 +42,7 @@ repos:
         name: shell-lint
         description: "Lint the project's shell scripts."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
         files: "^.+\\.(bash|sh)$"
         language: system
         pass_filenames: true
@@ -54,8 +59,8 @@ repos:
         name: workflow-lint
         description: "Lint the project's GitHub workflow files."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
-        files: "^.github/workflows/.+\\.(yaml|yml)$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+        files: "^\\.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: false
         stages: [commit]
@@ -63,8 +68,8 @@ repos:
         name: workflow-header-lint
         description: "Lint the headers of the project's GitHub workflow files."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-header-lint.sh
-        exclude: "^{{cookiecutter.project_slug}}/.+$"
-        files: "^.github/workflows/.+\\.(yaml|yml)$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+        files: "^\\.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: true
         stages: [commit]

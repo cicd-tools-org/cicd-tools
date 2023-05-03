@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "0.1.0",
+  "description": "CICD-Tools Cookiecutter Required Fields Schema",
+  "additionalProperties": true,
+  "minProperties": 16,
+  "required": [
+    "github_handle",
+    "project_slug",
+    "project_name",
+    "_BRANCH_NAME_BASE",
+    "_BRANCH_NAME_DEVELOPMENT",
+    "_CONFIG_DEFAULT_SHFMT_OPTIONS",
+    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS",
+    "_DOCKER_DEFAULT_CONTAINER",
+    "_GITHUB_ACTION_CACHE",
+    "_GITHUB_ACTION_CHECKOUT",
+    "_GITHUB_ACTION_MARKDOWN_LINK_CHECK",
+    "_GITHUB_ACTION_PYTHON",
+    "_GITHUB_ACTION_SCRIPT",
+    "_GITHUB_ACTION_TRUFFLEHOG",
+    "_GITHUB_CI_DEFAULT_CONCURRENCY",
+    "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS",
+    "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS"
+  ],
+  "type": "object",
+  "uniqueItems": true,
+  "properties": {
+    "github_handle": {
+      "description": "The author's GitHub handle, used to create repository paths.",
+      "type": "string"
+    },
+    "project_name": {
+      "description": "The plaintext name of the new project that will be templated.",
+      "type": "string"
+    },
+    "project_slug": {
+      "description": "The slugified name of the new project that will be templated, used for the repository name.",
+      "type": "string"
+    },
+    "_BRANCH_NAME_BASE": {
+      "description": "The name of the base branch that will be used in the templated repository.",
+      "type": "string"
+    },
+    "_BRANCH_NAME_DEVELOPMENT": {
+      "description": "The name of the development branch that will be used in the templated repository.",
+      "type": "string"
+    },
+    "_CONFIG_DEFAULT_SHFMT_OPTIONS": {
+      "description": "The CLI options that will be passed to shfmt in during precommit hook execution and CI/CD.",
+      "type": "string"
+    },
+    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS": {
+      "description": "The CLI options that will be passed to shellcheck in during precommit hook execution and CI/CD.",
+      "type": "string"
+    },
+    "_DOCKER_DEFAULT_CONTAINER": {
+      "description": "The container that will be used for the shellcheck, shfmt and other core binaries.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_CACHE": {
+      "description": "The name and version of the GitHub Action used for caching.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_CHECKOUT": {
+      "description": "The name and version of the GitHub Action used for checking out code.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_MARKDOWN_LINK_CHECK": {
+      "description": "The name and version of the GitHub Action used for validating markdown links.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_PYTHON": {
+      "description": "The name and version of the GitHub Action used for installing Python.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_SCRIPT": {
+      "description": "The name and version of the GitHub Action used for running custom scripts.",
+      "type": "string"
+    },
+    "_GITHUB_ACTION_TRUFFLEHOG": {
+      "description": "The name and version of the GitHub Action used for the trufflehog binary.",
+      "type": "string"
+    },
+    "_GITHUB_CI_DEFAULT_CONCURRENCY": {
+      "description": "The default concurrency value that will be used for GitHub workflows.",
+      "type": "number"
+    },
+    "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": {
+      "description": "The list of Python versions that will be used in GitHub workflows.",
+      "type": "array",
+      "contains": {
+        "pattern": "^3\\.[0-9]$",
+        "type": "string"
+      },
+      "minContains": 1
+    },
+    "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS": {
+      "description": "The default verbosity of GitHub Action notifications.",
+      "type": "boolean"
+    }
+  }
+}

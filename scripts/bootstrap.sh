@@ -82,13 +82,8 @@ _link_symlinks() {
 
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/libraries" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/libraries"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/pre-commit" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/pre-commit"
+  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schemas" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/schemas"
 
-  log "DEBUG" "LINK > Source: '${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schema.json'"
-  pushd "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}" >> /dev/null
-  LINK_NAME="$(_link_relative_path_new)/${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schema.json"
-  LINK_SOURCE="schema.json"
-  _link_symlink_write "${LINK_NAME}" "${LINK_SOURCE}"
-  popd >> /dev/null
 }
 
 _link_symlinks_template() {
