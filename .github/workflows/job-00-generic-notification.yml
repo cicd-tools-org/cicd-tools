@@ -33,6 +33,10 @@ on:
         description: "Optional, allows you to test a workflow failure."
         required: false
         type: boolean
+      WORKFLOW_NAME:
+        description: "Identifies this workflow in notifications."
+        required: true
+        type: string
     secrets:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
@@ -49,8 +53,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Notification -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification -- Install Toolbox

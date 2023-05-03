@@ -26,6 +26,10 @@ on:
         description: "Optional, allows you to adjust the notification verbosity."
         required: false
         type: boolean
+      WORKFLOW_NAME:
+        description: "Identifies this workflow in notifications."
+        required: true
+        type: string
     secrets:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
@@ -53,8 +57,10 @@ jobs:
           path: 'template'
 
       - name: Documentation Test -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./template/.github/scripts/step-setup-environment.sh" "${{ inputs.TESTING_MODE }}"
+          "./template/.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Documentation Test -- Set up Python ${{ matrix.python-version }}
