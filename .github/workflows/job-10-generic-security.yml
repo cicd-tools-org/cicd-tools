@@ -26,7 +26,7 @@ on:
         type: boolean
       WORKFLOW_NAME:
         description: "Identifies this workflow in notifications."
-        required: true
+        required: false
         type: string
     secrets:
       SLACK_WEBHOOK:
