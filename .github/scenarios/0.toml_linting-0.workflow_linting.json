@@ -24,6 +24,7 @@
     "_copy_without_render": [
         ".cicd-tools/boxes/bootstrap/libraries/environment.sh",
         ".github/actions",
-        "ansible_role/*"
+        "ansible_role/*",
+        "scripts/*"
     ]
 }
