@@ -1,0 +1,206 @@
+---
+name: job-60-cookiecutter-remote_push
+
+on:
+  workflow_call:
+    inputs:
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      REMOTE_SCRIPT_PRUNE_TEST_RELEASES:
+        default: "ci/github/scripts/job-60-prune-test-releases.sh"
+        description: "Optional, allows you to specify a remote push script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_TRIGGER_PUSH:
+        default: "ci/github/scripts/job-60-test-push.sh"
+        description: "Optional, allows you to specify a remote push script."
+        required: false
+        type: string
+      REMOTE_TEST_TAG:
+        description: "The tag that will be pushed if the scenario matches 'SCENARIO_TRIGGER_TAG_PUSH'."
+        required: true
+        type: string
+      REMOTE_RELEASE_WORKFLOW:
+        default: ""
+        description: "Optional, allows you to specify the filename of the release workflow for the remote repository."
+        required: false
+        type: string
+      SCENARIO_TRIGGER_TAG_PUSH:
+        description: "The scenario name that triggers a tag push."
+        required: true
+        type: string
+      SCENARIO_TRIGGER_BASE_BRANCH_PUSH:
+        description: "The scenario name that triggers a base branch push."
+        required: true
+        type: string
+      SCENARIO_TRIGGER_DEV_BRANCH_PUSH:
+        description: "The scenario name that triggers a dev branch push."
+        required: true
+        type: string
+      TEMPLATE_SCENARIOS:
+        default: '["default"]'
+        description: "Optional, a string encoded JSON array of 'cookiecutter.json' scenario files that will be used during rendering."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      REMOTE_TOKEN:
+        description: "GitHub token with access to the test repository."
+        required: true
+      REMOTE_ORIGIN:
+        description: "Identifies the test repository as: owner/repository"
+        required: true
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  TEMPLATE_SKIP_POETRY: 1
+  TEMPLATE_SKIP_PRECOMMIT: 1
+
+jobs:
+
+  push_to_test_repository:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+        scenario: ${{ fromJSON(inputs.TEMPLATE_SCENARIOS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Push Test -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: 'template'
+          persist-credentials: false
+
+      - name: Push Test -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          "./template/.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Push Test -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Push Test -- Install Toolbox
+        uses: ./template/.github/actions/action-00-toolbox
+        with:
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Push Test -- (COOKIECUTTER) Render Template
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
+        with:
+          PROJECT_ROOT_PATH: "template"
+          SCENARIO: ${{ matrix.scenario }}
+
+      - name: Push Test -- Push To Test Repository (${{ env.TEMPLATE_BRANCH_NAME_BASE }})
+        if: matrix.scenario == inputs.SCENARIO_TRIGGER_BASE_BRANCH_PUSH
+        run: |
+          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_TRIGGER_PUSH }}" \
+            "${TEMPLATE_BRANCH_NAME_BASE}"
+        env:
+          REMOTE_TOKEN: ${{ secrets.REMOTE_TOKEN }}
+          REMOTE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+          TEST_PROJECT_PATH: ${{ env.TEST_PROJECT_NAME }}
+
+      - name: Push Test -- Clean Up Test Releases
+        if: matrix.scenario == inputs.SCENARIO_TRIGGER_TAG_PUSH
+        run: |
+          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_PRUNE_TEST_RELEASES }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.REMOTE_TOKEN }}
+          REMOTE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+          TEST_PUSH_TAG: ${{ inputs.REMOTE_TEST_TAG }}
+
+      - name: Push Test -- Push To Test Repository (${{ inputs.REMOTE_TEST_TAG }})
+        if: matrix.scenario == inputs.SCENARIO_TRIGGER_TAG_PUSH
+        run: |
+          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_TRIGGER_PUSH }}" \
+            "${TEMPLATE_BRANCH_NAME_BASE}" \
+            "${{ inputs.REMOTE_TEST_TAG }}"
+        env:
+          REMOTE_TOKEN: ${{ secrets.REMOTE_TOKEN }}
+          REMOTE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+          TEST_PROJECT_PATH: ${{ env.TEST_PROJECT_NAME }}
+
+      - name: Push Test -- Trigger Release Workflow Test
+        if: matrix.scenario == inputs.SCENARIO_TRIGGER_TAG_PUSH && inputs.REMOTE_RELEASE_WORKFLOW != ''
+        run: |
+          gh workflow run \
+            -r "${{ inputs.REMOTE_TEST_TAG }}" \
+            -R "${REMOTE_ORIGIN}" \
+            -f "TAG=${{ inputs.REMOTE_TEST_TAG }}" \
+            ${{ inputs.REMOTE_RELEASE_WORKFLOW }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.REMOTE_TOKEN }}
+          REMOTE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+
+      - name: Push Test -- Push To Test Repository (${{ env.TEMPLATE_BRANCH_NAME_DEVELOPMENT }})
+        if: matrix.scenario == inputs.SCENARIO_TRIGGER_DEV_BRANCH_PUSH
+        run: |
+          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_TRIGGER_PUSH }}" \
+            "${TEMPLATE_BRANCH_NAME_DEVELOPMENT}"
+        env:
+          REMOTE_TOKEN: ${{ secrets.REMOTE_TOKEN }}
+          REMOTE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+          TEST_PROJECT_PATH: ${{ env.TEST_PROJECT_NAME }}
+
+      - name: Push Test -- Report Job Status on Success (${{ inputs.REMOTE_TEST_TAG }})
+        if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_TAG_PUSH
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "remote push to tag '${{ inputs.REMOTE_TEST_TAG }}' has been triggered!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Push Test -- Report Job Status on Success (${{ env.TEMPLATE_BRANCH_NAME_BASE }})
+        if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_BASE_BRANCH_PUSH
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "remote push to branch '${TEMPLATE_BRANCH_NAME_BASE}' has been triggered!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Push Test -- Report Job Status on Success (${{ env.TEMPLATE_BRANCH_NAME_DEVELOPMENT }})
+        if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_DEV_BRANCH_PUSH
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "remote push to branch '${TEMPLATE_BRANCH_NAME_DEVELOPMENT}' has been triggered!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"
+
+      - name: Push Test --- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "remote push (${{ matrix.scenario }}) has failed to trigger!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          PROJECT_ROOT_PATH: "template"

@@ -85,7 +85,7 @@ _environment_parse_defaults() {
 _environment_usage() {
   log "ERROR" "environment.sh -- enforce environment variables."
   log "ERROR" "USAGE: source environment.sh -m [MANDATORY] -o [OPTIONAL] -d [DEFAULTS]"
-  log "ERROR" "  Multiple items should be specified as space separated strings."
+  log "ERROR" "  Multiple items should be specified as space separated quoted strings."
   exit 127
 }
 
