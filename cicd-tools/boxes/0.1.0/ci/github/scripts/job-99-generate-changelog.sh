@@ -34,7 +34,7 @@ main() {
 }
 
 _changelog_generate() {
-  npx -q conventional-changelog-cli -t "${1}"
+  npx -q conventional-changelog-cli
 }
 
 main "$@"
