@@ -80,6 +80,7 @@ _link_symlinks() {
 
   log "DEBUG" "SYMLINK > Destination: '${1}': ..."
 
+  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/commitizen" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/commitizen"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/libraries" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/libraries"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/pre-commit" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/pre-commit"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schemas" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/schemas"

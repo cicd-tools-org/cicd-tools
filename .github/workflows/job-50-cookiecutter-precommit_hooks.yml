@@ -1,5 +1,5 @@
 ---
-name: job-50-cookiecutter-precommit
+name: job-50-cookiecutter-precommit_hooks
 
 on:
   workflow_call:

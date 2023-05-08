@@ -1,0 +1,122 @@
+---
+name: job-50-poetry-commitizen_hooks
+
+on:
+  workflow_call:
+    inputs:
+      COMMITIZEN_BUMP_TYPE:
+        description: "Typically this is MAJOR, MINOR or PATCH."
+        required: true
+        type: string
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      EXPECTED_BUMPED_VERSION:
+        description: "The new version value expected after running the commitizen 'bump' command."
+        required: true
+        type: string
+      GIT_AUTHOR_NAME:
+        default: "Pro Buddy Dev"
+        description: "Optional, allows you to define the author name that git will assign to any generated commit."
+        required: false
+        type: string
+      GIT_AUTHOR_EMAIL:
+        default: "somedude@coolstartup.com"
+        description: "Optional, allows you to define the author email that git will assign to any generated commits."
+        required: false
+        type: string
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  commitzen_hooks_test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Commitizen Hooks Test -- Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Commitizen Hooks Test -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Commitizen Hooks Test -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Commitizen Hooks Test -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Commitizen Hooks Test -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+
+      - name: Commitizen Hooks Test -- Configure Git Author
+        run: |
+          git config --global user.name "${{ inputs.GIT_AUTHOR_NAME }}"
+          git config --global user.email "${{ inputs.GIT_AUTHOR_EMAIL }}"
+        shell: bash
+
+      - name: Commitizen Hooks Test -- Execute 'bump' Command
+        run: |
+          poetry run cz bump --increment ${{ inputs.COMMITIZEN_BUMP_TYPE }} --yes
+        shell: bash
+
+      - name: Commitizen Hooks Test -- Validate New Version
+        run: |
+          poetry version | grep "${{ inputs.EXPECTED_BUMPED_VERSION }}"
+        shell: bash
+
+      - name: Commitizen Hooks Test -- Validate New Tag
+        run: |
+          git tag --list | grep "${{ inputs.EXPECTED_BUMPED_VERSION }}"
+        shell: bash
+
+      - name: Commitizen Hooks Test -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "commitizen hooks tests have succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Commitizen Hooks Test -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "commitizen hooks tests have failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
