@@ -50,14 +50,26 @@ jobs:
   # It's very likely the template you are creating has its own mixture of pre-commit hooks.
   # Please use this as a guide, and create your own .job-50-precommit.yml file.
 
-  pre-commit:
+  pre-commit_hooks:
     needs: [configuration]
     secrets: inherit
-    uses: ./.github/workflows/job-50-cookiecutter-precommit.yml
+    uses: ./.github/workflows/job-50-cookiecutter-precommit_hooks.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TEMPLATE_SCENARIOS: ${{ needs.configuration.outputs.COOKIECUTTER_ALL_SCENARIOS }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
+  commitizen_hooks:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-50-poetry-commitizen_hooks.yml
+    with:
+      COMMITIZEN_BUMP_TYPE: "MINOR"
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      EXPECTED_BUMPED_VERSION: "0.2.0"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
 
@@ -165,7 +177,7 @@ jobs:
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, json_metaschema_lint, json_schema_lint, markdown_links, pre-commit, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
+    needs: [configuration, commit_lint, commitizen_hooks, json_metaschema_lint, json_schema_lint, markdown_links, pre-commit_hooks, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
     secrets: inherit
     uses: ./.github/workflows/job-99-poetry-create_release.yml
     with:

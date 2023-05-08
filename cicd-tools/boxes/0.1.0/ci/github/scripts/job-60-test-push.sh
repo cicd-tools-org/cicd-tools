@@ -34,7 +34,6 @@ main() {
 }
 
 push() {
-
   local COMMAND
   local PREFIX
 
