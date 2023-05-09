@@ -28,7 +28,7 @@ _container_get_image() {
   if cicd_tools "is_template"; then
     cicd_tools "config_value" "cookiecutter.json" "_DOCKER_DEFAULT_CONTAINER"
   else
-    cicd_tools "config_value" ".cicd-tools/configuration.json" "CONTAINER"
+    cicd_tools "config_value" ".cicd-tools/configuration/cicd-tools.json" "CONTAINER"
   fi
 }
 

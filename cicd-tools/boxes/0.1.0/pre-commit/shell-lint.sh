@@ -20,7 +20,7 @@ main() {
   if cicd_tools "is_template"; then
     SHELLCHECK_OPTS="$(cicd_tools "config_value" "cookiecutter.json" "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS")"
   else
-    SHELLCHECK_OPTS="$(cicd_tools "config_value" ".cicd-tools/configuration.json" "SHELLCHECK_OPTIONS")"
+    SHELLCHECK_OPTS="$(cicd_tools "config_value" ".cicd-tools/configuration/cicd-tools.json" "SHELLCHECK_OPTIONS")"
   fi
 
   log "INFO" "PRE-COMMIT > 'shellcheck -x ${SHELLCHECK_OPTS} $*'"

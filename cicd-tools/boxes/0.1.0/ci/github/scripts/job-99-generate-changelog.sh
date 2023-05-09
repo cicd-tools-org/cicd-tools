@@ -34,7 +34,7 @@ main() {
 }
 
 _changelog_generate() {
-  npx -q conventional-changelog-cli
+  npx -q conventional-changelog-cli --config .cicd-tools/configuration/changelog.json
 }
 
 main "$@"

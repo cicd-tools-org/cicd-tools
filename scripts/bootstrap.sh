@@ -95,6 +95,7 @@ _link_symlinks_template() {
   log "DEBUG" "SYMLINK > Destination: '{{cookiecutter.project_slug}}/.cicd-tools': ..."
 
   _link_symlink_directory_contents ".cicd-tools/bin" "{{cookiecutter.project_slug}}/.cicd-tools/bin"
+  _link_symlink_directory_contents ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
   _link_symlink_directory_contents ".cicd-tools/pgp" "{{cookiecutter.project_slug}}/.cicd-tools/pgp"
 
   log "DEBUG" "LINK > Source: '.github/actions/*'"

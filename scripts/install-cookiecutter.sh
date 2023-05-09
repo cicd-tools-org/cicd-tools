@@ -67,6 +67,7 @@ _install_bootstrap() {
   log "INFO" "INSTALL > Boot-Strapping CICD-Tools to '${CICD_TOOLS_INSTALL_TARGET_PATH}/.cicd-tools' ..."
   mkdir -p "${CICD_TOOLS_INSTALL_TARGET_PATH}/.cicd-tools/boxes"
   _install_bootstrap_folder "bin"
+  _install_bootstrap_folder "configuration"
   _install_bootstrap_folder "boxes/bootstrap"
   _install_bootstrap_folder "pgp"
 }
@@ -82,6 +83,7 @@ _install_cookiecutter_symlinks() {
   log "INFO" "INSTALL > Destination: '${CICD_TOOLS_INSTALL_TARGET_PATH}/{{cookiecutter.project_slug}}/.cicd-tools': ..."
   mkdir -p "${CICD_TOOLS_INSTALL_TARGET_PATH}/{{cookiecutter.project_slug}}/.cicd-tools"
   _install_cookiecutter_symlink_directory ".cicd-tools/bin" "{{cookiecutter.project_slug}}/.cicd-tools/bin"
+  _install_cookiecutter_symlink_directory ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
   _install_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/libraries" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/libraries"
   _install_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/pre-commit" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/pre-commit"
   _install_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/schemas" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/schemas"
@@ -129,7 +131,7 @@ _install_cookiecutter_symlink_write() {
 _install_cookiecutter_copy() {
   # 1: Source
   log "INFO" "INSTALL > Copying additional template content ..."
-  _install_cookiecutter_copy_file "{{cookiecutter.project_slug}}/.cicd-tools/configuration.json"
+  _install_cookiecutter_copy_file "{{cookiecutter.project_slug}}/.cicd-tools/configuration/cicd-tools.json"
 }
 
 _install_cookiecutter_copy_file() {
