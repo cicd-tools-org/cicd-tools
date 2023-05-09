@@ -20,7 +20,7 @@ main() {
   if cicd_tools "is_template"; then
     SHFMT_OPTIONS="$(cicd_tools "config_value" "cookiecutter.json" "_CONFIG_DEFAULT_SHFMT_OPTIONS")"
   else
-    SHFMT_OPTIONS="$(cicd_tools "config_value" ".cicd-tools/configuration.json" "SHFMT_OPTIONS")"
+    SHFMT_OPTIONS="$(cicd_tools "config_value" ".cicd-tools/configuration/cicd-tools.json" "SHFMT_OPTIONS")"
   fi
 
   log "INFO" "PRE-COMMIT > 'shfmt -d ${SHFMT_OPTIONS} $*'"
