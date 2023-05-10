@@ -1,5 +1,5 @@
 ---
-name: job-40-cookiecutter-ansible-lint
+name: job-40-poetry-ansible-lint
 
 on:
   workflow_call:
@@ -17,14 +17,9 @@ on:
         description: "A string encoded JSON array of valid python versions."
         required: true
         type: string
-      REMOTE_SCRIPT_ROLE_NAME:
-        default: "ci/github/scripts/job-40-generic-ansible_role_name.sh"
-        description: "Optional, allows you to specify a script to set the ROLE_NAME environment variable."
-        required: false
-        type: string
       ROLE_PATH:
         default: "."
-        description: "Optional, allows you to specify a relative path, within the template, to the role that is being analyzed."
+        description: "Optional, allows you to specify a relative path, within the repository, to the role that is being analyzed."
         required: false
         type: string
       TESTING_MODE:
@@ -47,10 +42,6 @@ on:
         description: "Optional, enables Slack notifications."
         required: false
 
-env:
-  TEMPLATE_SKIP_POETRY: 0
-  TEMPLATE_SKIP_PRECOMMIT: 0
-
 jobs:
 
   run_ansible_lint:
@@ -65,14 +56,12 @@ jobs:
     steps:
       - name: Ansible Lint -- Checkout Repository
         uses: actions/checkout@v3
-        with:
-          path: 'template'
 
       - name: Ansible Lint -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./template/.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Ansible Lint -- Set up Python ${{ matrix.python-version }}
@@ -81,75 +70,46 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Ansible Lint -- Install Toolbox
-        uses: ./template/.github/actions/action-00-toolbox
-        with:
-          PROJECT_ROOT_PATH: "template"
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Ansible Lint -- Calculate Platform Independent Home Folder
+        id: platform_homefolder
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
 
       - name: Ansible Lint -- Calculate Cache Key
         id: hash
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
         with:
           FILE_NAME: "requirements.yml"
-          FILE_PREFIX: ${{ inputs.ROLE_PATH }}
-          FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
-          PROJECT_ROOT_PATH: "template"
 
       - name: Ansible Lint -- Initialize Cache Locations
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
-            /home/runner/.cache/ansible-compat
-            /home/runner/.cache/molecule
-          CACHE_KEY: ansible-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "ansible_cache"
-          PROJECT_ROOT_PATH: "template"
+            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
+          CACHE_KEY: ansible-compat-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_compat_cache"
 
-      - name: Ansible Lint -- Configure The Role Name
-        run: |
-          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ROLE_NAME }}" \
-            "${{ inputs.ROLE_PATH }}"
-        shell: bash
-
-      - name: Ansible Lint -- Initialize Molecule Scenario Folders
-        run: |
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
-      - name: Ansible Lint -- Initialize the Dependency Cache
-        run: |
-          mkdir -p ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
-      - name: Ansible Lint -- (COOKIECUTTER) Render Template
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
-        with:
-          PROJECT_ROOT_PATH: "template"
-
-      - name: Ansible Lint -- Use "default" Scenario Dependencies for the Dependency Cache
-        run: |
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/__CACHED_DEPENDENCIES
-        shell: bash
+      - name: Ansible Lint -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
       - name: Ansible Lint -- Run 'ansible-lint' via Poetry
         run: |
           poetry run ansible-lint ${{ inputs.EXTRA_ARGS }}
         shell: bash
-        working-directory: ${{ env.TEST_PROJECT_NAME }}/${{ inputs.ROLE_PATH }}
+        working-directory: ${{ inputs.ROLE_PATH }}
 
       - name: Ansible Lint -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "ansible-lint test has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"
 
       - name: Ansible Lint -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "ansible-lint test has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"

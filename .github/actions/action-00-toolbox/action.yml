@@ -32,6 +32,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Toolbox -- Install Required Software (Mac OSX Only)
+      if: runner.os == 'macOS'
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+      shell: bash
+
     - name: Toolbox -- Import GPG Key
       run: |
         gpg \
