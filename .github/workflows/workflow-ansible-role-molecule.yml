@@ -1,5 +1,5 @@
 ---
-name: cicd-tooling-github-workflow-ansible-role-molecule.yml
+name: cicd-tooling-github-workflow-ansible-role-molecule
 
 on:
   push:
@@ -33,8 +33,8 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/job-40-cookiecutter-ansible-lint.yml
     with:
-      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       ROLE_PATH: "ansible_role"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "ansible"

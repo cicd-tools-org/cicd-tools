@@ -13,10 +13,6 @@ driver:
     ansible_connection_options:
       ansible_connection: local
       ansible_sudo_pass: "${ANSIBLE_SUDO_PASSWORD}"
-lint: |
-  set -e
-  yamllint -f standard .
-  ansible-lint
 platforms:
   - name: instance
 provisioner:
