@@ -16,7 +16,9 @@ jobs:
 
   configuration:
     secrets: inherit
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+    uses: ./.github/workflows/job-00-generic-json_file.yml
+    with:
+      JSON_FILE_PATH: cookiecutter.json
 
   start:
     secrets: inherit
@@ -34,7 +36,7 @@ jobs:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       ROLE_PATH: "ansible_role"
-      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "ansible"
 
   molecule_test:
@@ -42,11 +44,11 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/job-40-cookiecutter-molecule-role.yml
     with:
-      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       MOLECULE_COMMAND: "test"
-      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       ROLE_PATH: "ansible_role"
-      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "ansible"
 
   success:

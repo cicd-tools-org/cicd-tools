@@ -1,0 +1,41 @@
+---
+name: job-00-generic-json_file
+
+on:
+  workflow_call:
+    inputs:
+      JSON_FILE_PATH:
+        description: "The JSON file to load."
+        required: true
+        type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
+        type: string
+    outputs:
+      JSON_FILE_DATA:
+        description: "The JSON file contents as a JSON encoded string."
+        value: ${{ jobs.json_file.outputs.JSON_FILE_DATA }}
+
+jobs:
+
+  json_file:
+
+    runs-on: ubuntu-latest
+    outputs:
+      JSON_FILE_DATA: ${{ steps.json_file_data.outputs.value }}
+
+    steps:
+      - name: JSON File -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: JSON File -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: JSON File -- Set Contents as Output
+        id: json_file_data
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+            cat "${{ inputs.JSON_FILE_PATH }}"
+        shell: bash
