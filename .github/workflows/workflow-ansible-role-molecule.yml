@@ -28,6 +28,15 @@ jobs:
       NOTIFICATION_MESSAGE: "workflow has started!"
       WORKFLOW_NAME: "ansible"
 
+  markdown_links:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-30-generic-documentation.yml
+    with:
+      CONFIG_FILE: ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
+      DOCUMENTATION_PATH: "{{cookiecutter.project_slug}}"
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+
   ansible_lint:
     needs: [configuration]
     secrets: inherit
@@ -52,7 +61,7 @@ jobs:
       WORKFLOW_NAME: "ansible"
 
   success:
-    needs: [configuration, molecule_test, start]
+    needs: [configuration, markdown_links, molecule_test, start]
     secrets: inherit
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
