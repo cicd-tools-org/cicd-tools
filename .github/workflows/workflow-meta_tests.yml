@@ -10,11 +10,57 @@ on:
 #      description: "Optional, enables Slack notifications."
 #      required: false
 
+env:
+  EXPECTED_MOLECULE_SCENARIOS: '[]'
+
 jobs:
 
   configuration:
     secrets: inherit
     uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  scenarios:
+    needs: [configuration]
+    secrets: inherit
+    uses: ./.github/workflows/job-00-generic-molecule_scenarios.yml
+    with:
+      MOLECULE_EXCLUSION_REGEX: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX }}
+      MOLECULE_SCENARIO_PATH: "{{cookiecutter.project_slug}}/ansible_role/molecule"
+
+  scenarios_data_test:
+    needs: [scenarios]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Molecule Scenario Discovery Test -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Molecule Scenario Discovery Test -- Setup Environment
+        env:
+          WORKFLOW_NAME: "test"
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Molecule Scenario Discovery Test -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Molecule Scenario Discovery Test -- Run Notification Action (Testing Locally)
+        if: needs.scenarios.outputs.SCENARIOS == env.EXPECTED_MOLECULE_SCENARIOS
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":heavy_check_mark:"
+          NOTIFICATION_MESSAGE: "Molecule Scenario detection is working (received: ${{ toJSON(needs.scenarios.outputs.SCENARIOS) }})!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Molecule Scenario Discovery Test -- Run Notification Action (Testing Locally)
+        if: needs.scenarios.outputs.SCENARIOS != env.EXPECTED_MOLECULE_SCENARIOS
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          FORCE_HALT_WORKFLOW: true
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "Molecule Scenario detection is NOT working (received: ${{ toJSON(needs.scenarios.outputs.SCENARIOS) }}) !"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   send_notification_test_success:
     runs-on: ubuntu-latest
@@ -199,7 +245,7 @@ jobs:
       WORKFLOW_NAME: "test"
 
   success:
-    needs: [commit_lint_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
+    needs: [commit_lint_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
