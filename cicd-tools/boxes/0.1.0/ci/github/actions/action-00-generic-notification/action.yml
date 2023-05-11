@@ -4,6 +4,10 @@ description: "Sends notifications via the selected notification script."
 author: niall@niallbyrne.ca
 
 inputs:
+  FORCE_HALT_WORKFLOW:
+    default: "false"
+    description: "Optional, allows you to use the notification to halt the workflow."
+    required: false
   NOTIFICATION_EMOJI:
     default: ":heavy_check_mark:"
     description: "Optional, allows you to specify a notification emoji for your notification platform."
@@ -51,11 +55,19 @@ runs:
     - name: Notification -- Report Job Status on Failure
       env:
         NOTIFICATION_WEBHOOK_URL: ${{ inputs.NOTIFICATION_WEBHOOK_URL }}
-      if: failure() || inputs.TESTING_MODE == true
+      if: failure() || inputs.TESTING_MODE == 'true'
       run: |
+        [[ "${{ inputs.TESTING_MODE }}" == "true" ]] && NOTIFICATION_EMOJI_FAILURE="${{ inputs.NOTIFICATION_EMOJI }}" || NOTIFICATION_EMOJI_FAILURE="${{ inputs.NOTIFICATION_EMOJI_FAILURE }}"
+        echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}" \
-          "${NOTIFICATION}" "${{ inputs.NOTIFICATION_EMOJI_FAILURE }} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" || \
-          echo "ERROR: ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}" >> /dev/stderr
-        exit 127
+          -l "${NOTIFICATION_LINK}" \
+          -m "${NOTIFICATION_EMOJI_FAILURE} ${{ inputs.NOTIFICATION_MESSAGE_FAILURE }}"
+        [[ "${{ inputs.TESTING_MODE }}" != "true" ]] && exit 127
       shell: bash
       working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Notification -- Halt Workflow Execution
+      if: inputs.FORCE_HALT_WORKFLOW == 'true'
+      run: |
+        exit 127
+      shell: bash
