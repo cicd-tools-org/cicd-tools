@@ -1,0 +1,57 @@
+---
+name: job-00-generic-molecule_scenarios
+
+on:
+  workflow_call:
+    inputs:
+      MOLECULE_EXCLUSION_REGEX:
+        description: "A regex to exclude particular scenarios from CI."
+        required: true
+        type: string
+      MOLECULE_SCENARIO_PATH:
+        description: "The relative path to where the Molecule scenario folders are found."
+        required: true
+        type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DISCOVERY_SCENARIOS:
+        default: "ci/generic/scripts/molecule-scenarios.sh"
+        description: "Optional, allows you to specify a Molecule scenario discovery script."
+        required: false
+        type: string
+    outputs:
+      SCENARIOS:
+        description: "The list of enabled Molecule Scenarios as a JSON encoded string."
+        value: ${{ jobs.molecule_scenarios.outputs.SCENARIOS }}
+
+jobs:
+
+  molecule_scenarios:
+
+    runs-on: ubuntu-latest
+    outputs:
+      SCENARIOS: ${{ steps.molecule_scenarios.outputs.value }}
+
+    steps:
+      - name: Molecule Scenario Discovery -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Molecule Scenario Discovery -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Molecule Scenario Discovery -- Set Discovered Scenarios as Output
+        id: molecule_scenarios
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+            bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DISCOVERY_SCENARIOS }}" \
+              -e "${{ inputs.MOLECULE_EXCLUSION_REGEX }}" \
+              -p "${{ inputs.MOLECULE_SCENARIO_PATH }}"
+        shell: bash
+
+      - name: Molecule Scenario Discovery -- Display Detected Active Scenarios
+        run: |
+          echo "${{ steps.molecule_scenarios.outputs.value }}"
+        shell: bash

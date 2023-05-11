@@ -4,6 +4,11 @@ name: job-00-generic-notification
 on:
   workflow_call:
     inputs:
+      FORCE_HALT_WORKFLOW:
+        default: false
+        description: "Optional, allows you to use the notification to halt the workflow."
+        required: false
+        type: string
       NOTIFICATION_EMOJI:
         default: ":heavy_check_mark:"
         description: "Optional, allows you to specify a notification emoji for your notification platform."
@@ -66,6 +71,7 @@ jobs:
       - name: Notification -- Run Notification Action
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
+          FORCE_HALT_WORKFLOW: ${{ inputs.FORCE_HALT_WORKFLOW }}
           NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI }}
           NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}
           NOTIFICATION_MESSAGE: ${{ inputs.NOTIFICATION_MESSAGE }}
