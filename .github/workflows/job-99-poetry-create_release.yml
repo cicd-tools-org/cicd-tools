@@ -9,6 +9,11 @@ on:
         description: "Optional, allows you to specify markdown content to append to the changelog in a generated release."
         required: false
         type: string
+      JSON_APPENDED_CONTENT:
+        default: "[]"
+        description: "Optional, allows you to specify a JSON array of markdown content to append to the changelog in a generated release.  This will override APPENDED_CONTENT."
+        required: false
+        type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
         default: "ci/github/scripts/job-99-generate-changelog.sh"
         description: "Optional, allows you to specify a changelog generation script."
@@ -121,13 +126,15 @@ jobs:
         id: create_release
         env:
           APPENDED_CONTENT: ${{ inputs.APPENDED_CONTENT }}
+          JSON_APPENDED_CONTENT: ${{ inputs.JSON_APPENDED_CONTENT }}
         if: steps.filter.outputs.RELEASE_CANDIDATE == 'true' && inputs.TESTING_MODE == false
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const script = require('./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_GENERATE_RELEASE }}');
-            const body = process.env.CHANGE_LOG_CONTENT + "\n" + process.env.APPENDED_CONTENT;
+            const extraContent = "\n" + (process.env.APPENDED_CONTENT ? process.env.APPENDED_CONTENT : JSON.parse(process.env.JSON_APPENDED_CONTENT).join("\n"));
+            const body = process.env.CHANGE_LOG_CONTENT + extraContent;
             const tag = process.env.BRANCH_OR_TAG;
             await script({ body, context, core, github, tag })
 
