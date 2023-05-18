@@ -1,0 +1,118 @@
+---
+name: job-95-galaxy-import_role
+
+on:
+  workflow_call:
+    inputs:
+      PYTHON_VERSION:
+        description: "The single version of Python that will be used as a string value."
+        required: true
+        type: string
+      REMOTE_SCRIPT_ROLE_NAME:
+        default: "ci/github/scripts/job-40-generic-ansible_role_name.sh"
+        description: "Optional, allows you to specify a script to set the ROLE_NAME environment variable."
+        required: false
+        type: string
+      ROLE_PATH:
+        default: "."
+        description: "Optional, allows you to specify a relative path, within the template, to the role that is being analyzed."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        description: "Manages the types of Slack notifications."
+        required: true
+        type: boolean
+      WORKFLOW_DISPATCH:
+        description: "Indicates if a 'workflow_dispatch' event triggered this workflow run."
+        required: true
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      GALAXY_API_KEY:
+        description: "Optional, enables importing the role into Ansible Galaxy."
+        required: false
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  ANSIBLE_VERSION: ">=7.5.0"
+
+jobs:
+
+  import_role:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Publish to Galaxy -- Code Checkout (workflow dispatch)
+        if: inputs.WORKFLOW_DISPATCH == true
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.TAG  }}
+
+      - name: Publish to Galaxy -- Code Checkout (published release)
+        if: inputs.WORKFLOW_DISPATCH == false
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Publish to Galaxy -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Publish to Galaxy -- Set up Python ${{ inputs.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.PYTHON_VERSION }}
+
+      - name: Publish to Galaxy -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Publish to Galaxy -- Install Ansible (For Galaxy CLI)
+        run: |
+          pip install "ansible${ANSIBLE_VERSION}"
+        shell: bash
+
+      - name: Publish to Galaxy -- Configure The Role Name
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ROLE_NAME }}" \
+            "${{ inputs.ROLE_PATH }}"
+        shell: bash
+
+      - name: Publish to Galaxy -- Trigger Ansible Galaxy Import
+        env:
+          API_KEY: ${{ secrets.GALAXY_API_KEY }}
+        run: |
+          ansible-galaxy role import "${PROJECT_OWNER}" "${PROJECT_NAME}" --token "${API_KEY}" | tee import.log
+          grep "0 errors" import.log
+        shell: bash
+        working-directory: ${{ inputs.ROLE_PATH }}
+
+      - name: Publish to Galaxy -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "the role '${{ env.ROLE_NAME }}' was successfully imported to Ansible Galaxy!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Publish to Galaxy -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "while importing the role '${{ env.ROLE_NAME }}' to Ansible Galaxy, an error occurred!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
