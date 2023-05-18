@@ -69,3 +69,4 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "Dockerfile linting has has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}

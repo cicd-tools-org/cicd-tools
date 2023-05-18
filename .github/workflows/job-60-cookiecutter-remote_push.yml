@@ -204,3 +204,4 @@ jobs:
           NOTIFICATION_MESSAGE: "remote push (${{ matrix.scenario }}) has failed to trigger!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}

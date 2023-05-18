@@ -104,3 +104,4 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "commit lint checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
