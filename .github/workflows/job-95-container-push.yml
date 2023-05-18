@@ -133,3 +133,4 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "docker container build/push has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}

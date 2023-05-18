@@ -314,4 +314,3 @@ jobs:
           NOTIFICATION_EMOJI: ":checkered_flag:"
           NOTIFICATION_MESSAGE: "all tests have passed successfully!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          TESTING_MODE: true
