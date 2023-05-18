@@ -8,6 +8,7 @@ on:
       - ".github/workflows/job-*-container-*.yml"
       - ".cicd-tools/container/Dockerfile"
       - ".cicd-tools/container/Dockerfile.sha256"
+      - "scripts/container.sh"
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
