@@ -153,3 +153,4 @@ jobs:
           NOTIFICATION_MESSAGE: "ansible-lint test has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}

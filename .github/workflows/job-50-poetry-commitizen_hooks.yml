@@ -120,3 +120,4 @@ jobs:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "commitizen hooks tests have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
