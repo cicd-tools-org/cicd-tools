@@ -3,7 +3,7 @@
   "$id": "0.1.0",
   "description": "CICD-Tools Cookiecutter Required Fields Schema",
   "additionalProperties": true,
-  "minProperties": 16,
+  "minProperties": 10,
   "required": [
     "github_handle",
     "project_slug",
@@ -13,12 +13,6 @@
     "_CONFIG_DEFAULT_SHFMT_OPTIONS",
     "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS",
     "_DOCKER_DEFAULT_CONTAINER",
-    "_GITHUB_ACTION_CACHE",
-    "_GITHUB_ACTION_CHECKOUT",
-    "_GITHUB_ACTION_MARKDOWN_LINK_CHECK",
-    "_GITHUB_ACTION_PYTHON",
-    "_GITHUB_ACTION_SCRIPT",
-    "_GITHUB_ACTION_TRUFFLEHOG",
     "_GITHUB_CI_DEFAULT_CONCURRENCY",
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS",
     "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS"
@@ -56,30 +50,6 @@
     },
     "_DOCKER_DEFAULT_CONTAINER": {
       "description": "The container that will be used for the shellcheck, shfmt and other core binaries.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_CACHE": {
-      "description": "The name and version of the GitHub Action used for caching.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_CHECKOUT": {
-      "description": "The name and version of the GitHub Action used for checking out code.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_MARKDOWN_LINK_CHECK": {
-      "description": "The name and version of the GitHub Action used for validating markdown links.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_PYTHON": {
-      "description": "The name and version of the GitHub Action used for installing Python.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_SCRIPT": {
-      "description": "The name and version of the GitHub Action used for running custom scripts.",
-      "type": "string"
-    },
-    "_GITHUB_ACTION_TRUFFLEHOG": {
-      "description": "The name and version of the GitHub Action used for the trufflehog binary.",
       "type": "string"
     },
     "_GITHUB_CI_DEFAULT_CONCURRENCY": {
