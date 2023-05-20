@@ -1,0 +1,156 @@
+---
+name: job-50-poetry-basic_precommit_hooks
+
+on:
+  workflow_call:
+    inputs:
+      CHECK_TOML:
+        description: "A boolean value, indicating if TOML checks should be performed."
+        required: true
+        type: boolean
+      CHECK_WORKFLOW:
+        description: "A boolean value, indicating if GitHub workflow checks should be performed."
+        required: true
+        type: boolean
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      GIT_AUTHOR_NAME:
+        default: "Pro Buddy Dev"
+        description: "Optional, allows you to define the author name that git will assign to any generated commit."
+        required: false
+        type: string
+      GIT_AUTHOR_EMAIL:
+        default: "somedude@coolstartup.com"
+        description: "Optional, allows you to define the author email that git will assign to any generated commits."
+        required: false
+        type: string
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  precommit_hook_tests:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Pre-Commit Test -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Pre-Commit Test -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Pre-Commit Test -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Pre-Commit Test -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Pre-Commit Test -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+
+      - name: Pre-Commit Test -- Mount Pre-Commit Cache
+        uses: actions/cache@v3
+        with:
+          key: pre-commit-${{ hashFiles('./.pre-commit-config.yaml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+          path: ~/.cache/pre-commit
+
+      - name: Pre-Commit Test -- Install pre-commit Hooks
+        run: |
+          poetry run pre-commit install
+        shell: bash
+
+      - name: Pre-Commit Test -- Configure Git Author
+        run: |
+          git config --global user.name "${{ inputs.GIT_AUTHOR_NAME }}"
+          git config --global user.email "${{ inputs.GIT_AUTHOR_EMAIL }}"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Commit Lint -- Expect Failure
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
+        if: inputs.CHECK_TOML == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
+        if: inputs.CHECK_TOML == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Shell Lint -- Expect Failure
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_shell_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Shell Format -- Expect Failure
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
+        if: inputs.CHECK_WORKFLOW == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test Workflow Headers Lint -- Expect Failure
+        if: inputs.CHECK_WORKFLOW == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_workflow_header_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "pre-commit hook test has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Pre-Commit Test -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "pre-commit hook test has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
