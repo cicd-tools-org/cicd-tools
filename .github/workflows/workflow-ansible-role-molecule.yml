@@ -15,13 +15,13 @@ on:
 jobs:
 
   configuration:
-    secrets: inherit
     uses: ./.github/workflows/job-00-generic-json_file.yml
     with:
       JSON_FILE_PATH: cookiecutter.json
 
   start:
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
@@ -30,7 +30,8 @@ jobs:
 
   markdown_links:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-generic-documentation.yml
     with:
       CONFIG_FILE: ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
@@ -39,7 +40,8 @@ jobs:
 
   ansible_lint:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-cookiecutter-ansible-lint.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -50,7 +52,8 @@ jobs:
 
   molecule_test:
     needs: [configuration, ansible_lint]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-cookiecutter-molecule-role.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -62,7 +65,8 @@ jobs:
 
   success:
     needs: [configuration, markdown_links, molecule_test, start]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
