@@ -1,6 +1,8 @@
 ---
 name: {{ cookiecutter.project_slug }}-github-workflow-push
 
+# Begin Cookiecutter Template Content{% raw %}
+
 on:
   push:
   schedule:
@@ -26,8 +28,11 @@ jobs:
 
   success:
     needs: [start]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: niall-byrne/cicd-tools/.job-00-notification@master
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "placeholder workflow has completed successfully!"
+
+# End Cookiecutter Template Content{% endraw %}
