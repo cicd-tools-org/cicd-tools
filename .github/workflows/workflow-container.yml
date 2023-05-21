@@ -21,11 +21,11 @@ on:
 jobs:
 
   configuration:
-    secrets: inherit
     uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
 
   start:
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
@@ -34,7 +34,8 @@ jobs:
 
   security:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-generic-security.yml
     with:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
@@ -44,7 +45,8 @@ jobs:
     permissions:
       security-events: write
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-container-security.yml
     with:
       CONTEXT: .cicd-tools/container
@@ -53,7 +55,8 @@ jobs:
 
   lint:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-container-dockerfile_linter.yml
     with:
       DOCKERFILE: .cicd-tools/container/Dockerfile
@@ -64,7 +67,8 @@ jobs:
     needs: [configuration, lint, scan, security, start]
     permissions:
       packages: write
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-95-container-push.yml
     with:
       CONTEXT: .cicd-tools/container
@@ -73,7 +77,8 @@ jobs:
 
   success:
     needs: [push]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"

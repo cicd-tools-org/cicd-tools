@@ -24,10 +24,10 @@ on:
         description: "Identifies this workflow in notifications."
         required: false
         type: string
+    secrets:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
         required: false
-        type: string
 
 jobs:
   run_hadolint:

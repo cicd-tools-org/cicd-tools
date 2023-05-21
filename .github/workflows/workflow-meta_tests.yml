@@ -16,12 +16,10 @@ env:
 jobs:
 
   configuration:
-    secrets: inherit
     uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
 
   scenarios:
     needs: [configuration]
-    secrets: inherit
     uses: ./.github/workflows/job-00-generic-molecule_scenarios.yml
     with:
       MOLECULE_EXCLUSION_REGEX: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX }}
@@ -63,16 +61,14 @@ jobs:
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   secret_exists:
-    secrets: inherit
+    secrets:
+      SECRET: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-secret_exists.yml
-    with:
-      SECRET: "SLACK_WEBHOOK"
 
   secret_does_not_exist:
-    secrets: inherit
+    secrets:
+      SECRET: ${{ secrets.NON_EXISTING_SECRET }}
     uses: ./.github/workflows/job-00-generic-secret_exists.yml
-    with:
-      SECRET: "NON_EXISTING_SECRET"
 
   secrets_data_test:
     needs: [secret_exists, secret_does_not_exist]
@@ -158,7 +154,8 @@ jobs:
 
   security_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-generic-security.yml
     with:
       TESTING_MODE: true
@@ -167,7 +164,8 @@ jobs:
 
   markdown_links_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-cookiecutter-documentation.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -179,7 +177,8 @@ jobs:
 
   pre-commit_hooks_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-50-cookiecutter-precommit_hooks.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -191,7 +190,8 @@ jobs:
 
   commitizen_hooks_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-50-poetry-commitizen_hooks.yml
     with:
       COMMITIZEN_BUMP_TYPE: "MINOR"
@@ -204,7 +204,8 @@ jobs:
 
   commit_lint_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-commit_lint.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -215,7 +216,8 @@ jobs:
 
   shell_lint_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
       fail-fast: true
       matrix:
@@ -237,7 +239,8 @@ jobs:
 
   toml_lint_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -250,7 +253,8 @@ jobs:
 
   workflow_lint_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
       fail-fast: true
       matrix:
@@ -272,7 +276,8 @@ jobs:
 
   yaml_lint_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
@@ -285,7 +290,8 @@ jobs:
 
   create_release_test_failure:
     needs: [configuration]
-    secrets: inherit
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-99-poetry-create_release.yml
     with:
       TESTING_MODE: true
