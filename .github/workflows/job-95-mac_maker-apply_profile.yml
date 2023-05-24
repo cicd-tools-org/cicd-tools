@@ -1,0 +1,134 @@
+---
+name: job-95-mac_maker-apply_profile
+
+on:
+  workflow_call:
+    inputs:
+      CACHE_FOLDERS:
+        description: "The local disk locations to cache, in order to speed up profile execution."
+        required: true
+        type: string
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      REMOTE_SCRIPT_APPLY_PROFILE:
+        default: "ci/github/scripts/job-95-mac_maker-apply_profile.sh"
+        description: "Optional, allows you to specify a script to apply a Mac Maker profile."
+        required: false
+        type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
+        type: string
+      TEST_ARCHITECTURES:
+        description: "All testable CPU architectures for the test runner as a JSON encoded string."
+        required: true
+        type: string
+      TEST_BINARY_VERSIONS:
+        description: "All testable Mac Maker versions for the test runner as a JSON encoded string."
+        required: true
+        type: string
+      TEST_OS:
+        description: "All testable OS versions for the test runner as a JSON encoded string."
+        required: true
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      REMOTE_ORIGIN:
+        description: "Identifies the test repository as: owner/repository"
+        required: true
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  apply_profile:
+
+    runs-on: macos-${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        architecture: ${{ fromJSON(inputs.TEST_ARCHITECTURES) }}
+        os: ${{ fromJSON(inputs.TEST_OS) }}
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+        version: ${{ fromJSON(inputs.TEST_BINARY_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Apply Mac Maker Profile -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Apply Mac Maker Profile -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Apply Mac Maker Profile -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Apply Mac Maker Profile -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Apply Mac Maker Profile -- Hash Remote Origin
+        id: remote_origin_hash
+        run: |
+          REMOTE_HASH="$(sha256sum <<< "${{ secrets.REMOTE_ORIGIN }}" | cut -f1 -d' ')"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+            echo "${REMOTE_HASH}"
+        shell: bash
+
+      - name: Apply Mac Maker Profile -- Setup Homebrew Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.CACHE_FOLDERS }}
+          key: mac_maker-${{ matrix.os }}-${{ matrix.architecture }}-${{ steps.remote_origin_hash.outputs.value }}-${{ env.CACHE_TTL }}
+
+      - name: Apply Mac Maker Profile -- Apply Mac Maker Profile
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_APPLY_PROFILE }}"
+        env:
+          MAC_MAKER_ARCHITECTURE: ${{ matrix.architecture }}
+          MAC_MAKER_VERSION: ${{ matrix.version }}
+          MAC_MAKER_OS_VERSION: ${{ matrix.os }}
+          TEST_PROFILE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
+
+      - name: Apply Mac Maker Profile -- Report Job Status (Success)
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os }}, Mac Maker: ${{ matrix.version }}, profile application was successful!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Apply Mac Maker Profile --  Report Job Status (Failure)
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os }}, Mac Maker: ${{ matrix.version }}, profile application has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}

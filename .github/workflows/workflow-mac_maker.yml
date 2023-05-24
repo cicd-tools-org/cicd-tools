@@ -1,0 +1,60 @@
+---
+name: cicd-tooling-github-workflow-mac_maker
+
+on:
+  push:
+    paths:
+      - ".github/workflows/workflow-mac_maker.yml"
+      - ".github/workflows/job-95-mac_maker-apply_profile.yml"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+env:
+  REMOTE:
+
+jobs:
+
+  configuration:
+    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+
+  start:
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "mac_maker workflow test has started!"
+      WORKFLOW_NAME: "mac_maker"
+
+  mac_maker_test:
+    needs: [configuration] # remote_push
+    secrets:
+      REMOTE_ORIGIN: "osx-provisioner/profile-example"
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-95-mac_maker-apply_profile.yml
+    with:
+      CACHE_FOLDERS: |
+        ~/.asdf
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TEST_ARCHITECTURES: '["x86_64"]'
+      TEST_BINARY_VERSIONS: '["0.0.6"]'
+      TEST_OS: '[12]'
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "mac_maker"
+
+  success:
+    needs: [mac_maker_test, start]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "mac_maker workflow test has completed successfully!"
+      WORKFLOW_NAME: "mac_maker"
