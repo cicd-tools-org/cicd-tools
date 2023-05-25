@@ -8,6 +8,10 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      ENABLED_PRECOMMIT_CHECKS:
+        description: "A string encoded JSON array of precommit test scenarios that will be executed and tested."
+        required: true
+        type: string
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -39,7 +43,7 @@ on:
 
 env:
   TEMPLATE_SKIP_POETRY: 0
-  TEMPLATE_PRECOMMIT: 0
+  TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
 
@@ -82,41 +86,50 @@ jobs:
           PROJECT_ROOT_PATH: "template"
           SCENARIO: ${{ matrix.scenario }}
 
+      - name: Pre-Commit Test -- (Rendered Template) Test Ansible Lint -- Expect Failure
+        if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_ansible_lint_fails')
+        run: |
+          "./template/.github/scripts/job-50-test-precommit.sh" "test_ansible_lint_fails"
+        shell: bash
+
       - name: Pre-Commit Test -- (Rendered Template) Test Commit Lint -- Expect Failure
+        if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_commit_lint_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Failure
-        if: contains(matrix.scenario, '1.toml_linting') == true
+        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Success
-        if: contains(matrix.scenario, '1.toml_linting') == true
+        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_passes')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Shell Lint -- Expect Failure
+        if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_shell_lint_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_lint_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Shell Format -- Expect Failure
+        if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_shell_format_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Workflow Lint -- Expect Failure
-        if: contains(matrix.scenario, '1.workflow_linting') == true
+        if: contains(matrix.scenario, '1.workflow_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_workflow_lint_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Workflow Headers Lint -- Expect Failure
-        if: contains(matrix.scenario, '1.workflow_linting') == true
+        if: contains(matrix.scenario, '1.workflow_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_workflow_header_lint_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_workflow_header_lint_fails"
         shell: bash
