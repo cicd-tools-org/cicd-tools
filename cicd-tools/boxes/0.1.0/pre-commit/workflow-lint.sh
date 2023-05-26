@@ -14,7 +14,7 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../libraries/logging.sh"
 
 main() {
   log "INFO" "PRE-COMMIT > actionlint"
-  container "run" actionlint
+  container "run" actionlint -config-file /mnt/.cicd-tools/configuration/actionlint.yaml
 }
 
 main "$@"
