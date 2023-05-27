@@ -3,12 +3,14 @@ ARG SHFMT_VERSION="3.6.0@sha256:b68b0e33bf799f393aec27f72da64ec1d84476c8cfa9a2a7
 ARG SHELLCHECK_VERSION="v0.9.0@sha256:a527e2077f11f28c1c1ad1dc784b5bc966baeb3e34ef304a0ffa72699b01ad9c"
 ARG TOMLL_VERSION="v2.0.7@sha256:31a4914ce328b8c7db0e7ce2ec3baf7a8f1ddb5ba430aab81754caf3ed66a2df"
 ARG TRUFFLEHOG_VERSION="3.34.0@sha256:eec7343e2fd738cf5cc9033c5dd34488a52cb3979d2dc6303f6b16658877fb50"
+ARG VALE_VERSION="v2.27.0@sha256:f5ef07ddd8627e261be31983e2bddcdf5596dc8ca8dac19c3b51655657f712dd"
 
 FROM rhysd/actionlint:${ACTIONLINT_VERSION} as actionlint
 FROM mvdan/shfmt:${SHFMT_VERSION} as shfmt
 FROM koalaman/shellcheck:${SHELLCHECK_VERSION} as shellcheck
 FROM trufflesecurity/trufflehog:${TRUFFLEHOG_VERSION} as trufflehog
 FROM ghcr.io/pelletier/go-toml:${TOMLL_VERSION} as tomll
+FROM jdkato/vale:${VALE_VERSION} as vale
 
 FROM ubuntu:22.04 as sha
 
@@ -33,6 +35,7 @@ COPY --from=shfmt /bin/shfmt /dist
 COPY --from=shellcheck /bin/shellcheck /dist
 COPY --from=tomll /bin/tomll /dist
 COPY --from=trufflehog /usr/bin/trufflehog /dist
+COPY --from=vale /bin/vale /dist
 
 COPY Dockerfile.sha256 /dist
 
