@@ -6,8 +6,6 @@
     "github_handle": "niall-byrne",
     "_BRANCH_NAME_BASE": "master",
     "_BRANCH_NAME_DEVELOPMENT": "dev",
-    "_CONFIG_DEFAULT_SHFMT_OPTIONS": "-i 2 -ci -sr",
-    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS": "-e SC2317 -P SCRIPTDIR",
     "_DOCKER_DEFAULT_CONTAINER": "ghcr.io/niall-byrne/cicd-tools:master",
     "_GITHUB_CI_DEFAULT_CONCURRENCY": 4,
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
