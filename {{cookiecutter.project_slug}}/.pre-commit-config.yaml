@@ -12,7 +12,9 @@ repos:
     rev: v1.29.0
     hooks:
       - id: yamllint
-        args: ["-c", "./.yamllint.yml"]
+        args:
+          - "-c"
+          - "./.yamllint.yml"
         stages: [commit]
   - repo: local
     hooks:
@@ -20,27 +22,60 @@ repos:
         name: ansible-lint
         description: "Check the profile for Ansible best practices."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/ansible-lint.sh
-        args: ["ansible_role"]
+        args:
+          - "ansible_role"
         files: "^ansible_role/.+\\.(yaml|yml)$|^ansible_role/.ansible-lint$"
         language: system
         pass_filenames: false
         stages: [commit]
+      - id: format-shell
+        name: format-shell
+        description: "Format the project's shell scripts."
+        entry: --entrypoint=shfmt --env=FORCE_COLOR=1 {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
+        args:
+          - "-w"
+          - "--indent=2"
+          - "-ci"
+          - "-sr"
+        exclude: "^\\.cicd-tools/boxes/.+$"
+        files: "^.+\\.(bash|sh)$"
+        language: docker_image
+        pass_filenames: true
+        stages: [manual]
+      - id: format-toml
+        name: format-toml
+        description: "Format the project's TOML files."
+        entry: --entrypoint=tomll --env=FORCE_COLOR=1 {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
+        files: "^.+\\.toml$"
+        language: docker_image
+        pass_filenames: true
+        stages: [manual]
       - id: shell-fmt
         name: shell-fmt
-        description: "Format the project's shell scripts."
-        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-fmt.sh
-        exclude: "^\\.cicd-tools/ci/.+$"
+        description: "Lint the project's shell script's formatting."
+        entry: --entrypoint=shfmt --env=FORCE_COLOR=1 {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
+        args:
+          - "-d"
+          - "--indent=2"
+          - "-ci"
+          - "-sr"
+        exclude: "^\\.cicd-tools/boxes/.+$"
         files: "^.+\\.(bash|sh)$"
-        language: system
+        language: docker_image
         pass_filenames: true
         stages: [commit]
       - id: shell-lint
         name: shell-lint
         description: "Lint the project's shell scripts."
-        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/shell-lint.sh
-        exclude: "^\\.cicd-tools/ci/.+$"
+        entry: --entrypoint=shellcheck {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
+        args:
+          - "--color=always"
+          - "--source-path=SCRIPTDIR"
+          - "--exclude=SC2317"
+          - "-x"
+        exclude: "^\\.cicd-tools/boxes/.+$"
         files: "^.+\\.(bash|sh)$"
-        language: system
+        language: docker_image
         pass_filenames: true
         stages: [commit]
 {%- if cookiecutter.optional_toml_linting == 'true' %}
@@ -48,20 +83,14 @@ repos:
         name: toml-lint
         description: "Lint the project's TOML files."
         entry: ./.cicd-tools/boxes/bootstrap/pre-commit/toml-lint.sh
+        args:
+          - {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
         files: "^.+\\.toml$"
         language: system
         stages: [commit]
         pass_filenames: true
 {%- endif %}
 {%- if cookiecutter.optional_workflow_linting == 'true' %}
-      - id: workflow-lint
-        name: workflow-lint
-        description: "Lint the project's GitHub workflow files."
-        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-lint.sh
-        files: "^.github/workflows/.+\\.(yaml|yml)$"
-        language: system
-        pass_filenames: false
-        stages: [commit]
       - id: workflow-header-lint
         name: workflow-header-lint
         description: "Lint the headers of the project's GitHub workflow files."
@@ -69,5 +98,17 @@ repos:
         files: "^.github/workflows/.+\\.(yaml|yml)$"
         language: system
         pass_filenames: true
+        stages: [commit]
+      - id: workflow-lint
+        name: workflow-lint
+        description: "Lint the project's GitHub workflow files."
+        entry: --entrypoint=actionlint {{ cookiecutter._DOCKER_DEFAULT_CONTAINER }}
+        args:
+          - "-color"
+          - "-config-file"
+          - ".cicd-tools/configuration/actionlint.yaml"
+        files: "^.github/workflows/.+\\.(yaml|yml)$"
+        language: docker_image
+        pass_filenames: false
         stages: [commit]
 {%- endif %}
