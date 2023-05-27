@@ -7,9 +7,6 @@
 
 set -eo pipefail
 
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/container.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/container.sh"
-
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/logging.sh"
 
@@ -24,31 +21,11 @@ _fmt() {
   local PREFIX
 
   _fmt_shell() {
-    local SHFMT_OPTIONS
-
-    if cicd_tools "is_template"; then
-      SHFMT_OPTIONS="$(cicd_tools "config_value" "cookiecutter.json" "_CONFIG_DEFAULT_SHFMT_OPTIONS")"
-    else
-      SHFMT_OPTIONS="$(cicd_tools "config_value" ".cicd-tools/configuration/cicd-tools.json" "SHFMT_OPTIONS")"
-    fi
-
-    log "INFO" "TOOLING CONTAINER > 'shfmt -w ${SHFMT_OPTIONS} $*'"
-
-    # shellcheck disable=SC2046
-    container "run" \
-      $(xargs <<< "shfmt -w ${SHFMT_OPTIONS} $*")
+    poetry run pre-commit run --hook-stage manual format-shell --all-files
   }
 
   _fmt_toml() {
-    local TOML_FILE
-
-    for TOML_FILE in "$@"; do
-
-      log "INFO" "TOOLING CONTAINER > tomll ${TOML_FILE}"
-
-      docker run -i --rm -v "$(pwd)":/mnt "$(container "get_image")" tomll /mnt/"${TOML_FILE}"
-
-    done
+    poetry run pre-commit run --hook-stage manual format-toml --all-files
   }
 
   _fmt_usage() {

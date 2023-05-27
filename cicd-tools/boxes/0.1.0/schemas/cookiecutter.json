@@ -10,8 +10,6 @@
     "project_name",
     "_BRANCH_NAME_BASE",
     "_BRANCH_NAME_DEVELOPMENT",
-    "_CONFIG_DEFAULT_SHFMT_OPTIONS",
-    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS",
     "_DOCKER_DEFAULT_CONTAINER",
     "_GITHUB_CI_DEFAULT_CONCURRENCY",
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS",
@@ -38,14 +36,6 @@
     },
     "_BRANCH_NAME_DEVELOPMENT": {
       "description": "The name of the development branch that will be used in the templated repository.",
-      "type": "string"
-    },
-    "_CONFIG_DEFAULT_SHFMT_OPTIONS": {
-      "description": "The CLI options that will be passed to shfmt in during precommit hook execution and CI/CD.",
-      "type": "string"
-    },
-    "_CONFIG_DEFAULT_SHELLCHECK_OPTIONS": {
-      "description": "The CLI options that will be passed to shellcheck in during precommit hook execution and CI/CD.",
       "type": "string"
     },
     "_DOCKER_DEFAULT_CONTAINER": {
