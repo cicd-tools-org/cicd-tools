@@ -131,7 +131,6 @@ _install_cookiecutter_symlink_write() {
 _install_cookiecutter_copy() {
   # 1: Source
   log "INFO" "INSTALL > Copying additional template content ..."
-  _install_cookiecutter_copy_file "{{cookiecutter.project_slug}}/.cicd-tools/configuration/cicd-tools.json"
   _install_cookiecutter_copy_file "{{cookiecutter.project_slug}}/scripts/format.sh"
 }
 
