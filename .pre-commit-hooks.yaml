@@ -1,0 +1,106 @@
+---
+- id: ansible-lint
+  name: ansible-lint
+  description: "Check the profile for Ansible best practices."
+  entry: ./.cicd-tools/boxes/bootstrap/pre-commit/ansible-lint.sh
+  files: "^.+\\.(yaml|yml)$|^.ansible-lint$"
+  language: system
+  pass_filenames: false
+  stages: [commit]
+- id: format-shell
+  name: format-shell
+  description: "Format the project's shell scripts."
+  entry: --entrypoint=shfmt --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
+  args:
+    - "-w"
+    - "--indent=2"
+    - "-ci"
+    - "-sr"
+  exclude: "^\\.cicd-tools/boxes/.+$"
+  files: "^.+\\.(bash|sh)$"
+  language: docker_image
+  pass_filenames: true
+  stages: [manual]
+- id: format-toml
+  name: format-toml
+  description: "Format the project's TOML files."
+  entry: --entrypoint=tomll --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
+  files: "^.+\\.toml$"
+  language: docker_image
+  pass_filenames: true
+  stages: [manual]
+- id: markdown-lint
+  name: markdown-lint
+  description: "Lint the Markdown files."
+  files: "^.+\\.md$"
+  entry: ghcr.io/igorshubovych/markdownlint-cli:latest
+  language: docker_image
+  pass_filenames: true
+  stages: [commit]
+- id: markdown-spelling
+  name: markdown-spelling
+  description: "Spellcheck the Markdown files."
+  entry: --entrypoint=vale ghcr.io/niall-byrne/cicd-tools:master
+  exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+  files: "^.+\\.md$"
+  language: docker_image
+  pass_filenames: true
+  stages: [commit]
+- id: shell-fmt-lint
+  name: shell-fmt-lint
+  description: "Lint the project's shell script's formatting."
+  entry: --entrypoint=shfmt --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
+  args:
+    - "-d"
+    - "--indent=2"
+    - "-ci"
+    - "-sr"
+  exclude: "^\\.cicd-tools/boxes/.+$"
+  files: "^.+\\.(bash|sh)$"
+  language: docker_image
+  pass_filenames: true
+  stages: [commit]
+- id: shell-lint
+  name: shell-lint
+  description: "Lint the project's shell scripts."
+  entry: --entrypoint=shellcheck ghcr.io/niall-byrne/cicd-tools:master
+  args:
+    - "--color=always"
+    - "--source-path=SCRIPTDIR"
+    - "--exclude=SC2317"
+    - "-x"
+  exclude: "^\\.cicd-tools/boxes/.+$"
+  files: "^.+\\.(bash|sh)$"
+  language: docker_image
+  pass_filenames: true
+  stages: [commit]
+- id: toml-lint
+  name: toml-lint
+  description: "Lint the project's TOML files."
+  entry: ./.cicd-tools/boxes/bootstrap/pre-commit/toml-lint.sh
+  args:
+    - ghcr.io/niall-byrne/cicd-tools:master
+  files: "^.+\\.toml$"
+  language: system
+  pass_filenames: true
+  stages: [commit]
+- id: workflow-header-lint
+  name: workflow-header-lint
+  description: "Lint the headers of the project's GitHub workflow files."
+  entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-header-lint.sh
+  files: "^.github/workflows/.+\\.(yaml|yml)$"
+  language: system
+  pass_filenames: true
+  stages: [commit]
+- id: workflow-lint
+  name: workflow-lint
+  description: "Lint the project's GitHub workflow files."
+  entry: --entrypoint=actionlint ghcr.io/niall-byrne/cicd-tools:master
+  args:
+    - "-color"
+    - "-config-file"
+    - ".cicd-tools/configuration/actionlint.yaml"
+  files: "^.github/workflows/.+\\.(yaml|yml)$"
+  language: docker_image
+  pass_filenames: false
+  stages: [commit]
