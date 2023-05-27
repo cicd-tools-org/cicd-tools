@@ -223,7 +223,7 @@ jobs:
       fail-fast: true
       matrix:
         hook:
-          - id: "shell-fmt"
+          - id: "shell-fmt-lint"
             name: "Shell Formatting"
           - id: "shell-lint"
             name: "Shell Linting"
