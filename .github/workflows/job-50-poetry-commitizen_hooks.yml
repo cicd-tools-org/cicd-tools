@@ -91,6 +91,13 @@ jobs:
           git config --global user.email "${{ inputs.GIT_AUTHOR_EMAIL }}"
         shell: bash
 
+      - name: Commitizen Hooks Test -- Insert Testable Commit
+        run: |
+          touch empty.file
+          git stage empty.file
+          git commit -m 'feat(TEST): testable commit'
+        shell: bash
+
       - name: Commitizen Hooks Test -- Execute 'bump' Command
         run: |
           poetry run cz bump --increment ${{ inputs.COMMITIZEN_BUMP_TYPE }} --yes

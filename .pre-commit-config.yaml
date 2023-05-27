@@ -4,12 +4,12 @@ default_install_hook_types:
   - commit-msg
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.42.1
+    rev: 3.2.2
     hooks:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.22.0
+    rev: 0.23.0
     hooks:
       - id: check-metaschema
         name: check-schema
@@ -22,96 +22,49 @@ repos:
           - "--schemafile"
           - ".cicd-tools/boxes/bootstrap/schemas/cookiecutter.json"
         stages: [commit]
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.29.0
-    hooks:
-      - id: yamllint
-        args:
-          - "-c"
-          - "./{{cookiecutter.project_slug}}/.yamllint.yml"
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-        stages: [commit]
-  - repo: local
+  - repo: https://github.com/niall-byrne/cicd-tools.git
+    rev: 1ac27febbe16e135bf21e77d9bd8da7c688cde79
     hooks:
       - id: format-shell
-        name: format-shell
-        description: "Format the project's shell scripts."
-        entry: --entrypoint=shfmt --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
         args:
           - "-w"
           - "--indent=2"
           - "-ci"
           - "-sr"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-        files: "^.+\\.(bash|sh)$"
-        language: docker_image
-        pass_filenames: true
-        stages: [manual]
       - id: format-toml
-        name: format-toml
-        description: "Format the project's TOML files."
-        entry: --entrypoint=tomll --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
-        files: "^.+\\.toml$"
-        language: docker_image
-        pass_filenames: true
-        stages: [manual]
-      - id: shell-fmt
-        name: shell-fmt
-        description: "Lint the project's shell script's formatting."
-        entry: --entrypoint=shfmt --env=FORCE_COLOR=1 ghcr.io/niall-byrne/cicd-tools:master
+      - id: markdown-lint
+        args:
+          - "-c"
+          - "{{cookiecutter.project_slug}}/.markdownlint.yml"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+      - id: markdown-spelling
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+      - id: shell-fmt-lint
         args:
           - "-d"
           - "--indent=2"
           - "-ci"
           - "-sr"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-        files: "^.+\\.(bash|sh)$"
-        language: docker_image
-        pass_filenames: true
-        stages: [commit]
       - id: shell-lint
-        name: shell-lint
-        description: "Lint the project's shell scripts."
-        entry: --entrypoint=shellcheck ghcr.io/niall-byrne/cicd-tools:master
         args:
           - "--color=always"
           - "--source-path=SCRIPTDIR"
           - "--exclude=SC2317"
           - "-x"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-        files: "^.+\\.(bash|sh)$"
-        language: docker_image
-        pass_filenames: true
-        stages: [commit]
       - id: toml-lint
-        name: toml-lint
-        description: "Lint the project's TOML files."
-        args:
-          - ghcr.io/niall-byrne/cicd-tools:master
-        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/toml-lint.sh
-        files: "^.+\\.toml$"
-        language: system
-        stages: [commit]
-        pass_filenames: true
       - id: workflow-header-lint
-        name: workflow-header-lint
-        description: "Lint the headers of the project's GitHub workflow files."
-        entry: ./.cicd-tools/boxes/bootstrap/pre-commit/workflow-header-lint.sh
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-        files: "^\\.github/workflows/.+\\.(yaml|yml)$"
-        language: system
-        pass_filenames: true
-        stages: [commit]
       - id: workflow-lint
-        name: workflow-lint
-        description: "Lint the project's GitHub workflow files."
-        entry: --entrypoint=actionlint ghcr.io/niall-byrne/cicd-tools:master
-        args:
-          - "-color"
-          - "-config-file"
-          - ".cicd-tools/configuration/actionlint.yaml"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-        files: "^\\.github/workflows/.+\\.(yaml|yml)$"
-        language: docker_image
-        pass_filenames: false
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args:
+          - "-c"
+          - "./{{cookiecutter.project_slug}}/.yamllint.yml"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
         stages: [commit]
