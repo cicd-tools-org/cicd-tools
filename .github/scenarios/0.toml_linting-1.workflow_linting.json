@@ -6,7 +6,7 @@
     "github_handle": "niall-byrne",
     "_BRANCH_NAME_BASE": "master",
     "_BRANCH_NAME_DEVELOPMENT": "dev",
-    "_DOCKER_DEFAULT_CONTAINER": "ghcr.io/niall-byrne/cicd-tools:master",
+    "_DOCKER_DEFAULT_CONTAINER": "ghcr.io/cicd-tools-org/cicd-tools:master",
     "_GITHUB_CI_DEFAULT_CONCURRENCY": 4,
     "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
     "_GITHUB_CI_DEFAULT_MOLECULE_TEST_PLATFORMS": ["ubuntu-latest"],
