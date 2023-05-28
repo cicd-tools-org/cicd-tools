@@ -30,7 +30,7 @@ jobs:
     needs: [start]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: niall-byrne/cicd-tools/.job-00-notification@master
+    uses: cicd-tools-org/cicd-tools/.job-00-notification@master
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "placeholder workflow has completed successfully!"

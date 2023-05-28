@@ -14,7 +14,7 @@ set -eo pipefail
 
 TEMPLATE_BRANCH_NAME_BASE="${TEMPLATE_BRANCH_NAME_BASE-"{{ cookiecutter._BRANCH_NAME_BASE }}"}"
 TEMPLATE_BRANCH_NAME_DEVELOPMENT="${TEMPLATE_BRANCH_NAME_DEVELOPMENT-"{{ cookiecutter._BRANCH_NAME_DEVELOPMENT }}"}"
-TEMPLATE_URL="https://github.com/niall-byrne/cicd-tools.git"
+TEMPLATE_URL="https://github.com/cicd-tools-org/cicd-tools.git"
 
 initialize_git() {
 

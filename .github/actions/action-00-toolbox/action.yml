@@ -17,7 +17,7 @@ inputs:
     description: "Optional, allows you to specify a keyserver being used to host the public GPG key."
     required: false
   CICD_TOOLS_REMOTE_MANIFEST:
-    default: "https://gist.github.com/niall-byrne/3e88cf22901e2a5eac2ede71c5606331/raw/manifest.json.asc"
+    default: "https://raw.githubusercontent.com/cicd-tools-org/manifest/master/manifest.json.asc"
     description: "Optional, allows you to specify the URL of the remote manifest used to coordinate CICD-tools toolbox installs."
     required: false
   CICD_TOOLS_TOOLBOX_VERSION:
