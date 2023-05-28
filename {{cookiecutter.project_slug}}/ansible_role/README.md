@@ -30,7 +30,7 @@ Including an example of how to use your role (for instance, with variables passe
 License
 -------
 
-Distributed as part of CI/CD Tools. (https://github.com/niall-byrne/cicd-tools)
+Distributed as part of CI/CD Tools. (https://github.com/cicd-tools-org/cicd-tools)
 
 Author Information
 ------------------

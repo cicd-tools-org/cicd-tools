@@ -112,6 +112,7 @@ jobs:
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_APPLY_PROFILE }}"
         env:
+          PROJECT_OWNER: "osx-provisioner"
           MAC_MAKER_ARCHITECTURE: ${{ matrix.architecture }}
           MAC_MAKER_VERSION: ${{ matrix.version }}
           MAC_MAKER_OS_VERSION: ${{ matrix.os }}

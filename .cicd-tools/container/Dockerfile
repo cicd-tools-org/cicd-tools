@@ -45,7 +45,7 @@ RUN sha256sum -c Dockerfile.sha256
 
 FROM scratch as ship
 
-LABEL org.opencontainers.image.source=https://github.com/niall-byrne/cicd-tools
+LABEL org.opencontainers.image.source=https://github.com/cicd-tools-org/cicd-tools
 LABEL org.opencontainers.image.description="FOSS binaries for CICD-tools."
 
 COPY --from=sha /dist/* /bin/

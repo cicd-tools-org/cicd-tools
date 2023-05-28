@@ -8,8 +8,8 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
-  - repo: https://github.com/niall-byrne/cicd-tools.git
-    rev: 1ac27febbe16e135bf21e77d9bd8da7c688cde79
+  - repo: https://github.com/cicd-tools-org/pre-commit.git
+    rev: 464f0996828412ddad3b284ce4473f99c6e6270b
     hooks:
       - id: ansible-lint
         args:

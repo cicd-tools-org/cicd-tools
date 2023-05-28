@@ -23,7 +23,7 @@ WORKFLOW_NAME="${WORKFLOW_NAME:-""}"
 main() {
 
   PROJECT_NAME="cicd-tools"
-  PROJECT_OWNER="niall-byrne"
+  PROJECT_OWNER="cicd-tools-org"
   TEST_PROJECT_NAME="cicd-tool-box"
 
   BRANCH_OR_TAG="$(echo "${GITHUB_REF}" | sed -E 's,refs/heads/|refs/tags/,,g')"

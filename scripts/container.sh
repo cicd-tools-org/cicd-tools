@@ -13,7 +13,7 @@ main() {
   log "INFO" "Building the CICD-tools utility container ..."
 
   pushd .cicd-tools/container >> /dev/null
-  docker build -t ghcr.io/niall-byrne/cicd-tools .
+  docker build -t ghcr.io/cicd-tools-org/cicd-tools .
   popd >> /dev/null
 
   log "INFO" "Container successfully built."

@@ -9,13 +9,13 @@ set -eo pipefail
 CICD_TOOLS_KEY_NAME="F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
 CICD_TOOLS_DISABLE_SECURITY="false"
 CICD_TOOLS_TOOLBOX_PATH="${CICD_TOOLS_TOOLBOX_PATH-"cicd-tools/boxes"}"
-CICD_TOOLS_REPOSITORY="niall-byrne/cicd-tools"
+CICD_TOOLS_REPOSITORY="cicd-tools-org/cicd-tools"
 CICD_TOOLS_REMOTE_HOSTNAME="${CICD_TOOLS_REMOTE_HOSTNAME-"raw.githubusercontent.com"}"
 CICD_TOOLS_REMOTE_PREFIX="${CICD_TOOLS_REMOTE_PREFIX-"https://${CICD_TOOLS_REMOTE_HOSTNAME}/${CICD_TOOLS_REPOSITORY}"}"
 CICD_TOOLS_SOURCE="${CICD_TOOLS_SOURCE-"master"}"
 
 MANIFEST_FILE=".cicd-tools/manifest.json"
-MANIFEST_REPOSITORY_PATH="../gists/3e88cf22901e2a5eac2ede71c5606331"
+MANIFEST_REPOSITORY_PATH="../manifest"
 
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"

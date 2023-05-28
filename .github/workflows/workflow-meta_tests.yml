@@ -3,7 +3,10 @@ name: cicd-tooling-github-workflow-meta_tests
 
 on:
   push:
+  schedule:
+    - cron: "0 6 * * 1"
   workflow_dispatch:
+
 
 #  secrets:
 #    SLACK_WEBHOOK:
