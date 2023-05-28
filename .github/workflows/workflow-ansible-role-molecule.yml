@@ -3,6 +3,12 @@ name: cicd-tooling-github-workflow-ansible-role-molecule
 
 on:
   push:
+    paths:
+      - ".github/workflows/workflow-ansible-role-molecule.yml"
+      - ".github/workflows/job-00-generic-json_file.yml"
+      - ".github/workflows/job-00-generic-notification"
+      - ".github/workflows/job-40-cookiecutter-ansible-lint."
+      - ".github/workflows/job-40-cookiecutter-molecule-role.yml"
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
