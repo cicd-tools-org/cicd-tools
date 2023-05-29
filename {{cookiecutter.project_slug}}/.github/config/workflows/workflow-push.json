@@ -1,0 +1,11 @@
+{
+  "ci_commitizen_rev_range": "HEAD",
+  "ci_concurrency_limit": 4,
+  "ci_extra_release_content": [
+    "## Customizable Text.",
+    "This message is appended to the changelog of your GitHub release."
+  ],
+  "ci_python_versions": {{ cookiecutter._GITHUB_CI_DEFAULT_PYTHON_VERSIONS | tojson }},
+  "ci_trufflehog_extra_scan_args": "",
+  "ci_verbose_notifications": {{ cookiecutter._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS | tojson }}
+}

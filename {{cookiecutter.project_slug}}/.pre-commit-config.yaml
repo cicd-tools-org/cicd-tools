@@ -3,18 +3,32 @@ default_install_hook_types:
   - pre-commit
   - commit-msg
 repos:
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.22.0
+    hooks:
+      - id: check-jsonschema
+        name: check-github-workflow-push-schema
+        files: "^\\.github/config/workflows/workflow-push.json$"
+        args:
+          - "--schemafile"
+          - ".github/config/schemas/workflows/workflow-push.json"
+        stages: [commit]
   - repo: https://github.com/commitizen-tools/commitizen
     rev: 3.2.2
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args:
+          - "-c"
+          - "./.yamllint.yml"
+        stages: [commit]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
     rev: 464f0996828412ddad3b284ce4473f99c6e6270b
     hooks:
-      - id: ansible-lint
-        args:
-          - "ansible_role"
-        files: "^ansible_role/.+\\.(yaml|yml)$|^ansible_role/.ansible-lint$"
       - id: format-shell
         args:
           - "-w"
@@ -46,11 +60,3 @@ repos:
       - id: workflow-header-lint
       - id: workflow-lint
 {%- endif %}
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
-    hooks:
-      - id: yamllint
-        args:
-          - "-c"
-          - "./.yamllint.yml"
-        stages: [commit]
