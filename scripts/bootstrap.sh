@@ -97,19 +97,6 @@ _link_symlinks_template() {
   _link_symlink_directory_contents ".cicd-tools/bin" "{{cookiecutter.project_slug}}/.cicd-tools/bin"
   _link_symlink_directory_contents ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
   _link_symlink_directory_contents ".cicd-tools/pgp" "{{cookiecutter.project_slug}}/.cicd-tools/pgp"
-
-  log "DEBUG" "LINK > Source: '.github/actions/*'"
-  mkdir -p "{{cookiecutter.project_slug}}/.github/actions"
-  pushd "{{cookiecutter.project_slug}}/.github/actions" >> /dev/null
-  for SOURCE_FILE in "../../../.github/actions/"*; do
-    mkdir -p "$(basename "${SOURCE_FILE}")"
-    pushd "$(basename "${SOURCE_FILE}")" >> /dev/null
-    LINK_NAME="../${SOURCE_FILE}/action.yml"
-    LINK_SOURCE="action.yml"
-    _link_symlink_write "${LINK_NAME}" "${LINK_SOURCE}"
-    popd >> /dev/null
-  done
-  popd >> /dev/null
 }
 
 _link_symlink_write() {
