@@ -1,20 +1,17 @@
 ---
-name: job-30-cookiecutter-documentation
+name: job-30-generic-markdown_links
 
 on:
   workflow_call:
     inputs:
-      CONCURRENCY:
-        description: "The maximum allowable parallel executions."
-        required: true
-        type: number
       CONFIG_FILE:
         description: "The 'github-action-markdown-link-check' config file's path."
         required: true
         type: string
-      PYTHON_VERSIONS:
-        description: "A string encoded JSON array of valid python versions."
-        required: true
+      DOCUMENTATION_PATH:
+        default: "."
+        description: "Optional, allows you to specify a path to the root folder under which all markdown is found."
+        required: false
         type: string
       TESTING_MODE:
         default: false
@@ -36,81 +33,47 @@ on:
         description: "Optional, enables Slack notifications."
         required: false
 
-env:
-  TEMPLATE_SKIP_POETRY: 1
-  TEMPLATE_SKIP_PRECOMMIT: 1
-
 jobs:
 
   check_markdown_links:
 
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
-      max-parallel: ${{ inputs.CONCURRENCY }}
 
     steps:
       - name: Documentation Test -- Checkout Repository
         uses: actions/checkout@v3
-        with:
-          path: 'template'
 
       - name: Documentation Test -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./template/.github/scripts/step-setup-environment.sh"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Documentation Test -- Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Documentation Test -- Install Toolbox
-        uses: ./template/.github/actions/action-00-toolbox
-        with:
-          PROJECT_ROOT_PATH: "template"
-
-      - name: Documentation Test -- (COOKIECUTTER) Render Template
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
-        with:
-          PROJECT_ROOT_PATH: "template"
+        uses: ./.github/actions/action-00-toolbox
 
       - name: Documentation Test -- (Template) Check Markdown Links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
-          config-file: 'template/${{ inputs.CONFIG_FILE }}'
+          config-file: '${{ inputs.CONFIG_FILE }}'
+          folder-path: ${{ inputs.DOCUMENTATION_PATH }}
           use-quiet-mode: 'no'
           use-verbose-mode: 'yes'
-          folder-path: 'template'
-          max-depth: 1
-
-      - name: Documentation Test -- (Rendered Template) Check Markdown Links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          config-file: 'template/${{ inputs.CONFIG_FILE }}'
-          use-quiet-mode: 'no'
-          use-verbose-mode: 'yes'
-          folder-path: ${{ env.TEST_PROJECT_NAME }}
           max-depth: -1
 
       - name: Documentation Test -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "documentation checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"
 
       - name: Documentation Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "documentation checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
