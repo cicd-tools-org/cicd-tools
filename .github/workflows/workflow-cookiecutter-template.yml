@@ -15,7 +15,7 @@ on:
 jobs:
 
   configuration:
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
 
   start:
     secrets:
@@ -30,7 +30,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-10-generic-security.yml
+    uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
@@ -39,7 +39,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-30-cookiecutter-documentation.yml
+    uses: ./.github/workflows/job-30-cookiecutter-markdown_links.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       CONFIG_FILE: "{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
@@ -51,7 +51,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-50-cookiecutter-precommit_hooks.yml
+    uses: ./.github/workflows/job-50-cookiecutter-test_precommit_hooks.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       ENABLED_PRECOMMIT_CHECKS: '["test_commit_lint_fails", "test_toml_lint_fails", "test_toml_lint_passes", "test_shell_lint_fails", "test_shell_format_fails", "test_workflow_lint_fails", "test_workflow_header_lint_fails"]'
@@ -65,7 +65,7 @@ jobs:
     if: startsWith(github.ref, 'refs/heads')
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-50-poetry-commitizen_hooks.yml
+    uses: ./.github/workflows/job-50-poetry-test_commitizen_hooks.yml
     with:
       COMMITIZEN_BUMP_TYPE: "MINOR"
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
