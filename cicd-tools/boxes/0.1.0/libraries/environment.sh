@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Library for enforcing optional and mandatory environment variables .
+# Library for enforcing optional and mandatory environment variables.
 
 set -eo pipefail
 
