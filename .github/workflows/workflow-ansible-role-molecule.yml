@@ -21,7 +21,7 @@ on:
 jobs:
 
   configuration:
-    uses: ./.github/workflows/job-00-generic-json_file.yml
+    uses: ./.github/workflows/job-00-generic-read_json_file.yml
     with:
       JSON_FILE_PATH: cookiecutter.json
 
@@ -38,7 +38,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-30-generic-documentation.yml
+    uses: ./.github/workflows/job-30-generic-markdown_links.yml
     with:
       CONFIG_FILE: ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
       DOCUMENTATION_PATH: "{{cookiecutter.project_slug}}"
@@ -48,7 +48,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-40-cookiecutter-ansible-lint.yml
+    uses: ./.github/workflows/job-40-cookiecutter-ansible_role_lint.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
@@ -60,7 +60,7 @@ jobs:
     needs: [configuration, ansible_lint]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-40-cookiecutter-molecule-role.yml
+    uses: ./.github/workflows/job-40-cookiecutter-molecule_role_command.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       MOLECULE_COMMAND: "test"

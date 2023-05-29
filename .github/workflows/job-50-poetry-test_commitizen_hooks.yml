@@ -1,21 +1,21 @@
 ---
-name: job-50-poetry-basic_precommit_hooks
+name: job-50-poetry-test_commitizen_hooks
 
 on:
   workflow_call:
     inputs:
-      CHECK_TOML:
-        description: "A boolean value, indicating if TOML checks should be performed."
+      COMMITIZEN_BUMP_TYPE:
+        description: "Typically this is MAJOR, MINOR or PATCH."
         required: true
-        type: boolean
-      CHECK_WORKFLOW:
-        description: "A boolean value, indicating if GitHub workflow checks should be performed."
-        required: true
-        type: boolean
+        type: string
       CONCURRENCY:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      EXPECTED_BUMPED_VERSION:
+        description: "The new version value expected after running the commitizen 'bump' command."
+        required: true
+        type: string
       GIT_AUTHOR_NAME:
         default: "Pro Buddy Dev"
         description: "Optional, allows you to define the author name that git will assign to any generated commit."
@@ -52,7 +52,7 @@ on:
 
 jobs:
 
-  precommit_hook_tests:
+  commitzen_hooks_test:
 
     runs-on: ubuntu-latest
     strategy:
@@ -62,95 +62,69 @@ jobs:
       max-parallel: ${{ inputs.CONCURRENCY }}
 
     steps:
-      - name: Pre-Commit Test -- Checkout Repository
+      - name: Commitizen Hooks Test -- Checkout Repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Pre-Commit Test -- Setup Environment
+      - name: Commitizen Hooks Test -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          bash "./.github/scripts/step-setup-environment.sh"
+          "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Pre-Commit Test -- Set up Python ${{ matrix.python-version }}
+      - name: Commitizen Hooks Test -- Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Pre-Commit Test -- Install Toolbox
+      - name: Commitizen Hooks Test -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
-      - name: Pre-Commit Test -- Install Project Dependencies
+      - name: Commitizen Hooks Test -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
-      - name: Pre-Commit Test -- Mount Pre-Commit Cache
-        uses: actions/cache@v3
-        with:
-          key: pre-commit-${{ hashFiles('./.pre-commit-config.yaml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
-          path: ~/.cache/pre-commit
-
-      - name: Pre-Commit Test -- Install pre-commit Hooks
-        run: |
-          poetry run pre-commit install
-        shell: bash
-
-      - name: Pre-Commit Test -- Configure Git Author
+      - name: Commitizen Hooks Test -- Configure Git Author
         run: |
           git config --global user.name "${{ inputs.GIT_AUTHOR_NAME }}"
           git config --global user.email "${{ inputs.GIT_AUTHOR_EMAIL }}"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Commit Lint -- Expect Failure
+      - name: Commitizen Hooks Test -- Insert Testable Commit
         run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
+          touch empty.file
+          git stage empty.file
+          git commit -m 'feat(TEST): testable commit'
         shell: bash
 
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
-        if: inputs.CHECK_TOML == true
+      - name: Commitizen Hooks Test -- Execute 'bump' Command
         run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
+          poetry run cz bump --increment ${{ inputs.COMMITIZEN_BUMP_TYPE }} --yes
         shell: bash
 
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
-        if: inputs.CHECK_TOML == true
+      - name: Commitizen Hooks Test -- Validate New Version
         run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
+          poetry version | grep "${{ inputs.EXPECTED_BUMPED_VERSION }}"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Shell Lint -- Expect Failure
+      - name: Commitizen Hooks Test -- Validate New Tag
         run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_shell_lint_fails"
+          git tag --list | grep "${{ inputs.EXPECTED_BUMPED_VERSION }}"
         shell: bash
 
-      - name: Pre-Commit Test -- Test Shell Format -- Expect Failure
-        run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
-        shell: bash
-
-      - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
-        if: inputs.CHECK_WORKFLOW == true
-        run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_workflow_lint_fails"
-        shell: bash
-
-      - name: Pre-Commit Test -- Test Workflow Headers Lint -- Expect Failure
-        if: inputs.CHECK_WORKFLOW == true
-        run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_workflow_header_lint_fails"
-        shell: bash
-
-      - name: Pre-Commit Test -- Report Job Status on Success
+      - name: Commitizen Hooks Test -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "pre-commit hook test has passed!"
+          NOTIFICATION_MESSAGE: "commitizen hooks tests have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Pre-Commit Test -- Report Job Status on Failure
+      - name: Commitizen Hooks Test -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "pre-commit hook test has failed!"
+          NOTIFICATION_MESSAGE: "commitizen hooks tests have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

@@ -21,7 +21,7 @@ env:
 jobs:
 
   configuration:
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
 
   start:
     secrets:

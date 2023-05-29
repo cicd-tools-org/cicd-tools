@@ -1,5 +1,5 @@
 ---
-name: job-10-container-security
+name: job-10-container-security_scan_container
 
 on:
   workflow_call:
