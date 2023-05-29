@@ -21,7 +21,7 @@ on:
 jobs:
 
   configuration:
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
 
   start:
     secrets:
@@ -36,7 +36,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-10-generic-security.yml
+    uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "container"
@@ -47,7 +47,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-10-container-security.yml
+    uses: ./.github/workflows/job-10-container-security_scan_container.yml
     with:
       CONTEXT: .cicd-tools/container
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}

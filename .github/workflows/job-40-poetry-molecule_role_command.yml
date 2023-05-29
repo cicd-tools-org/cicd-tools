@@ -1,5 +1,5 @@
 ---
-name: job-40-cookiecutter-molecule-role
+name: job-40-poetry-molecule_role_command
 
 on:
   workflow_call:
@@ -16,11 +16,6 @@ on:
         description: "The molecule command to execute on this scenario (ie. lint, test)."
         required: true
         type: string
-      MOLECULE_DOCKER:
-        default: false
-        description: "Optional, allows you to specify that Docker should be installed prior to using molecule."
-        required: false
-        type: boolean
       MOLECULE_SCENARIO:
         default: "default"
         description: "Optional, allows you to specify the molecule scenario to use."
@@ -36,9 +31,14 @@ on:
         description: "Optional, allows you to specify a script to set the ROLE_NAME environment variable."
         required: false
         type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
+        type: string
       ROLE_PATH:
         default: "."
-        description: "Optional, allows you to specify a relative path, within the template, to the role that is being analyzed."
+        description: "Optional, allows you to specify a relative path, within the repository, to the role that is being analyzed."
         required: false
         type: string
       TESTING_MODE:
@@ -61,15 +61,11 @@ on:
         description: "Optional, enables Slack notifications."
         required: false
 
-env:
-  TEMPLATE_SKIP_POETRY: 0
-  TEMPLATE_SKIP_PRECOMMIT: 0
-
 jobs:
 
   run_molecule:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.PLATFORM }}
     strategy:
       fail-fast: true
       matrix:
@@ -79,14 +75,12 @@ jobs:
     steps:
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Checkout Repository
         uses: actions/checkout@v3
-        with:
-          path: 'template'
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./template/.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Set up Python ${{ matrix.python-version }}
@@ -95,40 +89,58 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Toolbox
-        uses: ./template/.github/actions/action-00-toolbox
-        with:
-          PROJECT_ROOT_PATH: "template"
+        uses: ./.github/actions/action-00-toolbox
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Calculate Platform Independent Home Folder
         id: platform_homefolder
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
-        with:
-          PROJECT_ROOT_PATH: "template"
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Calculate Cache Key
         id: hash
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
         with:
           FILE_NAME: "requirements.yml"
-          FILE_PREFIX: ${{ inputs.ROLE_PATH }}
-          FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
-          PROJECT_ROOT_PATH: "template"
+          FILE_PREFIX:  ${{ inputs.ROLE_PATH }}
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Cache Locations
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
             ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
+          CACHE_KEY: ansible-compat-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_compat_cache"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
+        with:
+          CACHE_FOLDERS: |
             ${{ steps.platform_homefolder.outputs.HOME }}/.cache/molecule
-          CACHE_KEY: ansible-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "ansible_cache"
-          PROJECT_ROOT_PATH: "template"
+          CACHE_KEY: molecule-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "molecule_cache"
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Project Dependencies
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Configure The Role Name
         run: |
-          bash "./template/.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ROLE_NAME }}" \
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ROLE_NAME }}" \
             "${{ inputs.ROLE_PATH }}"
         shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (Mac OSX) Determine if Docker is Required
+        id: requires_docker
+        if: runner.os == 'macOS'
+        run: |
+          yq .driver "${{ inputs.ROLE_PATH }}/molecule/${{ inputs.MOLECULE_SCENARIO }}/molecule.yml" | grep "docker" \
+            && REQUIRES_DOCKER="true" \
+            || REQUIRES_DOCKER="false"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+            echo "${REQUIRES_DOCKER}"
+        shell: bash
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (Mac OSX) Install Docker
+        if: runner.os == 'macOS' && steps.requires_docker.outputs.value == 'true'
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-docker_osx
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Molecule Scenario Folders
         run: |
@@ -142,10 +154,11 @@ jobs:
           rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
         shell: bash
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (COOKIECUTTER) Render Template
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
-        with:
-          PROJECT_ROOT_PATH: "template"
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Molecule Dependencies for "default" Scenario
+        run: |
+          poetry run molecule dependency -s "default"
+        shell: bash
+        working-directory: ${{ inputs.ROLE_PATH }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Use "default" Scenario Dependencies for the Dependency Cache
         run: |
@@ -157,22 +170,20 @@ jobs:
         run: |
           poetry run molecule ${{ inputs.MOLECULE_COMMAND }} -s ${{ inputs.MOLECULE_SCENARIO }}
         shell: bash
-        working-directory: ${{ env.TEST_PROJECT_NAME }}/${{ inputs.ROLE_PATH }}
+        working-directory: ${{ inputs.ROLE_PATH }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
-        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
           NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          PROJECT_ROOT_PATH: "template"
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

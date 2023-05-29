@@ -19,11 +19,11 @@ env:
 jobs:
 
   configuration:
-    uses: ./.github/workflows/job-00-cookiecutter-configuration.yml
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
 
   scenarios:
     needs: [configuration]
-    uses: ./.github/workflows/job-00-generic-molecule_scenarios.yml
+    uses: ./.github/workflows/job-00-generic-identify_molecule_scenarios.yml
     with:
       MOLECULE_EXCLUSION_REGEX: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX }}
       MOLECULE_SCENARIO_PATH: "{{cookiecutter.project_slug}}/ansible_role/molecule"
@@ -66,12 +66,12 @@ jobs:
   secret_exists:
     secrets:
       SECRET: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-00-generic-secret_exists.yml
+    uses: ./.github/workflows/job-00-generic-identify_secret_exists.yml
 
   secret_does_not_exist:
     secrets:
       SECRET: ${{ secrets.NON_EXISTING_SECRET }}
-    uses: ./.github/workflows/job-00-generic-secret_exists.yml
+    uses: ./.github/workflows/job-00-generic-identify_secret_exists.yml
 
   secrets_data_test:
     needs: [secret_exists, secret_does_not_exist]
@@ -159,7 +159,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-10-generic-security.yml
+    uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
@@ -169,7 +169,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-30-cookiecutter-documentation.yml
+    uses: ./.github/workflows/job-30-cookiecutter-markdown_links.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       CONFIG_FILE: "{{cookiecutter.project_slug}}/.github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
@@ -182,7 +182,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-50-cookiecutter-precommit_hooks.yml
+    uses: ./.github/workflows/job-50-cookiecutter-test_precommit_hooks.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       ENABLED_PRECOMMIT_CHECKS: '["test_commit_lint_fails", "test_toml_lint_fails", "test_toml_lint_passes", "test_shell_lint_fails", "test_shell_format_fails", "test_workflow_lint_fails", "test_workflow_header_lint_fails"]'
@@ -196,7 +196,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-50-poetry-commitizen_hooks.yml
+    uses: ./.github/workflows/job-50-poetry-test_commitizen_hooks.yml
     with:
       COMMITIZEN_BUMP_TYPE: "MINOR"
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}

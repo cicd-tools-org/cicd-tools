@@ -1,5 +1,5 @@
 ---
-name: job-00-generic-molecule_scenarios
+name: job-00-generic-identify_molecule_scenarios
 
 on:
   workflow_call:

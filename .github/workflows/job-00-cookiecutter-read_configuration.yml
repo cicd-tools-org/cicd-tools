@@ -1,5 +1,5 @@
 ---
-name: job-00-cookiecutter-configuration
+name: job-00-cookiecutter-read_configuration
 
 on:
   workflow_call:

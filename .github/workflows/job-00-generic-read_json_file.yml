@@ -1,5 +1,5 @@
 ---
-name: job-00-generic-json_file
+name: job-00-generic-read_json_file
 
 on:
   workflow_call:
