@@ -63,7 +63,7 @@ _manifest_commands() {
 }
 
 _manifest_usage() {
-  log "ERROR" "manifest.sh -- interact with the CICD-tools manifest file."
+  log "ERROR" "manifest.sh -- interact with the CICD-Tools manifest file."
   log "ERROR" "USAGE: manifest.sh -p [PATH TO MANIFEST] [COMMAND]"
   log "ERROR" "  COMMANDS:"
   log "ERROR" "  toolbox_url [VERSION]   - Retrieves the URL of the given toolbox version."
