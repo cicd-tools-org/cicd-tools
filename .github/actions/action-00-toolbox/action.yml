@@ -6,7 +6,7 @@ author: niall@niallbyrne.ca
 inputs:
   CICD_TOOLS_GPG_KEY:
     default: "F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
-    description: "Optional, allows you to specify the public key used to sign the remote CICD-tools manifest."
+    description: "Optional, allows you to specify the public key used to sign the remote CICD-Tools manifest."
     required: false
   CICD_TOOLS_GPG_KEYSERVER_PRIMARY:
     default: "keys.openpgp.org"
@@ -18,7 +18,7 @@ inputs:
     required: false
   CICD_TOOLS_REMOTE_MANIFEST:
     default: "https://raw.githubusercontent.com/cicd-tools-org/manifest/master/manifest.json.asc"
-    description: "Optional, allows you to specify the URL of the remote manifest used to coordinate CICD-tools toolbox installs."
+    description: "Optional, allows you to specify the URL of the remote manifest used to coordinate CICD-Tools toolbox installs."
     required: false
   CICD_TOOLS_TOOLBOX_VERSION:
     default: "0.1.0"

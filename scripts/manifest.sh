@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build and publish the CICD-tools manifest.
+# Build and publish the CICD-Tools manifest.
 
 # CICD-Tools Development script.
 
