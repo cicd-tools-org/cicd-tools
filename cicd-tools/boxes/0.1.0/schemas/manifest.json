@@ -31,7 +31,7 @@
       "type": "string"
     },
     "version": {
-      "description": "The SHA identifier (Branch, Tag or Commit ID) of the CICD-tools repository to use.",
+      "description": "The SHA identifier (Branch, Tag or Commit ID) of the CICD-Tools repository to use.",
       "pattern": "^[A-Za-z]+$",
       "type": "string"
     }

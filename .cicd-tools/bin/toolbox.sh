@@ -154,7 +154,7 @@ _toolbox_manifest_load() {
 }
 
 _toolbox_usage() {
-  log "ERROR" "toolbox.sh -- download a remote toolbox from the CICD-tools manifest."
+  log "ERROR" "toolbox.sh -- download a remote toolbox from the CICD-Tools manifest."
   log "ERROR" "USAGE: toolbox.sh -b [TOOLBOX VERSION] -m [REMOTE MANIFEST URL]"
   log "ERROR" "  Optional: -r [OPTIONAL RETRY COUNT] -t [OPTIONAL MAX RETRY TIME]"
   exit 127
