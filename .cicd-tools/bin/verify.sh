@@ -53,7 +53,7 @@ _verify_trust_key() {
 }
 
 _verify_usage() {
-  log "ERROR" "verify.sh -- verify the CICD-tools gpg key."
+  log "ERROR" "verify.sh -- verify the CICD-Tools gpg key."
   log "ERROR" "USAGE: verify.sh -k [GPG KEY ID]"
   exit 127
 }

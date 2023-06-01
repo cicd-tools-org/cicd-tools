@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Bootstrap the CICD-tools system with the specified toolbox version.
+# Bootstrap the CICD-Tools system with the specified toolbox version.
 
 # CICD-Tools Development script.
 
@@ -106,7 +106,7 @@ _link_symlink_write() {
 }
 
 _link_usage() {
-  log "ERROR" "bootstrap.sh -- bootstrap the CICD-tools system with the specified toolbox version."
+  log "ERROR" "bootstrap.sh -- bootstrap the CICD-Tools system with the specified toolbox version."
   log "ERROR" "USAGE: link.sh -b [TOOLBOX VERSION]"
   exit 127
 }

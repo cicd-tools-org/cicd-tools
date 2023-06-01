@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Library for working with the CICD-tools projects.
+# Library for working with the CICD-Tools projects.
 
 set -eo pipefail
 
@@ -55,7 +55,7 @@ _cicd_tools_poetry() {
 }
 
 _cicd_tools_usage() {
-  log "ERROR" "tools.sh -- CICD-tools project helpers."
+  log "ERROR" "tools.sh -- CICD-Tools project helpers."
   log "ERROR" "USAGE: tools.sh [COMMAND]"
   log "ERROR" "  COMMANDS:"
   log "ERROR" "  is_template                          -- Evaluates whether the current context is a cookiecutter project."
