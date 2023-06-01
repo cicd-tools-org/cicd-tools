@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Library for reading the CICD-tools manifest.
+# Library for reading the CICD-Tools manifest.
 
 # CICD_TOOLS_COLOUR_DISABLE:  Optionally disable coloured messages.
 

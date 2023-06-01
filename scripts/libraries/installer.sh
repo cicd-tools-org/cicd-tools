@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Library for CICD-tools installers.
+# Library for CICD-Tools installers.
 
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../.cicd-tools/boxes/bootstrap/libraries/logging.sh"

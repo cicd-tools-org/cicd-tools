@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build the CICD-tools container.
+# Build the CICD-Tools container.
 
 # CICD-Tools Development script.
 
@@ -10,7 +10,7 @@ set -eo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
 
 main() {
-  log "INFO" "Building the CICD-tools utility container ..."
+  log "INFO" "Building the CICD-Tools utility container ..."
 
   pushd .cicd-tools/container >> /dev/null
   docker build -t ghcr.io/cicd-tools-org/cicd-tools .
