@@ -23,8 +23,9 @@ repos:
           - ".cicd-tools/boxes/bootstrap/schemas/cookiecutter.json"
         stages: [commit]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: 464f0996828412ddad3b284ce4473f99c6e6270b
+    rev:  0.1.0
     hooks:
+      - id: commit-message-spelling
       - id: format-shell
         args:
           - "-w"
