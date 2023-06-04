@@ -1,6 +1,9 @@
 ---
 name: job-80-poetry-commit_lint
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:

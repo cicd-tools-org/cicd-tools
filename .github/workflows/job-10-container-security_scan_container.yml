@@ -1,6 +1,9 @@
 ---
 name: job-10-container-security_scan_container
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:
