@@ -1,6 +1,11 @@
 ---
 name: job-40-cookiecutter-ansible_role_lint
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-render-template.sh
+# - ./.github/scripts/step-requirements-template.sh
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:

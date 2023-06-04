@@ -1,6 +1,11 @@
 ---
 name: job-30-cookiecutter-markdown_links
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-render-template.sh
+# - ./.github/scripts/step-requirements-template.sh
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:
