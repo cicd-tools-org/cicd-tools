@@ -1,6 +1,9 @@
 ---
 name: job-50-poetry-test_commitizen_hooks
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:
