@@ -9,6 +9,11 @@ on:
         description: "Optional, allows you define where the Dockerfile is located."
         required: false
         type: string
+      CONFIG_FILE:
+        default: "./.hadolint.yml"
+        description: "Optional, allows you define where the hadolint configuration file is located."
+        required: false
+        type: string
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -42,7 +47,7 @@ jobs:
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Dockerfile Lint -- Install Toolbox
@@ -53,7 +58,7 @@ jobs:
         with:
           dockerfile: ${{ inputs.DOCKERFILE }}
           failure-threshold: error
-          config: "./.hadolint.yml"
+          config: ${{ inputs.CONFIG_FILE }}
 
       - name: Dockerfile Lint -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
