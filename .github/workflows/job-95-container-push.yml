@@ -1,6 +1,9 @@
 ---
 name: job-95-container-push
 
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
 on:
   workflow_call:
     inputs:
