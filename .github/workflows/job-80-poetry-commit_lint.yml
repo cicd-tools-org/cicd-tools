@@ -63,7 +63,7 @@ jobs:
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
