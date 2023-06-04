@@ -40,7 +40,7 @@ jobs:
         env:
           WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Molecule Scenario Discovery Test -- Install Toolbox
@@ -85,7 +85,7 @@ jobs:
         env:
           WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Secret Exists Test -- Install Toolbox
@@ -118,7 +118,7 @@ jobs:
         env:
           WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
@@ -141,7 +141,7 @@ jobs:
         env:
           WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
@@ -312,7 +312,7 @@ jobs:
         env:
           WORKFLOW_NAME: "test"
         run: |
-          "./.github/scripts/step-setup-environment.sh"
+          bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Notification (Local Action Test) -- Install Toolbox
