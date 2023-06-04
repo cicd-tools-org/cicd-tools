@@ -72,7 +72,7 @@ jobs:
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
-          "./template/.github/scripts/step-setup-environment.sh"
+          bash "./template/.github/scripts/step-setup-environment.sh"
         shell: bash
 
       - name: Ansible Lint -- Set up Python ${{ matrix.python-version }}
