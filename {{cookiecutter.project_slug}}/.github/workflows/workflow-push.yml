@@ -27,7 +27,7 @@ jobs:
     uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@master
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
-      NOTIFICATION_MESSAGE: "workflow has started!"
+      NOTIFICATION_MESSAGE: "Workflow has started!"
 
   security:
     needs: [configuration]
@@ -215,6 +215,6 @@ jobs:
     uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@master
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
-      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
+      NOTIFICATION_MESSAGE: "Workflow has completed successfully!"
 
 # End Cookiecutter Template Content{% endraw %}
