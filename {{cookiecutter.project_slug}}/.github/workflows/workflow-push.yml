@@ -93,7 +93,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "check-jsonschema"
@@ -105,7 +105,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "markdown-lint"
@@ -117,7 +117,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "markdown-spelling"
@@ -138,7 +138,7 @@ jobs:
           - id: "shell-lint"
             name: "Shell Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -152,7 +152,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "toml-lint"
@@ -176,7 +176,7 @@ jobs:
           - id: "workflow-header-lint"
             name: "Workflow Header Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -190,7 +190,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_linter.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "yamllint"

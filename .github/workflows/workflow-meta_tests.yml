@@ -251,7 +251,7 @@ jobs:
           - id: "shell-lint"
             name: "Shell Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -265,7 +265,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: "toml-lint"
@@ -288,7 +288,7 @@ jobs:
           - id: "workflow-header-lint"
             name: "Workflow Header Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -302,7 +302,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-80-cookiecutter-precommit_linter.yml
+    uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: "yamllint"
