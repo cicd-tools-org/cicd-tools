@@ -113,7 +113,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "container security scan has passed!"
+          NOTIFICATION_MESSAGE: "Container Security Scan has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Container Scan -- Report Job Status on Failure
@@ -121,6 +121,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "container security scan has failed!"
+          NOTIFICATION_MESSAGE: "Container Security Scan has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

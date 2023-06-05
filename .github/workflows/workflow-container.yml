@@ -29,7 +29,7 @@ jobs:
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
-      NOTIFICATION_MESSAGE: "docker build has started!"
+      NOTIFICATION_MESSAGE: "Docker build has started!"
       WORKFLOW_NAME: "container"
 
   security:
@@ -82,5 +82,5 @@ jobs:
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
-      NOTIFICATION_MESSAGE: "docker build has completed successfully!"
+      NOTIFICATION_MESSAGE: "Docker build has completed successfully!"
       WORKFLOW_NAME: "container"

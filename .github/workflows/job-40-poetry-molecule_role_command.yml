@@ -179,7 +179,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has passed!"
+          NOTIFICATION_MESSAGE: "Molecule Command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Failure
@@ -187,6 +187,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "Molecule command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has failed!"
+          NOTIFICATION_MESSAGE: "Molecule Command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
