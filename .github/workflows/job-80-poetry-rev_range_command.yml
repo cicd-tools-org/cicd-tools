@@ -1,5 +1,5 @@
 ---
-name: job-80-poetry-commit_lint
+name: job-80-poetry-rev_range_command
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-setup-environment.sh
@@ -7,15 +7,18 @@ name: job-80-poetry-commit_lint
 on:
   workflow_call:
     inputs:
+      COMMAND:
+        description: "The command to execute with respect to the Git history. (The PUSHED_COMMIT_REV_RANGE variable will be available to target a particular commit range.)"
+        required: true
+        type: string
+      COMMAND_NAME:
+        description: "A description of the command itself for logging purposes."
+        required: true
+        type: string
       CONCURRENCY:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
-      LINTED_REV_RANGE:
-        default: "HEAD"
-        description: "Optional, allows you to specify a rev range (i.e. last_non_linted_commit_hash..HEAD) where linted commit messages start.  The default value HEAD covers ALL commits."
-        required: false
-        type: string
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -23,6 +26,11 @@ on:
       REMOTE_SCRIPT_DETERMINE_COMMITS:
         default: "ci/github/scripts/step-determine-pushed-commits.sh"
         description: "Optional, allows you to specify a determine commits script."
+        required: false
+        type: string
+      REV_RANGE:
+        default: "HEAD"
+        description: "Optional, allows you to specify a rev range (i.e. last_commit_to_exclude..HEAD) where a certain type of commits start.  The default value HEAD covers ALL commits."
         required: false
         type: string
       TESTING_MODE:
@@ -47,7 +55,7 @@ on:
 
 jobs:
 
-  run_commitizen:
+  run_command:
 
     runs-on: ubuntu-latest
     strategy:
@@ -57,47 +65,47 @@ jobs:
       max-parallel: ${{ inputs.CONCURRENCY }}
 
     steps:
-      - name: Commit Linting -- Checkout Repository
+      - name: ${{ inputs.COMMAND_NAME }} -- Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Commit Linting -- Setup Environment
+      - name: ${{ inputs.COMMAND_NAME }} -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
           bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Commit Linting -- Set up Python ${{ matrix.python-version }}
+      - name: ${{ inputs.COMMAND_NAME }} -- Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Commit Linting -- Install Toolbox
+      - name: ${{ inputs.COMMAND_NAME }} -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
-      - name: Commit Linting -- Install Project Dependencies
+      - name: ${{ inputs.COMMAND_NAME }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
-      - name: Commit Linting -- Determine Pushed Commits
+      - name: ${{ inputs.COMMAND_NAME }} -- Determine Pushed Commits
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
-          PUSH_FALLBACK_REV_RANGE: ${{ inputs.LINTED_REV_RANGE }}
+          PUSH_FALLBACK_REV_RANGE: ${{ inputs.REV_RANGE }}
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DETERMINE_COMMITS }}"
         shell: bash
 
-      - name: Commit Linting -- Lint Pushed Commits
+      - name: ${{ inputs.COMMAND_NAME }} -- Execute Configured Command
         run: |
-          poetry run cz check --rev-range "${PUSHED_COMMIT_REV_RANGE}"
+          ${{ inputs.COMMAND }}
         shell: bash
 
-      - name: Commit Linting -- Report Job Status on Success
+      - name: ${{ inputs.COMMAND_NAME }} -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "commit lint checks have succeeded!"
+          NOTIFICATION_MESSAGE: "${{ inputs.COMMAND_NAME }} checks have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Commit Linting -- Report Job Status on Failure
@@ -105,6 +113,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "commit lint checks have failed!"
+          NOTIFICATION_MESSAGE: "${{ inputs.COMMAND_NAME }} checks have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

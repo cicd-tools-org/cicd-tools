@@ -210,13 +210,33 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-80-poetry-commit_lint.yml
+    uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
     with:
+      COMMAND: |
+        poetry run cz check --rev-range "${PUSHED_COMMIT_REV_RANGE}"
+      COMMAND_NAME: "Commit Message Lint"
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TESTING_MODE: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "test"
+      WORKFLOW_NAME: "cookiecutter"
+
+  commit_spell_check_test_failure:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
+    with:
+      COMMAND: |
+        CICD_COMMIT_MESSAGES_FILE="$(mktemp XXXXXXXX.git_history_file)"
+        git log --pretty=format:%s "${PUSHED_COMMIT_REV_RANGE}" > "${CICD_COMMIT_MESSAGES_FILE}"
+        poetry run pre-commit run --hook-stage commit-msg commit-message-spelling --commit-msg-filename "${CICD_COMMIT_MESSAGES_FILE}"
+      COMMAND_NAME: "Commit Message Spelling"
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      TESTING_MODE: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
 
   shell_lint_test_failure:
     needs: [configuration]
@@ -302,7 +322,7 @@ jobs:
       WORKFLOW_NAME: "test"
 
   success:
-    needs: [commit_lint_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, secrets_data_test, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
+    needs: [commit_lint_test_failure, commit_spell_check_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, secrets_data_test, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
