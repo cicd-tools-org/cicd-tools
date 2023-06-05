@@ -181,7 +181,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_TAG_PUSH
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "remote push to tag '${{ inputs.REMOTE_TEST_TAG }}' has been triggered!"
+          NOTIFICATION_MESSAGE: "Remote Push to tag '${{ inputs.REMOTE_TEST_TAG }}' has been triggered!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
 
@@ -189,7 +189,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_BASE_BRANCH_PUSH
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "remote push to branch '${TEMPLATE_BRANCH_NAME_BASE}' has been triggered!"
+          NOTIFICATION_MESSAGE: "Remote Push to branch '${TEMPLATE_BRANCH_NAME_BASE}' has been triggered!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
 
@@ -197,7 +197,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true && matrix.scenario == inputs.SCENARIO_TRIGGER_DEV_BRANCH_PUSH
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "remote push to branch '${TEMPLATE_BRANCH_NAME_DEVELOPMENT}' has been triggered!"
+          NOTIFICATION_MESSAGE: "Remote Push to branch '${TEMPLATE_BRANCH_NAME_DEVELOPMENT}' has been triggered!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
 
@@ -206,7 +206,7 @@ jobs:
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "remote push (${{ matrix.scenario }}) has failed to trigger!"
+          NOTIFICATION_MESSAGE: "Remote Push (${{ matrix.scenario }}) has failed to trigger!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           PROJECT_ROOT_PATH: "template"
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
