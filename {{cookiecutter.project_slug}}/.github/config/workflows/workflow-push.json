@@ -1,4 +1,5 @@
 {
+  "ci_commit_spelling_rev_range": "HEAD",
   "ci_commitizen_rev_range": "HEAD",
   "ci_concurrency_limit": 4,
   "ci_extra_release_content": [
