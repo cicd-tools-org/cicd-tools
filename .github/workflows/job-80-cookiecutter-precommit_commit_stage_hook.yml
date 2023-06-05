@@ -1,5 +1,5 @@
 ---
-name: job-80-cookiecutter-precommit_linter
+name: job-80-cookiecutter-precommit_commit_stage_hook
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-render-template.sh
