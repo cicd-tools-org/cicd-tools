@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       REMOTE_SCRIPT_ROLE_NAME:
-        default: "ci/github/scripts/job-40-generic-ansible_role_name.sh"
+        default: "ci/github/scripts/job-40-ansible_role_name.sh"
         description: "Optional, allows you to specify a script to set the ROLE_NAME environment variable."
         required: false
         type: string
