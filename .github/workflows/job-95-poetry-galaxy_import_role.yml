@@ -109,7 +109,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "the role '${{ env.ROLE_NAME }}' was successfully imported to Ansible Galaxy!"
+          NOTIFICATION_MESSAGE: "The role '${{ env.ROLE_NAME }}' was successfully imported to Ansible Galaxy!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Publish to Galaxy -- Report Job Status on Failure
@@ -117,5 +117,5 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "while importing the role '${{ env.ROLE_NAME }}' to Ansible Galaxy, an error occurred!"
+          NOTIFICATION_MESSAGE: "While importing the role '${{ env.ROLE_NAME }}' to Ansible Galaxy, an error occurred!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

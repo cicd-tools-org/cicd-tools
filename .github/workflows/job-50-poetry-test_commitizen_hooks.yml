@@ -120,7 +120,7 @@ jobs:
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "commitizen hooks tests have succeeded!"
+          NOTIFICATION_MESSAGE: "Commitizen Hooks tests have succeeded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Commitizen Hooks Test -- Report Job Status on Failure
@@ -128,6 +128,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "commitizen hooks tests have failed!"
+          NOTIFICATION_MESSAGE: "Commitizen Hooks tests have failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

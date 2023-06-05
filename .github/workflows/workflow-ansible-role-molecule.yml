@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
-      NOTIFICATION_MESSAGE: "workflow has started!"
+      NOTIFICATION_MESSAGE: "Workflow has started!"
       WORKFLOW_NAME: "ansible"
 
   markdown_links:
@@ -76,5 +76,5 @@ jobs:
     uses: ./.github/workflows/job-00-generic-notification.yml
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
-      NOTIFICATION_MESSAGE: "workflow has completed successfully!"
+      NOTIFICATION_MESSAGE: "Workflow has completed successfully!"
       WORKFLOW_NAME: "ansible"
