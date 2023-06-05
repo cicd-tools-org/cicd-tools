@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       REMOTE_SCRIPT_APPLY_PROFILE:
-        default: "ci/github/scripts/job-95-mac_maker-apply_profile.sh"
+        default: "ci/github/scripts/job-95-apply_profile.sh"
         description: "Optional, allows you to specify a script to apply a Mac Maker profile."
         required: false
         type: string
