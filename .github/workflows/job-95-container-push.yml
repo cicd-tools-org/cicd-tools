@@ -125,7 +125,7 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: |
-            docker container has been built and pushed!
+            Docker Container has been built and pushed!
             Pushed Image: ${{ steps.registry.outputs.IMAGE_NAME }}
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
@@ -134,6 +134,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "docker container build/push has failed!"
+          NOTIFICATION_MESSAGE: "Docker Container Build/Push has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}

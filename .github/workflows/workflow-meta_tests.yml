@@ -128,7 +128,7 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":vertical_traffic_light:"
-          NOTIFICATION_MESSAGE: "testing workflow has started!"
+          NOTIFICATION_MESSAGE: "The testing workflow has started!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   send_notification_test_failure:
@@ -151,7 +151,7 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":heavy_check_mark:"
-          NOTIFICATION_MESSAGE: "local notification script is working!"
+          NOTIFICATION_MESSAGE: "The local notification script is working!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: true
 
@@ -342,5 +342,5 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":checkered_flag:"
-          NOTIFICATION_MESSAGE: "all tests have passed successfully!"
+          NOTIFICATION_MESSAGE: "All tests have passed successfully!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
