@@ -1,0 +1,34 @@
+---
+name: action-05-npm-dependencies
+description: "Installs a Node project's NPM dependencies for CI."
+author: niall@niallbyrne.ca
+
+inputs:
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  NODE_MODULES_PATH:
+    default: "node_modules"
+    description: "Optional, allows you to override the target folder that will be cached."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Dependencies (Node) -- Initialize Cache Locations
+      run: |
+        mkdir -p "${{ format('{0}/{1}', inputs.PROJECT_ROOT_PATH, inputs.NODE_MODULES_PATH) }}"
+      shell: bash
+
+    - name: Dependencies (Node) -- Mount NPM Cache
+      uses: actions/cache@v3
+      with:
+        key: npm-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
+        path: ${{ format('{0}/{1}', inputs.PROJECT_ROOT_PATH, inputs.NODE_MODULES_PATH) }}
+
+    - name: Dependencies (Node) -- Install Project Dependencies with NPM
+      run: |
+        npm install
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

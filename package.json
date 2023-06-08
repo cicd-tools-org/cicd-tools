@@ -1,0 +1,22 @@
+{
+  "name": "cicd-tools",
+  "version": "0.1.0",
+  "description": "Reusable CI/CD components.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Mock Test Command\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cicd-tools-org/cicd-tools.git"
+  },
+  "author": "Niall Byrne <niall@niallbyrne.ca>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/cicd-tools-org/cicd-tools/issues"
+  },
+  "homepage": "https://github.com/cicd-tools-org/cicd-tools#readme",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
