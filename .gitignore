@@ -1,7 +1,6 @@
-poetry.lock
 .cicd-tools/boxes/*
 !.cicd-tools/boxes/bootstrap
 .cicd-tools/manifest.json
 .cicd-tools/manifest.json.asc
+poetry.lock
 node_modules/*
-

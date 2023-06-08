@@ -1,0 +1,58 @@
+---
+name: cicd-tooling-github-workflow-npm-node_application
+
+on:
+  push:
+    paths:
+      - ".github/workflows/job-40-npm-run_cached_command.yml"
+      - ".github/workflows/workflow-npm-node_application.yml"
+      - "package.json"
+      - "package-lock.json"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+env:
+  REMOTE:
+
+jobs:
+
+  configuration:
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
+
+  start:
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "The node application workflow test has started!"
+      WORKFLOW_NAME: "node_npm"
+
+  npm_test:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-40-npm-run_cached_command.yml
+    with:
+      COMMAND: test
+      COMMAND_NAME: NPM Test
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      NODE_VERSIONS: '["16.19"]'
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "node_npm"
+
+  success:
+    needs: [npm_test, start]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "The node application workflow test has completed successfully!"
+      WORKFLOW_NAME: "node_npm"
