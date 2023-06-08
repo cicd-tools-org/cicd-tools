@@ -1,0 +1,99 @@
+---
+name: job-40-npm-run_cached_command
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+on:
+  workflow_call:
+    inputs:
+      COMMAND:
+        description: "The NPM you wish to run. (ie. build, test)."
+        required: true
+        type: string
+      COMMAND_NAME:
+        description: "The name of the NPM command you wish to run for logging."
+        required: true
+        type: string
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      NODE_VERSIONS:
+        description: "A string encoded JSON array of valid node versions."
+        required: true
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  run_npm_command:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: ${{ fromJSON(inputs.NODE_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: ${{ inputs.COMMAND_NAME }} -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Install Packages with NPM
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-npm-dependencies
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Execute 'npm run ${{ inputs.COMMAND }}'
+        run: |
+          npm run ${{ inputs.COMMAND }}
+        shell: bash
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "${{ inputs.COMMAND_NAME }} has succeeded!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: ${{ inputs.COMMAND_NAME }} -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "${{ inputs.COMMAND_NAME }} has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
