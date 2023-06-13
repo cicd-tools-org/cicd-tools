@@ -26,6 +26,15 @@ scenario() {
     util "fail"
   }
 
+  test_commit_spelling_fails() {
+    util "git_reset"
+    TEMP_FILE=$(util "create_tmp")
+    touch "${TEMP_FILE}"
+    git stage "${TEMP_FILE}"
+    git commit -m 'test(PRE-COMMIT): ssspelling error' || exit 0
+    util "fail"
+  }
+
   test_toml_lint_fails() {
     util "git_reset"
     sed -i.bak 's/authors =/    authors = /g' pyproject.toml

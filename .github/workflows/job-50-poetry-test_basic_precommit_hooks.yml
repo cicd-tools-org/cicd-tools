@@ -108,6 +108,11 @@ jobs:
           "./.github/scripts/job-50-test-precommit.sh" "test_commit_lint_fails"
         shell: bash
 
+      - name: Pre-Commit Test -- Test Commit Spelling -- Expect Failure
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_commit_spelling_fails"
+        shell: bash
+
       - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
         if: inputs.CHECK_TOML == true
         run: |
