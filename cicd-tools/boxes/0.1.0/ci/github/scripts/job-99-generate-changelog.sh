@@ -17,6 +17,10 @@ main() {
 
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 
+  log "DEBUG" "Removing local release tag ..."
+  _changelog_remove_commit_tag "${1}"
+
+  log "DEBUG" "Generating changelog ..."
   CHANGE_LOG_CONTENT="$(_changelog_generate "${1}")"
 
   log "INFO" "Changelog has been generated."
@@ -34,7 +38,14 @@ main() {
 }
 
 _changelog_generate() {
-  npx -q conventional-changelog-cli --config .cicd-tools/configuration/changelog.json
+  npx -q "conventional-changelog-cli@^3.0.0" \
+    --config .cicd-tools/configuration/changelog.json \
+    -r 1
+}
+
+_changelog_remove_commit_tag() {
+  # 1:  The new git tag the changelog is being generated for.
+  git tag --delete "${1}"
 }
 
 main "$@"
