@@ -84,12 +84,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Release -- Rollback Tagged Commit
-        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
-        run: |
-          git reset HEAD~1
-        shell: bash
-
       - name: Create Release -- Retrieve Stashed Toolbox
         if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
