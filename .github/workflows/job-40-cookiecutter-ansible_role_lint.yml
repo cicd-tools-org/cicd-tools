@@ -18,6 +18,11 @@ on:
         description: "Optional, allows you to specify additional arguments to ansible-lint"
         required: false
         type: string
+      GALAXY_REQUIREMENTS_PATH:
+        default: "requirements.yml"
+        description: "Optional, allows you to specify a relative path, within the repository, to the Ansible Galaxy requirements file used by this role."
+        required: false
+        type: string
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -94,8 +99,7 @@ jobs:
         id: hash
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
         with:
-          FILE_NAME: "requirements.yml"
-          FILE_PREFIX: ${{ inputs.ROLE_PATH }}
+          FILE_NAME: ${{ inputs.GALAXY_REQUIREMENTS_PATH }}
           FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
           PROJECT_ROOT_PATH: "template"
 

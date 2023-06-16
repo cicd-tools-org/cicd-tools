@@ -11,6 +11,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      GALAXY_REQUIREMENTS_PATH:
+        default: "requirements.yml"
+        description: "Optional, allows you to specify a relative path, within the repository, to the Ansible Galaxy requirements file used by this role."
+        required: false
+        type: string
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -98,19 +103,12 @@ jobs:
         id: platform_homefolder
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Calculate Cache Key
-        id: hash
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
-        with:
-          FILE_NAME: "requirements.yml"
-          FILE_PREFIX:  ${{ inputs.ROLE_PATH }}
-
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Cache Locations
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
             ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
-          CACHE_KEY: ansible-compat-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_KEY: ansible-compat-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
           CACHE_NAME: "ansible_compat_cache"
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
@@ -118,7 +116,7 @@ jobs:
         with:
           CACHE_FOLDERS: |
             ${{ steps.platform_homefolder.outputs.HOME }}/.cache/molecule
-          CACHE_KEY: molecule-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_KEY: molecule-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
           CACHE_NAME: "molecule_cache"
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Project Dependencies
