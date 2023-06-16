@@ -51,6 +51,7 @@ jobs:
     uses: ./.github/workflows/job-40-cookiecutter-ansible_role_lint.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       ROLE_PATH: "ansible_role"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
@@ -63,6 +64,7 @@ jobs:
     uses: ./.github/workflows/job-40-cookiecutter-molecule_role_command.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
       MOLECULE_COMMAND: "test"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       ROLE_PATH: "ansible_role"
