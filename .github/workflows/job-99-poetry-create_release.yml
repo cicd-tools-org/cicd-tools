@@ -17,6 +17,16 @@ on:
         description: "Optional, allows you to specify a JSON array of markdown content to append to the changelog in a generated release.  This will override APPENDED_CONTENT."
         required: false
         type: string
+      RELEASE_TYPE:
+        default: false
+        description: "Optional, allows you to identify this release as a specific 'type' triggering additional validation. (Valid values: 'ansible collection')"
+        required: false
+        type: string
+      REMOTE_SCRIPT_COLLECTION_VALIDATION:
+        default: "ci/github/scripts/job-99-release-collection.sh"
+        description: "Optional, allows you to specify an Ansible collection validation script."
+        required: false
+        type: string
       REMOTE_SCRIPT_GENERATE_CHANGELOG:
         default: "ci/github/scripts/job-99-generate-changelog.sh"
         description: "Optional, allows you to specify a changelog generation script."
@@ -109,7 +119,15 @@ jobs:
         if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
-            "check-version" "${BRANCH_OR_TAG}"
+            "check-version" \
+            "${BRANCH_OR_TAG}"
+        shell: bash
+
+      - name: Create Release -- Execute Remote Collection Validation Script (Ansible Collections Only)
+        if: steps.filter.outputs.RELEASE_CANDIDATE == 'true' && inputs.RELEASE_TYPE == 'ansible collection'
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_COLLECTION_VALIDATION }}" \
+            "${BRANCH_OR_TAG}"
         shell: bash
 
       - name: Create Release -- Execute Remote Generate Changelog Script
