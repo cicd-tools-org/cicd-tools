@@ -3,11 +3,6 @@ default_install_hook_types:
   - pre-commit
   - commit-msg
 repos:
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: 3.2.2
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.23.0
     hooks:
@@ -22,10 +17,14 @@ repos:
           - "--schemafile"
           - ".cicd-tools/boxes/bootstrap/schemas/cookiecutter.json"
         stages: [commit]
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: 3.2.2
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
     rev:  0.1.0
     hooks:
-      - id: commit-message-spelling
       - id: format-shell
         args:
           - "-w"
@@ -34,31 +33,24 @@ repos:
           - "-sr"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
       - id: format-toml
-      - id: markdown-lint
+      - id: lint-github-workflow
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+      - id: lint-github-workflow-header
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+      - id: lint-markdown
         args:
           - "-c"
           - "{{cookiecutter.project_slug}}/.markdownlint.yml"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-      - id: markdown-spelling
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-      - id: shell-fmt-lint
-        args:
-          - "-d"
-          - "--indent=2"
-          - "-ci"
-          - "-sr"
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-      - id: shell-lint
+      - id: lint-shell
         args:
           - "--color=always"
           - "--source-path=SCRIPTDIR"
           - "--exclude=SC2317"
           - "-x"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-      - id: toml-lint
-      - id: workflow-header-lint
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-      - id: workflow-lint
+      - id: spelling-commit-message
+      - id: spelling-markdown
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0

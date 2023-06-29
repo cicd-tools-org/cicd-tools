@@ -18,6 +18,37 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  - repo: https://github.com/cicd-tools-org/pre-commit.git
+    rev: 0.1.0
+    hooks:
+      - id: format-shell
+        args:
+          - "-w"
+          - "--indent=2"
+          - "-ci"
+          - "-sr"
+{%- if cookiecutter.optional_toml_linting == 'true' %}
+      - id: format-toml
+{%- endif %}
+      - id: lint-ansible
+        args:
+          - ansible_role
+{%- if cookiecutter.optional_workflow_linting == 'true' %}
+      - id: lint-github-workflow-header
+      - id: lint-github-workflow
+{%- endif %}
+      - id: lint-markdown
+        args:
+          - "-c"
+          - ".markdownlint.yml"
+      - id: lint-shell
+        args:
+          - "--color=always"
+          - "--source-path=SCRIPTDIR"
+          - "--exclude=SC2317"
+          - "-x"
+      - id: spelling-commit-message
+      - id: spelling-markdown
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:
@@ -26,41 +57,3 @@ repos:
           - "-c"
           - "./.yamllint.yml"
         stages: [commit]
-  - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: 0.1.0
-    hooks:
-      - id: ansible-lint
-        args:
-          - ansible_role
-      - id: commit-message-spelling
-      - id: format-shell
-        args:
-          - "-w"
-          - "--indent=2"
-          - "-ci"
-          - "-sr"
-      - id: format-toml
-      - id: markdown-lint
-        args:
-          - "-c"
-          - ".markdownlint.yml"
-      - id: markdown-spelling
-      - id: shell-fmt-lint
-        args:
-          - "-d"
-          - "--indent=2"
-          - "-ci"
-          - "-sr"
-      - id: shell-lint
-        args:
-          - "--color=always"
-          - "--source-path=SCRIPTDIR"
-          - "--exclude=SC2317"
-          - "-x"
-{%- if cookiecutter.optional_toml_linting == 'true' %}
-      - id: toml-lint
-{%- endif %}
-{%- if cookiecutter.optional_workflow_linting == 'true' %}
-      - id: workflow-header-lint
-      - id: workflow-lint
-{%- endif %}
