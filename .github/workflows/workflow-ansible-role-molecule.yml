@@ -48,7 +48,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-40-cookiecutter-ansible_role_lint.yml
+    uses: ./.github/workflows/job-40-cookiecutter-ansible_lint.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
@@ -61,7 +61,7 @@ jobs:
     needs: [configuration, ansible_lint]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: ./.github/workflows/job-40-cookiecutter-molecule_role_command.yml
+    uses: ./.github/workflows/job-40-cookiecutter-molecule_command.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
