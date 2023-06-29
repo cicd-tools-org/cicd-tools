@@ -1,5 +1,5 @@
 ---
-name: job-40-cookiecutter-ansible_role_lint
+name: job-40-cookiecutter-ansible_lint
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-render-template.sh
