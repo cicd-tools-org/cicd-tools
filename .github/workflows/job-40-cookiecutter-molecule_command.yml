@@ -1,5 +1,5 @@
 ---
-name: job-40-cookiecutter-molecule_role_command
+name: job-40-cookiecutter-molecule_command
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-render-template.sh
