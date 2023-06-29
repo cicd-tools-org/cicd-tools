@@ -63,7 +63,7 @@ _installer_conditional_recursive_copy() {
 _installer_cookiecutter_copy() {
   # 1: Source
   log "INFO" "INSTALL > Copying additional template content ..."
-  _installer_cookiecutter_copy_file "{{cookiecutter.project_slug}}/scripts/format.sh"
+  # _installer_cookiecutter_copy_file "{{cookiecutter.project_slug}}/reserved"
 }
 
 _installer_cookiecutter_copy_file() {

@@ -53,7 +53,7 @@ jobs:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
-      ROLE_PATH: "ansible_role"
+      TARGET_PATH: "ansible_role"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "ansible"
 
@@ -67,7 +67,7 @@ jobs:
       GALAXY_REQUIREMENTS_PATH: "ansible_role/requirements.yml"
       MOLECULE_COMMAND: "test"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
-      ROLE_PATH: "ansible_role"
+      TARGET_PATH: "ansible_role"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "ansible"
 

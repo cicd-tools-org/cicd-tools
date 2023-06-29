@@ -44,7 +44,7 @@ on:
         description: "Optional, allows you to specify a workflow set value script."
         required: false
         type: string
-      ROLE_PATH:
+      TARGET_PATH:
         default: "."
         description: "Optional, allows you to specify a relative path, within the repository, to the role that is being analyzed."
         required: false
@@ -125,14 +125,14 @@ jobs:
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Configure The Role Name
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ROLE_NAME }}" \
-            "${{ inputs.ROLE_PATH }}"
+            "${{ inputs.TARGET_PATH }}"
         shell: bash
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (Mac OSX) Determine if Docker is Required
         id: requires_docker
         if: runner.os == 'macOS'
         run: |
-          yq .driver "${{ inputs.ROLE_PATH }}/molecule/${{ inputs.MOLECULE_SCENARIO }}/molecule.yml" | grep "docker" \
+          yq .driver "${{ inputs.TARGET_PATH }}/molecule/${{ inputs.MOLECULE_SCENARIO }}/molecule.yml" | grep "docker" \
             && REQUIRES_DOCKER="true" \
             || REQUIRES_DOCKER="false"
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
@@ -159,7 +159,7 @@ jobs:
         run: |
           poetry run molecule dependency -s "default"
         shell: bash
-        working-directory: ${{ inputs.ROLE_PATH }}
+        working-directory: ${{ inputs.TARGET_PATH }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Use "default" Scenario Dependencies for the Dependency Cache
         run: |
@@ -171,7 +171,7 @@ jobs:
         run: |
           poetry run molecule ${{ inputs.MOLECULE_COMMAND }} -s ${{ inputs.MOLECULE_SCENARIO }}
         shell: bash
-        working-directory: ${{ inputs.ROLE_PATH }}
+        working-directory: ${{ inputs.TARGET_PATH }}
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
