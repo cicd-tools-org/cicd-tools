@@ -1,5 +1,5 @@
 ---
-name: job-40-poetry-molecule_role_command
+name: job-40-poetry-molecule_command
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-setup-environment.sh
