@@ -2,7 +2,7 @@
 
 # Runs ansible-galaxy to install/update the dependencies if needed, and then runs ansible-lint on each active target folder's changes.
 
-# @:  An array of folders to run ansible-lin on.
+# @:  An array of folders to run ansible-lint on.
 
 # pre-commit script.
 
