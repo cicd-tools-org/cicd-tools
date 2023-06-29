@@ -25,7 +25,7 @@ on:
         description: "A string encoded JSON array of valid python versions."
         required: true
         type: string
-      ROLE_PATH:
+      TARGET_PATH:
         default: "."
         description: "Optional, allows you to specify a relative path, within the repository, to the role (or collection of roles) being analyzed."
         required: false
@@ -99,7 +99,7 @@ jobs:
         run: |
           poetry run ansible-lint ${{ inputs.EXTRA_ARGS }}
         shell: bash
-        working-directory: ${{ inputs.ROLE_PATH }}
+        working-directory: ${{ inputs.TARGET_PATH }}
 
       - name: Ansible Lint -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
