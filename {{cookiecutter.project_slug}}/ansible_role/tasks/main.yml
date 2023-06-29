@@ -5,7 +5,7 @@
   ansible.builtin.debug:
     msg: "A placeholder task."
 
-- name: Placeholder Task With Priviledge
+- name: Placeholder Task With Privilege
   become: true
   ansible.builtin.command: whoami
   changed_when: false

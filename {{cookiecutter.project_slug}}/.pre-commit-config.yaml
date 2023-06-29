@@ -29,6 +29,9 @@ repos:
   - repo: https://github.com/cicd-tools-org/pre-commit.git
     rev: 0.1.0
     hooks:
+      - id: ansible-lint
+        args:
+          - ansible_role
       - id: commit-message-spelling
       - id: format-shell
         args:

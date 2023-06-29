@@ -34,7 +34,7 @@ on:
         type: string
       ROLE_PATH:
         default: "."
-        description: "Optional, allows you to specify a relative path, within the template, to the role that is being analyzed."
+        description: "Optional, allows you to specify a relative path, within the template, to the role (or collection of roles) being analyzed."
         required: false
         type: string
       TESTING_MODE:
