@@ -2,6 +2,4 @@
 collections:
   - name: community.general
     version: ">=6.3.0,<7.0.0"
-roles:
-  - name: osx_provisioner.homebrew_retry
-    version: 0.3.0
+roles: []
