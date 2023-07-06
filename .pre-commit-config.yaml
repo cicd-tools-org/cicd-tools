@@ -23,7 +23,7 @@ repos:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev:  0.1.0
+    rev:  0.2.0
     hooks:
       - id: format-shell
         args:
@@ -49,6 +49,7 @@ repos:
           - "--exclude=SC2317"
           - "-x"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
+      - id: security-credentials
       - id: spelling-commit-message
       - id: spelling-markdown
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
