@@ -35,6 +35,14 @@ scenario() {
     util "fail"
   }
 
+  test_credentials_fails() {
+    util "git_reset"
+    ssh-keygen -t rsa -b 1024 -f test_key -N ''
+    git stage test_key test_key.pub
+    git commit -m 'test(PRE-COMMIT): fail due to credentials' || exit 0
+    util "fail"
+  }
+
   test_toml_lint_fails() {
     util "git_reset"
     sed -i.bak 's/authors =/    authors = /g' pyproject.toml

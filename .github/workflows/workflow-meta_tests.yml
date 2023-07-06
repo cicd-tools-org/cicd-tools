@@ -185,7 +185,7 @@ jobs:
     uses: ./.github/workflows/job-50-cookiecutter-test_precommit_hooks.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-      ENABLED_PRECOMMIT_CHECKS: '["test_commit_lint_fails", "test_toml_lint_fails", "test_toml_lint_passes", "test_shell_lint_fails", "test_shell_format_fails", "test_workflow_lint_fails", "test_workflow_header_lint_fails"]'
+      ENABLED_PRECOMMIT_CHECKS: '["test_commit_lint_fails", "test_credentials_fails", "test_commit_spelling_fails", "test_shell_lint_fails", "test_shell_format_fails", "test_toml_lint_fails", "test_toml_lint_passes", "test_workflow_lint_fails", "test_workflow_header_lint_fails"]'
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TEMPLATE_SCENARIOS: '["0.toml_linting-0.workflow_linting"]'
       TESTING_MODE: true

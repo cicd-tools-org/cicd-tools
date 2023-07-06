@@ -35,19 +35,12 @@ scenario() {
     util "fail"
   }
 
-  test_toml_lint_fails() {
+  test_credentials_fails() {
     util "git_reset"
-    sed -i.bak 's/authors =/    authors = /g' pyproject.toml
-    git stage pyproject.toml
-    git commit -m 'test(PRE-COMMIT): fail due to tomll' || exit 0
+    ssh-keygen -t rsa -b 1024 -f test_key -N ''
+    git stage test_key test_key.pub
+    git commit -m 'test(PRE-COMMIT): fail due to credentials' || exit 0
     util "fail"
-  }
-
-  test_toml_lint_passes() {
-    util "git_reset"
-    sed -i.bak "s/python = '^3.9/python = '>=3.10.0,<4.0/g" pyproject.toml
-    git stage pyproject.toml
-    git commit -m 'test(PRE-COMMIT): upgrade python without issue'
   }
 
   test_shell_lint_fails() {
@@ -66,6 +59,21 @@ scenario() {
     git stage "${TEMP_FILE}.sh"
     git commit -m 'test(PRE-COMMIT): fail due to shfmt' || exit 0
     util "fail"
+  }
+
+  test_toml_lint_fails() {
+    util "git_reset"
+    sed -i.bak 's/authors =/    authors = /g' pyproject.toml
+    git stage pyproject.toml
+    git commit -m 'test(PRE-COMMIT): fail due to tomll' || exit 0
+    util "fail"
+  }
+
+  test_toml_lint_passes() {
+    util "git_reset"
+    sed -i.bak "s/python = '^3.9/python = '>=3.10.0,<4.0/g" pyproject.toml
+    git stage pyproject.toml
+    git commit -m 'test(PRE-COMMIT): upgrade python without issue'
   }
 
   test_workflow_lint_fails() {
