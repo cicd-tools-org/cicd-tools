@@ -109,16 +109,10 @@ jobs:
           "./template/.github/scripts/job-50-test-precommit.sh" "test_commit_spelling_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Failure
-        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_fails')
+      - name: Pre-Commit Test -- (Rendered Template) Security Test -- Expect Failure
+        if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_credentials_fails')
         run: |
-          "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
-        shell: bash
-
-      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Success
-        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_passes')
-        run: |
-          "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
+          "./template/.github/scripts/job-50-test-precommit.sh" "test_credentials_fails"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Shell Lint -- Expect Failure
@@ -131,6 +125,18 @@ jobs:
         if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_shell_format_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Failure
+        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_fails')
+        run: |
+          "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- (Rendered Template) Test TOML Lint -- Expect Success
+        if: contains(matrix.scenario, '1.toml_linting') == true && contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_toml_lint_passes')
+        run: |
+          "./template/.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
         shell: bash
 
       - name: Pre-Commit Test -- (Rendered Template) Test Workflow Lint -- Expect Failure
