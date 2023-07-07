@@ -109,7 +109,7 @@ jobs:
           "./template/.github/scripts/job-50-test-precommit.sh" "test_commit_spelling_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- (Rendered Template) Security Test -- Expect Failure
+      - name: Pre-Commit Test -- (Rendered Template) Test Credentials -- Expect Failure
         if: contains(fromJSON(inputs.ENABLED_PRECOMMIT_CHECKS), 'test_credentials_fails')
         run: |
           "./template/.github/scripts/job-50-test-precommit.sh" "test_credentials_fails"
