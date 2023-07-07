@@ -53,6 +53,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: cicd-tools-org/cicd-tools/.github/workflows/job-50-poetry-test_basic_precommit_hooks.yml@master
     with:
+      CHECK_CREDENTIALS: true
       CHECK_TOML: true
       CHECK_WORKFLOW: true
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}

@@ -7,6 +7,11 @@ name: job-50-poetry-test_basic_precommit_hooks
 on:
   workflow_call:
     inputs:
+      CHECK_CREDENTIALS:
+        description: "A boolean value, indicating if credential checks should be performed."
+        default: false
+        required: false
+        type: boolean
       CHECK_TOML:
         description: "A boolean value, indicating if TOML checks should be performed."
         required: true
@@ -113,16 +118,10 @@ jobs:
           "./.github/scripts/job-50-test-precommit.sh" "test_commit_spelling_fails"
         shell: bash
 
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
-        if: inputs.CHECK_TOML == true
+      - name: Pre-Commit Test -- Test Credentials -- Expect Failure
+        if: inputs.CHECK_CREDENTIALS == true
         run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
-        shell: bash
-
-      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
-        if: inputs.CHECK_TOML == true
-        run: |
-          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
+          "./.github/scripts/job-50-test-precommit.sh" "test_credentials_fails"
         shell: bash
 
       - name: Pre-Commit Test -- Test Shell Lint -- Expect Failure
@@ -133,6 +132,18 @@ jobs:
       - name: Pre-Commit Test -- Test Shell Format -- Expect Failure
         run: |
           "./.github/scripts/job-50-test-precommit.sh" "test_shell_format_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Failure
+        if: inputs.CHECK_TOML == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_fails"
+        shell: bash
+
+      - name: Pre-Commit Test -- Test TOML Lint -- Expect Success
+        if: inputs.CHECK_TOML == true
+        run: |
+          "./.github/scripts/job-50-test-precommit.sh" "test_toml_lint_passes"
         shell: bash
 
       - name: Pre-Commit Test -- Test Workflow Lint -- Expect Failure
