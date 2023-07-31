@@ -1,0 +1,36 @@
+---
+name: action-05-generic-serial_commands
+description: "Executes a JSON array of commands serially."
+author: niall@niallbyrne.ca
+
+inputs:
+  COMMAND_SUFFIX:
+    default: ""
+    description: "A string to prepend to each command."
+    required: false
+  COMMANDS:
+    description: "A JSON encoded string containing an array of commands to execute."
+    required: true
+  EXECUTION_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to execute the command in."
+    required: false
+  REMOTE_SCRIPT_EXECUTE_COMMAND_LIST:
+    default: "ci/generic/scripts/execute-serial-commands.sh"
+    description: "Optional, allows you to specify a workflow set value script."
+    required: false
+  REMOTE_SCRIPT_SET_VALUE:
+    default: "ci/github/scripts/step-set-value.sh"
+    description: "Optional, allows you to specify a workflow set value script."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Serial Commands -- Execute Command List
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_EXECUTE_COMMAND_LIST }}" \
+         -c '${{ inputs.COMMANDS }}' \
+         -p "${{ inputs.EXECUTION_PATH }}" \
+         -s "${{ inputs.COMMAND_SUFFIX }}"
+      shell: bash
