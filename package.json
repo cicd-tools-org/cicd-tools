@@ -18,5 +18,9 @@
   "homepage": "https://github.com/cicd-tools-org/cicd-tools#readme",
   "dependencies": {
     "lodash": "^4.17.21"
+  },
+    "engines": {
+    "npm": "^8.0.0",
+    "node": "^16.0.0"
   }
 }
