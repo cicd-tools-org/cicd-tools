@@ -7,6 +7,11 @@ name: job-40-npm-run_cached_command
 on:
   workflow_call:
     inputs:
+      ADDITIONAL_CACHE_PATHS:
+        default: ""
+        description: "Optional, allows you to specify additional paths to add to the NPM cache."
+        required: false
+        type: string
       COMMAND:
         description: "The NPM you wish to run. (ie. build, test)."
         required: true
@@ -19,9 +24,25 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
-      NODE_VERSIONS:
-        description: "A string encoded JSON array of valid node versions."
-        required: true
+      ERROR_COMMAND:
+        default: ""
+        description: "Optional, a command to run if the workflow fails."
+        required: false
+        type: string
+      POST_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the npm command executes."
+        required: false
+        type: string
+      PRE_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the npm command executes."
+        required: false
+        type: string
+      SECRET_CONTENT_FILENAME:
+        default: ""
+        description: "Optional, allows you to write the content of 'secrets.FILE_CONTENT' to the given filename before command execution."
+        required: false
         type: string
       TESTING_MODE:
         default: false
@@ -39,21 +60,32 @@ on:
         required: false
         type: string
     secrets:
+      ENV_SECRET_1:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_2:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_3:
+        description: "Optional, content to save to the environment."
+        required: false
+      FILE_CONTENT:
+        description: "Optional, content to write to a selected file before command execution."
+        required: false
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
         required: false
+
+env:
+  ENV_SECRET_1: ${{ secrets.ENV_SECRET_1 }}
+  ENV_SECRET_2: ${{ secrets.ENV_SECRET_2 }}
+  ENV_SECRET_3: ${{ secrets.ENV_SECRET_3 }}
 
 jobs:
 
   run_npm_command:
 
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        node-version: ${{ fromJSON(inputs.NODE_VERSIONS) }}
-      max-parallel: ${{ inputs.CONCURRENCY }}
-
     steps:
       - name: ${{ inputs.COMMAND_NAME }} -- Checkout Repository
         uses: actions/checkout@v3
@@ -65,21 +97,41 @@ jobs:
           bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: ${{ inputs.COMMAND_NAME }} -- Set up Node ${{ matrix.node-version }}
+      - name: ${{ inputs.COMMAND_NAME }} -- Set up Node From 'package.json'
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          node-version-file: 'package.json'
 
       - name: ${{ inputs.COMMAND_NAME }} -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
       - name: ${{ inputs.COMMAND_NAME }} -- Install Packages with NPM
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-npm-dependencies
+        with:
+          ADDITIONAL_CACHE_PATHS: ${{ inputs.ADDITIONAL_CACHE_PATHS }}
 
-      - name: ${{ inputs.COMMAND_NAME }} -- Execute 'npm run ${{ inputs.COMMAND }}'
+      - name: ${{ inputs.COMMAND_NAME }} -- Write to '${{ inputs.SECRET_CONTENT_FILENAME }}'
+        if: inputs.SECRET_CONTENT_FILENAME != ''
+        run: |
+          echo "${FILE_CONTENT}" > "${{ inputs.SECRET_CONTENT_FILENAME }}"
+        env:
+          FILE_CONTENT: ${{ secrets.FILE_CONTENT }}
+
+      - name: ${{ inputs.COMMAND_NAME }} -- PRE_COMMAND > '${{ inputs.PRE_COMMAND }}'
+        if: inputs.PRE_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_COMMAND }}
+        shell: bash
+
+      - name: ${{ inputs.COMMAND_NAME }} -- COMMAND > 'npm run ${{ inputs.COMMAND }}'
         run: |
           npm run ${{ inputs.COMMAND }}
+        shell: bash
+
+      - name: ${{ inputs.COMMAND_NAME }} -- POST_COMMAND > '${{ inputs.POST_COMMAND }}'
+        if: inputs.POST_COMMAND != ''
+        run: |
+          ${{ inputs.POST_COMMAND }}
         shell: bash
 
       - name: ${{ inputs.COMMAND_NAME }} -- Report Job Status on Success
@@ -97,3 +149,9 @@ jobs:
           NOTIFICATION_MESSAGE: "${{ inputs.COMMAND_NAME }} has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: ${{ inputs.COMMAND_NAME }} -- ERROR_COMMAND > '${{ inputs.ERROR_COMMAND }}'
+        if: failure() && inputs.ERROR_COMMAND != ''
+        run: |
+          ${{ inputs.ERROR_COMMAND }}
+        shell: bash
