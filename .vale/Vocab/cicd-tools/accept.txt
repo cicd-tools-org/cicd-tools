@@ -14,6 +14,7 @@ hadolint
 json|JSON
 mac_maker
 npm
+pre
 rebase
 rebasing
 reusability

@@ -4,6 +4,10 @@ description: "Installs a Node project's NPM dependencies for CI."
 author: niall@niallbyrne.ca
 
 inputs:
+  ADDITIONAL_CACHE_PATHS:
+    default: ""
+    description: "Optional, allows you to specify additional paths to add to the NPM cache."
+    required: false
   PROJECT_ROOT_PATH:
     default: "."
     description: "Optional, allows you to specify a path to the project's root."
@@ -21,11 +25,19 @@ runs:
         mkdir -p "${{ format('{0}/{1}', inputs.PROJECT_ROOT_PATH, inputs.NODE_MODULES_PATH) }}"
       shell: bash
 
+    - name: Dependencies (Node) -- Initialize Additional Cache Locations'
+      if: inputs.ADDITIONAL_CACHE_PATHS != ''
+      run: |
+        mkdir -p "${{ inputs.ADDITIONAL_CACHE_PATHS }}"
+      shell: bash
+
     - name: Dependencies (Node) -- Mount NPM Cache
       uses: actions/cache@v3
       with:
         key: npm-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
-        path: ${{ format('{0}/{1}', inputs.PROJECT_ROOT_PATH, inputs.NODE_MODULES_PATH) }}
+        path: |
+          ${{ format('{0}/{1}', inputs.PROJECT_ROOT_PATH, inputs.NODE_MODULES_PATH) }}
+          ${{ inputs.ADDITIONAL_CACHE_PATHS }}
 
     - name: Dependencies (Node) -- Install Project Dependencies with NPM
       run: |
