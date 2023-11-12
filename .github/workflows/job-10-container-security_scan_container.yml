@@ -7,6 +7,11 @@ name: job-10-container-security_scan_container
 on:
   workflow_call:
     inputs:
+      BUILD_ARGS:
+        default: ""
+        description: "Optional, allows you define build arguments for the container build."
+        required: false
+        type: string
       CONTEXT:
         default: "."
         description: "Optional, allows you define where the build context is located."
@@ -77,7 +82,7 @@ jobs:
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
             -o "IMAGE_NAME" \
-            -d "${{ inputs.REGISTRY }}/${PROJECT_OWNER}/${PROJECT_NAME}:${BRANCH_OR_TAG}" \
+            -d "${PROJECT_OWNER}/${PROJECT_NAME}" \
             -s "${{ inputs.IMAGE_NAME }}"
         shell: bash
 
@@ -87,6 +92,8 @@ jobs:
       - name: Container Scan -- Build Container
         uses: docker/build-push-action@v4
         with:
+          build-args: |
+            ${{ inputs.BUILD_ARGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           context: ${{ inputs.CONTEXT }}
@@ -94,7 +101,7 @@ jobs:
           load: true
           tags: |
             localbuild/test:${{ env.BRANCH_OR_TAG }}
-            ${{ steps.registry.outputs.IMAGE_NAME }}
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }}
 
       - name: Container Scan -- Run Anchore Scan
         id: scan
