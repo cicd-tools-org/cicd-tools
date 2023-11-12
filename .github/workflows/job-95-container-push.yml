@@ -32,6 +32,11 @@ on:
         description: "Optional, allows you to specify the image and tag name, otherwise the configured script will generate one."
         required: false
         type: string
+      IMAGE_LATEST:
+        default: false
+        description: "Optional, allows you to designate this as the 'latest' image when pushed."
+        required: false
+        type: boolean
       REMOTE_SCRIPT_DEFAULT_SETTER:
         default: "ci/github/scripts/step-set-value-with-default.sh"
         description: "Optional, allows you to specify different default value creation script."
@@ -108,7 +113,8 @@ jobs:
           username: ${{ steps.registry.outputs.REGISTRY_USERNAME }}
           password: ${{ steps.registry.outputs.REGISTRY_PASSWORD }}
 
-      - name: Push Container -- Build and Push
+      - name: Push Container -- Build and Push (without latest tag)
+        if: inputs.IMAGE_LATEST == false
         uses: docker/build-push-action@v4
         with:
           build-args: |
@@ -120,6 +126,21 @@ jobs:
           push: true
           tags: |
             ${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }}
+
+      - name: Push Container -- Build and Push (with latest tag)
+        if: inputs.IMAGE_LATEST == true
+        uses: docker/build-push-action@v4
+        with:
+          build-args: |
+            ${{ inputs.BUILD_ARGS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: ${{ inputs.CONTEXT }}
+          file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
+          push: true
+          tags: |
+            ${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }}
+            ${{ steps.registry.outputs.IMAGE_NAME }}:latest
 
       - name: Push Container -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
