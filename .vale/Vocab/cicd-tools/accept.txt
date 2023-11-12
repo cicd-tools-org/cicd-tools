@@ -1,5 +1,6 @@
 (C|c)ookiecutter
 (D|d)ev
+(G|g)cp
 (U|u)ntracked
 Javascript
 ansible
