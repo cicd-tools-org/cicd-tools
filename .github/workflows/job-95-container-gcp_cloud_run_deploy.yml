@@ -1,0 +1,161 @@
+---
+name: job-95-container-gcp_cloud_run_deploy
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+# The GCP Service Account should have the following permissions:
+# - Cloud Run Admin
+# - Cloud Run Service Agent
+# - Secret Manager Secret Accessor (if you are mounting secrets.)
+
+on:
+  workflow_call:
+    inputs:
+      GCP_CLOUD_RUN_EXTRA_ARGS:
+        default: ""
+        description: "Optional, allows you add additional options to the gcloud run deploy command. (ie. --allow-unauthenticated)"
+        required: false
+        type: string
+      MAX_INSTANCES:
+        default: "10"
+        description: "Optional, allows you to define the maximum number of running instances."
+        required: false
+        type: string
+      MIN_INSTANCES:
+        default: "0"
+        description: "Optional, allows you to define the minimum number of running instances."
+        required: false
+        type: string
+      POST_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the npm command executes."
+        required: false
+        type: string
+      PRE_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the npm command executes."
+        required: false
+        type: string
+      REGISTRY:
+        default: "ghcr.io"
+        description: "Optional, allows you to specify a Docker registry to use."
+        required: false
+        type: string
+      IMAGE_NAME:
+        default: ""
+        description: "Optional, allows you to specify the image and tag name, otherwise the configured script will generate one."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DEFAULT_SETTER:
+        default: "ci/github/scripts/step-set-value-with-default.sh"
+        description: "Optional, allows you to specify different default value creation script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      GCP_CLOUD_RUN_SERVICE_NAME:
+        description: "The GCP cloud run service name to deploy."
+        required: true
+      GCP_PROJECT_ID:
+        description: "The GCP project ID to deploy to."
+        required: true
+      GCP_SERVICE_ACCOUNT_EMAIL:
+        description: "The full email address of the service account that will be used in GCP."
+        required: true
+      GCP_SERVICE_ACCOUNT_JSON:
+        description: "JSON content for the service account that will be used in GCP."
+        required: true
+      GCP_REGION_NAME:
+        description: "The GCP region to deploy to."
+        required: true
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+  gcp_cloud_run_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: GCP Cloud Run Deploy -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: GCP Cloud Run Deploy -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: GCP Cloud Run Deploy -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: GCP Cloud Run Deploy -- Configure Registry
+        id: registry
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "IMAGE_NAME" \
+            -d "${{ inputs.REGISTRY }}/${PROJECT_OWNER}/${PROJECT_NAME}" \
+            -s "${{ inputs.IMAGE_NAME }}"
+        shell: bash
+
+      - name: GCP Cloud Run Deploy -- Authenticate with GCP
+        uses: "google-github-actions/auth@v1"
+        with:
+          export_environment_variables: true
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+
+      - name: GCP Cloud Run Deploy -- Set up Cloud SDK
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          version: ">= 454.0.0"
+
+      - name: GCP Cloud Run Deploy -- PRE_COMMAND > '${{ inputs.PRE_COMMAND }}'
+        if: inputs.PRE_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_COMMAND }}
+        shell: bash
+
+      - name: GCP Cloud Run Deploy -- Deploy Image
+        run: gcloud run deploy ${{ secrets.GCP_CLOUD_RUN_SERVICE_NAME }} --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} --image ${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }} --region ${{ secrets.GCP_REGION_NAME }} --min-instances=${{ INPUTS.MIN_INSTANCES }} --max-instances=${{ INPUTS.MAX_INSTANCES }} ${{ inputs.GCP_CLOUD_RUN_EXTRA_ARGS }}
+        shell: bash
+
+      - name: GCP Cloud Run Deploy -- POST_COMMAND > '${{ inputs.POST_COMMAND }}'
+        if: inputs.POST_COMMAND != ''
+        run: |
+          ${{ inputs.POST_COMMAND }}
+        shell: bash
+
+      - name: GCP Cloud Run Deploy -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: |
+            Deploy to GCP Cloud Run has been successful!
+            Deployed Image: ${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }}
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: GCP Cloud Run Deploy -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: " Deploy to GCP Cloud Run has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
