@@ -60,21 +60,6 @@ _installer_conditional_recursive_copy() {
   fi
 }
 
-_installer_cookiecutter_copy() {
-  # 1: Source
-  log "INFO" "INSTALL > Copying additional template content ..."
-  # _installer_cookiecutter_copy_file "{{cookiecutter.project_slug}}/reserved"
-}
-
-_installer_cookiecutter_copy_file() {
-  log "DEBUG" "COPY > Source: '${1}'"
-  log "DEBUG" "COPY > Destination: '${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}'"
-  set -x
-  mkdir -p "$(dirname -- "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}")"
-  cp -v "${1}" "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}"
-  { set +x; } 2> /dev/null
-}
-
 _installer_cookiecutter_symlinks() {
   log "INFO" "INSTALL > Destination: '${CICD_TOOLS_INSTALL_TARGET_PATH}/{{cookiecutter.project_slug}}/.cicd-tools': ..."
   mkdir -p "${CICD_TOOLS_INSTALL_TARGET_PATH}/{{cookiecutter.project_slug}}/.cicd-tools"
@@ -140,6 +125,35 @@ _installer_line_in_file() {
   fi
 }
 
+_installer_initialize_vale() {
+  #1: prefix folder
+
+  local TARGET_FOLDER
+  local VALE_FOLDER
+
+  log "DEBUG" "VALE INITIALIZE > '${1}'"
+
+  if [[ "${1}" != "." ]]; then
+    VALE_FOLDER=${1}
+    log "DEBUG" "VALE CREATE > '${1}/.vale.ini'"
+    _installer_prefixed_copy_file "${1}" .vale.ini
+  else
+    VALE_FOLDER="$(basename "${CICD_TOOLS_INSTALL_TARGET_PATH}")"
+  fi
+
+  TARGET_FOLDER="${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.vale/Vocab/${VALE_FOLDER}"
+
+  log "DEBUG" "VALE CREATE > '${TARGET_FOLDER}/'"
+
+  mkdir -p "${TARGET_FOLDER}/"
+  touch "${TARGET_FOLDER}/accept.txt"
+  touch "${TARGET_FOLDER}/reject.txt"
+
+  log "DEBUG" "VALE CREATE > '.vale.ini'"
+  _installer_jinja_render ".vale.ini"
+
+}
+
 _installer_jinja_render() {
   #1: source / destination
 
@@ -190,4 +204,21 @@ EOF
   fi
   tomll pyproject.toml
   popd >> /dev/null
+}
+
+_installer_prefixed_copy_file() {
+  # 1:  Prefix
+  # 2:  Source
+
+  log "DEBUG" "PREFIXED COPY > Source: '${1}/${2}'"
+  log "DEBUG" "PREFIXED COPY > Destination: '${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/${2}'"
+
+  if [[ ! -e "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/${2}" ]]; then
+    set -x
+    mkdir -p "$(dirname -- "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/${2}")"
+    cp -v "${1}/${2}" "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/${2}"
+    { set +x; } 2> /dev/null
+  else
+    log "DEBUG" "SKIP > '${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/${2}' already exists!"
+  fi
 }
