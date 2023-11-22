@@ -30,8 +30,9 @@ main() {
 
   _installer_conditional_recursive_copy ".github/config/schemas"
   _installer_conditional_recursive_copy ".github/scripts/job-50-test-precommit.sh"
-  _installer_conditional_recursive_copy ".yamllint.yml"
   _installer_conditional_recursive_copy ".gitignore"
+  _installer_conditional_recursive_copy ".markdownlint.yml"
+  _installer_conditional_recursive_copy ".yamllint.yml"
 
   _installer_line_in_file ".gitignore" '.cicd-tools/boxes/*'
   _installer_line_in_file ".gitignore" '!.cicd-tools/boxes/bootstrap'
@@ -40,6 +41,8 @@ main() {
   _installer_jinja_render ".github/scripts/step-setup-environment.sh"
   _installer_jinja_render ".github/workflows/workflow-push.yml"
   _installer_jinja_render ".pre-commit-config.yaml"
+
+  _installer_initialize_vale "."
 
   log "INFO" "Successfully installed CICD-Tools."
 }
