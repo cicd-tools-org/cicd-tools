@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install the bootstrapped CICD-Tools system to an existing cookiecutter repository.
+# Install the default CICD-Tools precommit hook into an existing repository.
 
 # CICD-Tools Development script.
 
@@ -25,23 +25,17 @@ main() {
   source "$(dirname -- "${BASH_SOURCE[0]}")/libraries/installer.sh"
 
   _installer_bootstrap
-  _installer_actions
-  _installer_cookiecutter_symlinks
-
-  _installer_line_in_file ".gitignore" '.cicd-tools/boxes/*'
-  _installer_line_in_file ".gitignore" '!.cicd-tools/boxes/bootstrap'
-  _installer_line_in_file "{{cookiecutter.project_slug}}/.gitignore" '.cicd-tools/boxes/*'
-  _installer_line_in_file "{{cookiecutter.project_slug}}/.gitignore" '!.cicd-tools/boxes/bootstrap'
-
   _installer_poetry_init "."
 
-  _installer_initialize_vale "."
-  _installer_initialize_vale "{{cookiecutter.project_slug}}"
-
+  _installer_conditional_recursive_copy ".gitignore"
   _installer_conditional_recursive_copy ".markdownlint.yml"
-  _installer_prefixed_copy_file "{{cookiecutter.project_slug}}" ".markdownlint.yml"
+  _installer_conditional_recursive_copy ".yamllint.yml"
 
-  log "INFO" "Successfully installed CICD-Tools."
+  _installer_jinja_render ".pre-commit-config.yaml"
+
+  _installer_initialize_vale "."
+
+  log "INFO" "Successfully installed CICD-Tools precommit hooks."
 }
 
 _install_args() {
@@ -75,8 +69,8 @@ _install_no_target_path() {
 }
 
 _install_usage() {
-  log "ERROR" "install-cookiecutter.sh -- install the bootstrapped CICD-Tools system to an existing cookiecutter repository."
-  log "ERROR" "USAGE: install-cookiecutter.sh -d [DESTINATION PATH]"
+  log "ERROR" "install-poetry.sh -- install the default CICD-Tools precommit hook into an existing poetry repository."
+  log "ERROR" "USAGE: install-poetry.sh -d [DESTINATION PATH]"
   exit 127
 }
 
