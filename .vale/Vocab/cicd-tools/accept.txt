@@ -1,4 +1,5 @@
 (C|c)ookiecutter
+commitizen
 (D|d)ev
 (G|g)cp
 (U|u)ntracked
