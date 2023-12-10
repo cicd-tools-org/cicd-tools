@@ -1,0 +1,243 @@
+---
+name: job-40-compose-run_cached_commands
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+on:
+  workflow_call:
+    inputs:
+      BUILD_ARG_ENV_FILE:
+        default: "build_arg.env"
+        description: "Optional, allows you to specify a file path to an env file that will provide environment variables for dynamic build args."
+        required: false
+        type: string
+      BUILD_ARG_ENV_FILE_CONTENT:
+        default: ""
+        description: "Optional, allows you to specify the env file content to write to your BUILD_ARG_FILE.  These should be newline separated VAR_NAME=VAR_VALUE pairs."
+        required: false
+        type: string
+      COMMANDS:
+        description: "A newline separated string containing the commands to execute."
+        required: true
+        type: string
+      COMPOSE_BUILDX_CACHED_SERVICE_NAME:
+        default: ""
+        description: "Optionally allows you to set the name of the compose service that will be cached between builds.  Defaults to COMPOSE_SERVICE_NAME."
+        required: false
+        type: string
+      COMPOSE_BUILDX_CACHE_KEY:
+        default: ""
+        description: "Optionally allows you to set the he key for the cached compose build in the GitHub cache.  Defaults to COMPOSE_SERVICE_NAME."
+        required: false
+        type: string
+      COMPOSE_ENV_FILE:
+        default: "compose.env"
+        description: "Optional, allows you to specify a file path to an env file that will provide environment variables for dynamic build args."
+        required: false
+        type: string
+      COMPOSE_ENV_FILE_CONTENT:
+        default: ""
+        description: "Optional, allows you to specify the env file content to write to your BUILD_ARG_FILE.  These should be newline separated VAR_NAME=VAR_VALUE pairs."
+        required: false
+        type: string
+      COMPOSE_FILE_PATH:
+        default: "docker-compose.yml"
+        description: "Optional, allows you to specify a relative path, from EXECUTION_PATH, to the docker compose file used by this workflow."
+        required: false
+        type: string
+      COMPOSE_MOUNTED_CACHE_FOLDER:
+        default: ""
+        description: "Optional, allows you to specify a relative path, from EXECUTION_PATH, to a cachable folder your service consumes as a mount."
+        required: false
+        type: string
+      COMPOSE_MOUNTED_CACHE_KEY_FILE:
+        default: ""
+        description: "Optional, allows you to specify a relative path, from EXECUTION_PATH, to a file who's hashed contents will become the cache key for the COMPOSE_MOUNTED_CACHE_FOLDERS."
+        required: false
+        type: string
+      COMPOSE_SERVICE_NAME:
+        description: "The name of the compose service that will be used to execute the commands."
+        required: true
+        type: string
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      EXECUTION_PATH:
+        default: "."
+        description: "Optional, allows you to specify a path to execute the command in."
+        required: false
+        type: string
+      ERROR_COMMAND:
+        default: ""
+        description: "Optional, a command to run if the workflow fails."
+        required: false
+        type: string
+      POST_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the docker compose commands execute."
+        required: false
+        type: string
+      PRE_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the docker compose commands execute."
+        required: false
+        type: string
+      REMOTE_SCRIPT_ADD_CACHING_TO_COMPOSE_SERVICE:
+        default: "ci/github/scripts/job-40-compose-gha-caching.py"
+        description: "Optional, allows you to specify a script to modify your docker compose file to add caching values."
+        required: false
+        type: string
+      REMOTE_SCRIPT_DEFAULT_SETTER:
+        default: "ci/github/scripts/step-set-value-with-default.sh"
+        description: "Optional, allows you to specify different default value creation script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to adjust the notification verbosity."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  compose_command_sequence:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Compose Command Sequence -- Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Compose Command Sequence -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Compose Command Sequence -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Compose Command Sequence -- Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compose Command Sequence -- Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Compose Command Sequence -- Configure Defaults
+        id: CACHING_CONFIGURATION
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "BUILDX_CACHED_SERVICE_NAME" \
+            -d "${{ inputs.COMPOSE_SERVICE_NAME }}" \
+            -s "${{ inputs.COMPOSE_BUILDX_CACHED_SERVICE_NAME }}"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "BUILDX_CACHE_KEY" \
+            -d "${{ inputs.COMPOSE_SERVICE_NAME }}" \
+            -s "${{ inputs.COMPOSE_BUILDX_CACHE_KEY }}"
+        shell: bash
+
+      - name: Compose Command Sequence -- Create Build Arg Env File
+        if: inputs.BUILD_ARG_ENV_FILE_CONTENT != ''
+        run: |
+          echo "${{ inputs.BUILD_ARG_ENV_FILE_CONTENT }}" > "${{ inputs.BUILD_ARG_ENV_FILE }}"
+        shell: bash
+
+      - name: Compose Command Sequence -- PRE_COMMAND > '${{ inputs.PRE_COMMAND }}'
+        if: inputs.PRE_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_COMMAND }}
+        shell: bash
+
+      - name: Compose Command Sequence -- Add Caching to Docker Compose Service
+        run: |
+          python "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ADD_CACHING_TO_COMPOSE_SERVICE }}" \
+            "${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_FILE_PATH }}" \
+            "${{ steps.CACHING_CONFIGURATION.outputs.BUILDX_CACHED_SERVICE_NAME }}" \
+            "${{ steps.CACHING_CONFIGURATION.outputs.BUILDX_CACHE_KEY }}"
+        shell: bash
+
+      - name: Compose Command Sequence -- Build and Cache Docker Compose Services
+        run: |
+          [[ -f "${{ inputs.BUILD_ARG_ENV_FILE }}" ]] && source "${{ inputs.BUILD_ARG_ENV_FILE }}"
+          docker compose -f "${{ inputs.COMPOSE_FILE_PATH }}" build ${{ steps.CACHING_CONFIGURATION.outputs.BUILDX_CACHED_SERVICE_NAME }}
+        shell: bash
+        working-directory: ${{ inputs.EXECUTION_PATH }}
+
+      - name: Compose Command Sequence -- Create Compose Env File
+        if: inputs.COMPOSE_ENV_FILE_CONTENT != ''
+        run: |
+          echo "${{ inputs.COMPOSE_ENV_FILE_CONTENT }}" > "${{ inputs.COMPOSE_ENV_FILE }}"
+        shell: bash
+
+      - name: Compose Command Sequence -- Create the Mounted Cache Folder -- '${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}'
+        if: inputs.COMPOSE_MOUNTED_CACHE_FOLDER != '' && inputs.COMPOSE_MOUNTED_CACHE_KEY_FILE != ''
+        run: |
+          mkdir -p "${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}"
+        shell: bash
+
+      - name: Compose Command Sequence -- Populate the Mounted Cache Folder -- '${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}'
+        if: inputs.COMPOSE_MOUNTED_CACHE_FOLDER != '' && inputs.COMPOSE_MOUNTED_CACHE_KEY_FILE != ''
+        uses: actions/cache@v3
+        with:
+          key: compose-cache-folder-${{ hashFiles(format('{0}/{1}', inputs.EXECUTION_PATH, inputs.COMPOSE_MOUNTED_CACHE_KEY_FILE )) }}-${{ steps.CACHING_CONFIGURATION.outputs.BUILDX_CACHE_KEY }}-${{ env.CACHE_TTL }}
+          path: ${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}
+
+      - name: Compose Command Sequence -- Start Docker Compose Services
+        run: |
+          [[ -f "${{ inputs.COMPOSE_ENV_FILE }}" ]] && source "${{ inputs.COMPOSE_ENV_FILE }}"
+          docker compose -f "${{ inputs.COMPOSE_FILE_PATH }}" up -d
+          git checkout "${{ inputs.COMPOSE_FILE_PATH }}"
+        shell: bash
+        working-directory: ${{ inputs.EXECUTION_PATH }}
+
+      - name: Compose Command Sequence -- Execute Commands in Service '${{ inputs.COMPOSE_SERVICE_NAME }}'
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-serial_commands
+        with:
+          COMMAND_SUFFIX: 'docker compose -f "${{ inputs.COMPOSE_FILE_PATH }}" exec -it ${{ inputs.COMPOSE_SERVICE_NAME }}'
+          COMMANDS: ${{ inputs.COMMANDS }}
+          EXECUTION_PATH: ${{ inputs.EXECUTION_PATH }}
+
+      - name: Compose Command Sequence --  POST_COMMAND > '${{ inputs.POST_COMMAND }}'
+        if: inputs.POST_COMMAND != ''
+        run: |
+          ${{ inputs.POST_COMMAND }}
+        shell: bash
+
+      - name: Compose Command Sequence -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "Docker Compose Command Sequence has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Compose Command Sequence -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "Docker Compose Command Sequence has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: Compose Command Sequence -- ERROR_COMMAND > '${{ inputs.ERROR_COMMAND }}'
+        if: failure() && inputs.ERROR_COMMAND != ''
+        run: |
+          ${{ inputs.ERROR_COMMAND }}
+        shell: bash
