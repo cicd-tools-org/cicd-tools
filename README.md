@@ -4,6 +4,7 @@ Managed, Centralized CI/CD Components.  A platform in a repository.
 
 #### Master Branch (Please consume this branch.)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml)
+- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)
@@ -11,6 +12,7 @@ Managed, Centralized CI/CD Components.  A platform in a repository.
 
 #### Dev Branch
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml)
+- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)
