@@ -1,0 +1,10 @@
+---
+version: '3.9'
+
+services:
+  test_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: test
+    command: sh -c 'while true; do sleep 1; done'
