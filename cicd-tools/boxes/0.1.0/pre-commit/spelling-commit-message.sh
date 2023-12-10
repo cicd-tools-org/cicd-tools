@@ -20,13 +20,14 @@ main() {
   PRECOMMIT_GIT_COMMIT_MESSAGE_FILE="${2}"
   PRECOMMIT_GIT_CONTENT_REGEX='/^#[[:blank:]]*.*$/d'
   PRECOMMIT_VALE_DOCKER_IMAGE="${1}"
+  PRECOMMIT_MOUNT_FOLDER="${PRE_COMMIT_OVERRIDE_DOCKER_HOST_PATH:-${PWD}}"
 
   log "DEBUG" "PRE_COMMIT > Docker Image: '${PRECOMMIT_VALE_DOCKER_IMAGE}'"
   log "DEBUG" "PRE_COMMIT > Commit Message: '${PRECOMMIT_GIT_COMMIT_MESSAGE_FILE}'"
   sed "${PRECOMMIT_GIT_CONTENT_REGEX}" "${PRECOMMIT_GIT_COMMIT_MESSAGE_FILE}"
   log "DEBUG" "PRE_COMMIT > Running vale ..."
   sed "${PRECOMMIT_GIT_CONTENT_REGEX}" "${PRECOMMIT_GIT_COMMIT_MESSAGE_FILE}" |
-    docker run -i --rm -v "$(pwd)":/mnt --workdir /mnt "${PRECOMMIT_VALE_DOCKER_IMAGE}" vale
+    docker run -i --rm -v "${PRECOMMIT_MOUNT_FOLDER}":/mnt --workdir /mnt "${PRECOMMIT_VALE_DOCKER_IMAGE}" vale
   log "INFO" "PRE-COMMIT > Commit message spelling has passed!"
 }
 
