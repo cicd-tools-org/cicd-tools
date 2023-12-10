@@ -13,8 +13,8 @@
  */
 module.exports = async ({ body, context, core, github, tag }) => {
   try {
-    console.debug(`DEBUG: -- ${__filename} --`)
-    const result = await github.rest.repos.createRelease({
+    console.debug(`DEBUG: -- ${__filename} --`);
+    const releaseContext = await github.rest.repos.createRelease({
       body,
       draft: true,
       name: 'Release ' + tag,
@@ -23,7 +23,7 @@ module.exports = async ({ body, context, core, github, tag }) => {
       repo: context.repo.repo,
       tag_name: tag,
     })
-    return result
+    core.setOutput("RELEASE_CONTEXT", releaseContext);
   } catch (error) {
     core.setFailed(error.message)
   }
