@@ -52,17 +52,16 @@ _execute_serial_commands_args() {
 }
 
 _execute_serial_commands_start() {
-  local PARSED_SERIAL_COMMANDS_INPUT
   local SERIAL_COMMAND
   local SERIAL_SYSTEM_CALL
 
-  log "DEBUG" "Parsing JSON encoded string: '${SERIAL_COMMANDS_INPUT}'"
-  PARSED_SERIAL_COMMANDS_INPUT="$(echo "${SERIAL_COMMANDS_INPUT}" | jq -r '. | @sh')"
-  declare -a SERIAL_COMMANDS_ARRAY="(${PARSED_SERIAL_COMMANDS_INPUT})"
+  log "DEBUG" "Parsing newline separated string into array ..."
+  IFS=$'\n' read -r -d '' -a SERIAL_COMMANDS_ARRAY <<< "${SERIAL_COMMANDS_INPUT}" || true
 
   log "DEBUG" "Changing Execution Path: '${SERIAL_COMMANDS_PATH}'"
   pushd "${SERIAL_COMMANDS_PATH}" >> /dev/null
   log "DEBUG" "Current Path: '$(pwd)'"
+
   for SERIAL_COMMAND in "${SERIAL_COMMANDS_ARRAY[@]}"; do
     if [[ -z "${SERIAL_COMMAND_SUFFIX}" ]]; then
       SERIAL_SYSTEM_CALL="${SERIAL_COMMAND}"
@@ -75,13 +74,14 @@ _execute_serial_commands_start() {
       exit 127
     fi
   done
+
   popd >> /dev/null
   log "INFO" "Execution of all commands complete!"
 }
 
 _execute_serial_commands_usage() {
-  log "ERROR" "execute-serial-commands.sh -- serially execute a JSON array of commands."
-  log "ERROR" "USAGE: execute-serial-commands.sh -c [JSON ARRAY AS STRING] -p [EXECUTION PATH] -s [COMMAND SUFFIX TO PREPEND]"
+  log "ERROR" "execute-serial-commands.sh -- serially execute a newline separated list of commands."
+  log "ERROR" "USAGE: execute-serial-commands.sh -c [NEWLINE SEPARATED COMMANDS] -p [EXECUTION PATH] -s [COMMAND SUFFIX TO PREPEND]"
   exit 127
 }
 

@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       COMMANDS:
-        description: "A JSON encoded string containing an array of commands to execute."
+        description: "A newline separated string containing the commands to execute."
         required: true
         type: string
       CONCURRENCY:
