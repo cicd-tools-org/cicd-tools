@@ -61,12 +61,23 @@ on:
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
         required: false
+    outputs:
+      RELEASE_CANDIDATE:
+        description: "If set to a string value of 'true' it indicates a release build."
+        value: ${{ jobs.generate_github_release.outputs.RELEASE_CANDIDATE }}
+      RELEASE_CONTEXT:
+        description: "The newly created release object."
+        value: ${{ jobs.generate_github_release.outputs.RELEASE_CONTEXT }}
 
 jobs:
 
   generate_github_release:
 
     runs-on: ubuntu-latest
+
+    outputs:
+      RELEASE_CANDIDATE: ${{  steps.filter.outputs.RELEASE_CANDIDATE }}
+      RELEASE_CONTEXT: ${{ steps.create_release.outputs.RELEASE_CONTEXT }}
 
     steps:
       - name: Create Release -- Checkout Repository
