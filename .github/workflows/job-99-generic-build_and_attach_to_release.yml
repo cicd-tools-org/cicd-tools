@@ -1,0 +1,197 @@
+---
+name: job-99-generic-build_and_attach_to_release
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+on:
+  workflow_call:
+    inputs:
+      BUILD_COMMAND:
+        description: "A shell command (or commands) to execute to create your build."
+        required: true
+        type: string
+      ERROR_COMMAND:
+        default: ""
+        description: "Optional, a command to run if the workflow fails."
+        required: false
+        type: string
+      POST_BUILD_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the build executes."
+        required: false
+        type: string
+      PRE_BUILD_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the build executes."
+        required: false
+        type: string
+      RELEASE_CONTEXT:
+        description: "A JSON encoded release context object from a newly generated release."
+        required: true
+        type: string
+      REMOTE_SCRIPT_ATTACH_TO_RELEASE:
+        default: "ci/github/scripts/job-99-attach-to-release.js"
+        description: "Optional, allows you to specify a script to attach files to a GitHub release."
+        required: false
+        type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
+      REQUIRES_BUILDX:
+        default: false
+        description: "Optional, allows you to use docker buildx as part of your build."
+        required: false
+        type: boolean
+      REQUIRES_POETRY:
+        default: false
+        description: "Optional, allows you to use poetry as part of your build."
+        required: false
+        type: boolean
+      REQUIRES_QEMU:
+        default: false
+        description: "Optional, allows you to use docker support for QEMU as part of your build."
+        required: false
+        type: boolean
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      UPLOAD_FOLDERS:
+        description: "A newline delimited list of folders who's content will be attached to the release."
+        required: true
+        type: string
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to enable verbose notifications."
+        required: false
+        type: boolean
+    secrets:
+      ENV_SECRET_1:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_2:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_3:
+        description: "Optional, content to save to the environment."
+        required: false
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+env:
+  ENV_SECRET_1: ${{ secrets.ENV_SECRET_1 }}
+  ENV_SECRET_2: ${{ secrets.ENV_SECRET_2 }}
+  ENV_SECRET_3: ${{ secrets.ENV_SECRET_3 }}
+
+jobs:
+
+  build_and_attach_to_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build and Attach to Release -- Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Build and Attach to Release -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Build and Attach to Release -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Build and Attach to Release -- Build Start Notification
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+          NOTIFICATION_MESSAGE: "A release build has started ..."
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: Build and Attach to Release -- Set up QEMU
+        if: inputs.REQUIRES_QEMU == true
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build and Attach to Release -- Set up Docker Buildx
+        if: inputs.REQUIRES_BUILDX == true
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Build and Attach to Release -- Setup Poetry
+        if: inputs.REQUIRES_POETRY == true
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-poetry"
+        shell: bash
+
+      - name: Build and Attach to Release -- Pre Build Command
+        if: inputs.PRE_BUILD_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_BUILD_COMMAND }}
+        shell: bash
+
+      - name: Build and Attach to Release -- Build Command
+        run: |
+          ${{ inputs.BUILD_COMMAND }}
+        shell: bash
+
+      - name: Build and Attach to Release -- Post Build Command
+        if: inputs.POST_BUILD_COMMAND != ''
+        run: |
+          ${{ inputs.POST_BUILD_COMMAND }}
+        shell: bash
+
+      - name: Build and Attach to Release -- Attach Files
+        env:
+          RELEASE_CONTEXT: ${{ inputs.RELEASE_CONTEXT }}
+          UPLOAD_FOLDERS: ${{ inputs.UPLOAD_FOLDERS }}
+        if: inputs.TESTING_MODE == false
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const script = require('./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ATTACH_TO_RELEASE }}');
+            const folders = process.env.UPLOAD_FOLDERS;
+            const release = JSON.parse(process.env.RELEASE_CONTEXT);
+            await script({ context, core, fs, folders, github, release })
+
+      - name: Build and Attach to Release -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: |
+            Build has completed, and files have been attached!
+            https://github.com/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}/releases
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Build and Attach to Release -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "An error occurred while creating the release build!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: Build and Attach to Release -- Error Command
+        if: failure() && inputs.ERROR_COMMAND != ''
+        run: |
+          ${{ inputs.ERROR_COMMAND }}
+        shell: bash
