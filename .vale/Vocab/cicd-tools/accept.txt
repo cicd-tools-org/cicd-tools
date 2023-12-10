@@ -15,8 +15,9 @@ golang
 hadolint
 json|JSON
 mac_maker
+makefile
 npm
-pre
+(P)re
 rebase
 rebasing
 reusability
