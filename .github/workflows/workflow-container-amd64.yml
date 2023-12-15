@@ -1,13 +1,13 @@
 ---
-name: cicd-tooling-github-workflow-container
+name: cicd-tooling-github-workflow-container-amd64
 
 on:
   push:
     paths:
       - ".github/workflows/workflow-container.yml"
       - ".github/workflows/job-*-container-*.yml"
-      - ".cicd-tools/container/Dockerfile"
-      - ".cicd-tools/container/Dockerfile.sha256"
+      - ".cicd-tools/container/amd64/Dockerfile"
+      - ".cicd-tools/container/amd64/Dockerfile.sha256"
       - "scripts/container.sh"
   schedule:
     - cron: "0 6 * * 1"
@@ -49,7 +49,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-container-security_scan_container.yml
     with:
-      CONTEXT: .cicd-tools/container
+      CONTEXT: .cicd-tools/container/amd64
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "container"
 
@@ -59,7 +59,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-container-dockerfile_linter.yml
     with:
-      DOCKERFILE: .cicd-tools/container/Dockerfile
+      DOCKERFILE: .cicd-tools/container/amd64/Dockerfile
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "container"
 
@@ -71,7 +71,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-95-container-push.yml
     with:
-      CONTEXT: .cicd-tools/container
+      CONTEXT: .cicd-tools/container/amd64
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "container"
 

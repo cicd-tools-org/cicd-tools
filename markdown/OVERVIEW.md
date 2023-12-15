@@ -5,7 +5,7 @@
 CICD-Tools provides four consumable resources that together form the basis for a complete CI solution:
 
 1. Customized [pre-commit hooks](https://github.com/cicd-tools-org/pre-commit) for end-user projects.
-2. A custom [Docker container](../.cicd-tools/container/Dockerfile) which supplies the required binary tools for the pre-commit hooks.
+2. A custom [Docker container](../.cicd-tools/container/amd64/Dockerfile) which supplies the required binary tools for the pre-commit hooks.
 3. Remotely consumable [GitHub "Jobs"](../.github/workflows) that are actively maintained.
 4. A custom [packaging system](https://github.com/cicd-tools-org/manifest/blob/master/manifest.json.asc) that securely delivers upgradable [Toolboxes](../cicd-tools/boxes) full of scripts for the workflows.
 
@@ -25,7 +25,7 @@ However, this leads to a problem where the tools used to perform these quality c
 
 The [CICD-Tools container](https://ghcr.io/cicd-tools-org/cicd-tools) provides vetted binaries that are [integrated](https://github.com/cicd-tools-org/pre-commit/blob/master/.pre-commit-hooks.yaml) with the pre-commit hooks.
 
-This allows a [single container definition](../.cicd-tools/container/Dockerfile) to [securely](../.cicd-tools/container/Dockerfile.sha256) provide most third party software. Where necessary, other trusted containers are leveraged to create a complete solution. Together these containers provide a way of leveraging third party tools without polluting your codebase with extra dependencies.
+This allows a [single container definition](../.cicd-tools/container/amd64/Dockerfile) to [securely](../.cicd-tools/container/Dockerfile.sha256) provide most third party software. Where necessary, other trusted containers are leveraged to create a complete solution. Together these containers provide a way of leveraging third party tools without polluting your codebase with extra dependencies.
 
 Finally, the containers ensure the same tools are used to check the codebase locally, and in the CI.  
 
