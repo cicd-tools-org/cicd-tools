@@ -1,10 +1,12 @@
 ARG ACTIONLINT_VERSION="1.6.23@sha256:02ccb6d91e4cb4a7b21eb99d5274d257e81ae667688d730e89d7ea0d6d35db91"
+ARG HADOLINT_VERSION="2.12.0-debian@sha256:27173fe25e062448490a32de410c08491c626a0bef360aa2ce5d5bdd9384b50d"
 ARG SHFMT_VERSION="3.6.0@sha256:b68b0e33bf799f393aec27f72da64ec1d84476c8cfa9a2a7bfd0cbbdbfc8d534"
 ARG SHELLCHECK_VERSION="v0.9.0@sha256:a527e2077f11f28c1c1ad1dc784b5bc966baeb3e34ef304a0ffa72699b01ad9c"
 ARG TOMLL_VERSION="v2.0.7@sha256:31a4914ce328b8c7db0e7ce2ec3baf7a8f1ddb5ba430aab81754caf3ed66a2df"
 ARG VALE_VERSION="v2.27.0@sha256:f5ef07ddd8627e261be31983e2bddcdf5596dc8ca8dac19c3b51655657f712dd"
 
 FROM rhysd/actionlint:${ACTIONLINT_VERSION} as actionlint
+FROM ghcr.io/hadolint/hadolint:${HADOLINT_VERSION} as hadolint
 FROM mvdan/shfmt:${SHFMT_VERSION} as shfmt
 FROM koalaman/shellcheck:${SHELLCHECK_VERSION} as shellcheck
 FROM ghcr.io/pelletier/go-toml:${TOMLL_VERSION} as tomll
@@ -29,6 +31,7 @@ RUN curl -sL --retry 3 "${JQ_VERSION}" -o /dist/jq \
     && chmod +x /dist/jq
 
 COPY --from=actionlint /usr/local/bin/actionlint /dist
+COPY --from=hadolint /bin/hadolint /dist
 COPY --from=shfmt /bin/shfmt /dist
 COPY --from=shellcheck /bin/shellcheck /dist
 COPY --from=tomll /bin/tomll /dist
