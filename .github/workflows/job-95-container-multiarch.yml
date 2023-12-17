@@ -1,5 +1,5 @@
 ---
-name: job-95-container-push
+name: job-95-container-multiarch
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-setup-environment.sh
@@ -7,26 +7,16 @@ name: job-95-container-push
 on:
   workflow_call:
     inputs:
-      BUILD_ARGS:
-        default: ""
-        description: "Optional, allows you define build arguments for the container build."
-        required: false
-        type: string
-      CONTEXT:
-        default: "."
-        description: "Optional, allows you define where the build context is located."
-        required: false
-        type: string
-      DOCKERFILE:
-        default: "./Dockerfile"
-        description: "Optional, allows you define where the Dockerfile is located with respect to the context."
-        required: false
-        type: string
       REGISTRY:
         default: "ghcr.io"
         description: "Optional, allows you to specify a Docker registry to use."
         required: false
         type: string
+      IMAGE_GIT:
+        default: false
+        description: "Optional, allows you to create image tags from git branches and tags."
+        required: false
+        type: boolean
       IMAGE_NAME:
         default: ""
         description: "Optional, allows you to specify the image name, otherwise the configured script will generate one."
@@ -37,25 +27,14 @@ on:
         description: "Optional, allows you to designate this as the 'latest' image when pushed."
         required: false
         type: boolean
-      IMAGE_TAG:
-        default: ""
-        description: "Optional, allows you specify the image tag, otherwise the pushed branch or tag will be used."
+      MULTIARCH_TAG:
+        default: "multiarch"
+        description: "Optional, allows you specify the multiarch tag that will be used to aggregate images from different platforms."
         required: false
         type: string
-      PLATFORM:
-        default: ""
-        description: "Optional, allows you to specify the target platform of the container."
-        required: false
-        type: string
-      POST_BUILD_COMMAND:
-        default: ""
-        description: "Optional, a command to run after the build executes."
-        required: false
-        type: string
-      PRE_BUILD_COMMAND:
-        default: ""
-        description: "Optional, a command to run before build executes."
-        required: false
+      SOURCE_TAGS:
+        description: "The newline separated list of tags you wish to create the multiarch image from."
+        required: true
         type: string
       REMOTE_SCRIPT_DEFAULT_SETTER:
         default: "ci/github/scripts/step-set-value-with-default.sh"
@@ -67,11 +46,6 @@ on:
         description: "Optional, allows you to specify a workflow set value script."
         required: false
         type: string
-      REQUIRES_QEMU:
-        default: false
-        description: "Optional, allows you to use docker support for QEMU as part of your build."
-        required: false
-        type: boolean
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -100,35 +74,31 @@ on:
 
 jobs:
 
-  run_docker_push:
+  multiarch_image:
 
     runs-on: ubuntu-latest
 
     steps:
-      - name: Push Container -- Checkout Repository
+      - name: Multiarch Image Management -- Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Push Container -- Setup Environment
+      - name: Multiarch Image Management --Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
           bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Push Container -- Install Toolbox
+      - name: Multiarch Image Management -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
-      - name: Push Container -- Configure Registry
+      - name: Multiarch Image Management -- Configure Registry
         id: registry
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
             -o "IMAGE_NAME" \
             -d "${PROJECT_OWNER}/${PROJECT_NAME}" \
             -s "${{ inputs.IMAGE_NAME }}"
-          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
-            -o "IMAGE_TAG" \
-            -d "${{ env.BRANCH_OR_TAG }}" \
-            -s "${{ inputs.IMAGE_TAG }}"
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
             -o "REGISTRY_USERNAME" \
             -d "${{ github.actor }}" \
@@ -139,71 +109,65 @@ jobs:
             -s "${{ secrets.REGISTRY_PASSWORD }}"
         shell: bash
 
-      - name: Push Container -- Set up QEMU
-        if: inputs.REQUIRES_QEMU == true
-        uses: docker/setup-qemu-action@v3
-
-      - name: Push Container -- Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Push Container -- Login to GitHub Container Registry
+      - name: Multiarch Image Management -- Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.REGISTRY }}
           username: ${{ steps.registry.outputs.REGISTRY_USERNAME }}
           password: ${{ steps.registry.outputs.REGISTRY_PASSWORD }}
 
-      - name: Push Container -- Append Latest Tag
-        id: latest
+      - name: Multiarch Image Management -- Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Multiarch Image Management -- Build Tag to Platform Mappings
+        id: tags
         run: |
-          LATEST=""
-          [[ "${{ inputs.IMAGE_LATEST }}" == "true" ]] && LATEST="${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:latest"
+          PREFIX="${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}"
+          IFS=$'\n' read -r -d '' -a TAGS <<< "${{ inputs.SOURCE_TAGS }}" || true
+          SOURCE_IMAGES=""
+          for TAG in "${TAGS[@]}"; do
+            SOURCE_IMAGE="${PREFIX}:$(echo "${TAG}" | tr -d '[:blank:]')"
+            SOURCE_IMAGES="${SOURCE_IMAGES} ${SOURCE_IMAGE}"
+          done
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
-            echo "${LATEST}"
-
-      - name: Push Container -- Pre Build Command
-        if: inputs.PRE_BUILD_COMMAND != ''
-        run: |
-          ${{ inputs.PRE_BUILD_COMMAND }}
+            echo "${SOURCE_IMAGES}"
         shell: bash
 
-      - name: Push Container -- Build and Push (with latest tag)
-        uses: docker/build-push-action@v5
-        with:
-          platforms: ${{ inputs.PLATFORM }}
-          build-args: |
-            ${{ inputs.BUILD_ARGS }}
-          cache-from: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
-          cache-to: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
-          no-cache: true
-          context: ${{ inputs.CONTEXT }}
-          file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
-          push: true
-          pull: true
-          tags: |
-            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
-            ${{ steps.latest.outputs.VALUE }}
-
-      - name: Push Container -- Post Build Command
-        if: inputs.POST_BUILD_COMMAND != ''
+      - name: Multiarch Image Management -- Create Multiarch Image
         run: |
-          ${{ inputs.POST_BUILD_COMMAND }}
+          docker buildx imagetools create -t \
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ inputs.MULTIARCH_TAG }} \
+            ${{ steps.tags.outputs.value }}
         shell: bash
 
-      - name: Push Container -- Report Job Status on Success
+      - name: Multiarch Image Management -- Append Latest Tag
+        if: inputs.IMAGE_LATEST == true
+        run: |
+          docker buildx imagetools create -t \
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:latest \
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ inputs.MULTIARCH_TAG }}
+
+      - name: Multiarch Image Management -- Append Git Tag
+        if: inputs.IMAGE_GIT == true
+        run: |
+          docker buildx imagetools create -t \
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ env.BRANCH_OR_TAG }} \
+            ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ inputs.MULTIARCH_TAG }}
+
+      - name: Multiarch Image Management -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_MESSAGE: |
-            Docker Container has been built and pushed!
-            Pushed Image: ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
+            Multiarch image has been created!
+            Pushed Image: ${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ inputs.MULTIARCH_TAG }}
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Push Container -- Report Job Status on Failure
+      - name: Multiarch Image Management -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "Docker Container Build/Push has failed!"
+          NOTIFICATION_MESSAGE: "Multiarch image creation has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
