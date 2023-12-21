@@ -1,5 +1,5 @@
 ---
-name: job-99-generic-build_and_attach_to_release
+name: job-95-generic-build_artifact
 
 # Consuming Projects Must Implement:
 # - ./.github/scripts/step-setup-environment.sh
@@ -7,9 +7,22 @@ name: job-99-generic-build_and_attach_to_release
 on:
   workflow_call:
     inputs:
+      ARTIFACT_NAME:
+        description: "The unique identifier for this build artifact."
+        required: true
+        type: string
+      ARTIFACT_FOLDERS:
+        description: "A newline delimited list of folders who's content will be packaged in the artifact."
+        required: true
+        type: string
       BUILD_COMMAND:
         description: "A shell command (or commands) to execute to create your build."
         required: true
+        type: string
+      DEPENDENT_ARTIFACT_NAME_PATTERN:
+        default: ""
+        description: "Optional, a glob pattern to identify artifacts that should be downloaded prior to build."
+        required: false
         type: string
       ERROR_COMMAND:
         default: ""
@@ -24,15 +37,6 @@ on:
       PRE_BUILD_COMMAND:
         default: ""
         description: "Optional, a command to run before the build executes."
-        required: false
-        type: string
-      RELEASE_CONTEXT:
-        description: "A JSON encoded release context object from a newly generated release."
-        required: true
-        type: string
-      REMOTE_SCRIPT_ATTACH_TO_RELEASE:
-        default: "ci/github/scripts/job-99-attach-to-release.js"
-        description: "Optional, allows you to specify a script to attach files to a GitHub release."
         required: false
         type: string
       REMOTE_SCRIPT_USE_POETRY:
@@ -50,6 +54,11 @@ on:
         description: "Optional, allows you to use poetry as part of your build."
         required: false
         type: boolean
+      REQUIRES_PYTHON:
+        default: "false"
+        description: "Optional, allows you to use setup a python version as part of your build."
+        required: false
+        type: string
       REQUIRES_QEMU:
         default: false
         description: "Optional, allows you to use docker support for QEMU as part of your build."
@@ -60,10 +69,6 @@ on:
         description: "Optional, allows you to test a workflow failure."
         required: false
         type: boolean
-      UPLOAD_FOLDERS:
-        description: "A newline delimited list of folders who's content will be attached to the release."
-        required: true
-        type: string
       WORKFLOW_NAME:
         default: ""
         description: "Identifies this workflow in notifications."
@@ -95,102 +100,116 @@ env:
 
 jobs:
 
-  build_and_attach_to_release:
+  build_artifacts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build and Attach to Release -- Repository
+      - name: Build and Upload Artifact -- Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Build and Attach to Release -- Install Toolbox
+      - name: Build and Upload Artifact -- Set up Python ${{ inputs.REQUIRES_PYTHON }}
+        if: inputs.REQUIRES_PYTHON != 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.REQUIRES_PYTHON }}
+
+      - name: Build and Upload Artifact -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
 
-      - name: Build and Attach to Release -- Setup Environment
+      - name: Build and Upload Artifact -- Setup Environment
         env:
           WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
         run: |
           bash "./.github/scripts/step-setup-environment.sh"
         shell: bash
 
-      - name: Build and Attach to Release -- Build Start Notification
+      - name: Build and Upload Artifact -- Build Start Notification
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":vertical_traffic_light:"
-          NOTIFICATION_MESSAGE: "A release build has started ..."
+          NOTIFICATION_MESSAGE: "A build for '${{ inputs.ARTIFACT_NAME }}' has started ..."
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
 
-      - name: Build and Attach to Release -- Set up QEMU
+      - name: Build and Upload Artifact -- Download Dependent Artifacts
+        if: inputs.DEPENDENT_ARTIFACT_NAME_PATTERN != ''
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          pattern: ${{ inputs.DEPENDENT_ARTIFACT_NAME_PATTERN }}
+          merge-multiple: true
+
+      - name: Build and Upload Artifact -- Unpack Dependent Artifacts
+        if: inputs.DEPENDENT_ARTIFACT_NAME_PATTERN != ''
+        run: |
+          for FILE in ./*.tar.gz; do tar xvzf "${FILE}"; done
+
+      - name: Build and Upload Artifact -- Set up QEMU
         if: inputs.REQUIRES_QEMU == true
         uses: docker/setup-qemu-action@v3
 
-      - name: Build and Attach to Release -- Set up Docker Buildx
+      - name: Build and Upload Artifact -- Set up Docker Buildx
         if: inputs.REQUIRES_BUILDX == true
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker
 
-      - name: Build and Attach to Release -- Setup Poetry
+      - name: Build and Upload Artifact -- Setup Poetry
         if: inputs.REQUIRES_POETRY == true
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
             "install-poetry"
         shell: bash
 
-      - name: Build and Attach to Release -- Pre Build Command
+      - name: Build and Upload Artifact -- Pre Build Command
         if: inputs.PRE_BUILD_COMMAND != ''
         run: |
           ${{ inputs.PRE_BUILD_COMMAND }}
         shell: bash
 
-      - name: Build and Attach to Release -- Build Command
+      - name: Build and Upload Artifact -- Build Command
         run: |
           ${{ inputs.BUILD_COMMAND }}
         shell: bash
 
-      - name: Build and Attach to Release -- Post Build Command
+      - name: Build and Upload Artifact -- Post Build Command
         if: inputs.POST_BUILD_COMMAND != ''
         run: |
           ${{ inputs.POST_BUILD_COMMAND }}
         shell: bash
 
-      - name: Build and Attach to Release -- Attach Files
-        env:
-          RELEASE_CONTEXT: ${{ inputs.RELEASE_CONTEXT }}
-          UPLOAD_FOLDERS: ${{ inputs.UPLOAD_FOLDERS }}
-        if: inputs.TESTING_MODE == false
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const script = require('./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ATTACH_TO_RELEASE }}');
-            const folders = process.env.UPLOAD_FOLDERS;
-            const release = JSON.parse(process.env.RELEASE_CONTEXT);
-            await script({ context, core, fs, folders, github, release })
+      - name: Build and Upload Artifact -- Package Artifact
+        run: |
+          IFS=$'\n' read -r -d '' -a FOLDERS <<< "${{ inputs.ARTIFACT_FOLDERS }}" || true
+          eval "tar -czf '${{ inputs.ARTIFACT_NAME }}.tar.gz' $(printf "'%s' " "${FOLDERS[@]}")"
+        shell: bash
 
-      - name: Build and Attach to Release -- Report Job Status on Success
+      - name: Build and Upload Artifact -- Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT_NAME }}
+          path: "${{ inputs.ARTIFACT_NAME }}.tar.gz"
+
+      - name: Build and Upload Artifact -- Report Job Status on Success
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: |
-            Build has completed, and files have been attached!
-            https://github.com/${{ env.PROJECT_OWNER }}/${{ env.PROJECT_NAME }}/releases
+          NOTIFICATION_MESSAGE: "Build artifact '${{ inputs.ARTIFACT_NAME }}' has been built and uploaded!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
-      - name: Build and Attach to Release -- Report Job Status on Failure
+      - name: Build and Upload Artifact -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "An error occurred while creating the release build!"
+          NOTIFICATION_MESSAGE: "An error occurred while building '${{ inputs.ARTIFACT_NAME }}'!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
 
-      - name: Build and Attach to Release -- Error Command
+      - name: Build and Upload Artifact -- Error Command
         if: failure() && inputs.ERROR_COMMAND != ''
         run: |
           ${{ inputs.ERROR_COMMAND }}
