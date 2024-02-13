@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Notification -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Notification -- Setup Environment
         env:
