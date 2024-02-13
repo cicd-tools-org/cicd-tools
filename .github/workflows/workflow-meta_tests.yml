@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Molecule Scenario Discovery Test -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Molecule Scenario Discovery Test -- Setup Environment
         env:
@@ -79,7 +79,7 @@ jobs:
 
     steps:
       - name: Secret Exists Test -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Secret Exists Test -- Setup Environment
         env:
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Notification (Local Action Test) -- Setup Environment
         env:
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Notification (Local Action Test) -- Setup Environment
         env:
@@ -326,7 +326,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Notification (Local Action Test) -- Setup Environment
         env:
