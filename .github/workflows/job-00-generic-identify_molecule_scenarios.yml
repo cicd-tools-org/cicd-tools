@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Molecule Scenario Discovery -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Molecule Scenario Discovery -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox

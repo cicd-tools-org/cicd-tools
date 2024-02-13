@@ -80,7 +80,7 @@ jobs:
 
     steps:
       - name: Multiarch Image Management -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Multiarch Image Management --Setup Environment
         env:
