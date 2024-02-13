@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Fly.io Deploy -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fly.io Deploy -- Setup Environment
         env:

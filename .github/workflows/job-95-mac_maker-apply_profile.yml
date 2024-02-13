@@ -80,7 +80,7 @@ jobs:
 
     steps:
       - name: Apply Mac Maker Profile -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Apply Mac Maker Profile -- Setup Environment
         env:
