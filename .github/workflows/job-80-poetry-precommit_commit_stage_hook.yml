@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Setup Environment
         env:

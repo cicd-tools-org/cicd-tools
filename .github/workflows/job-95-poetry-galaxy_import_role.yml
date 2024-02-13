@@ -59,14 +59,14 @@ jobs:
     steps:
       - name: Publish to Galaxy -- Code Checkout (workflow dispatch)
         if: inputs.WORKFLOW_DISPATCH == true
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.TAG  }}
 
       - name: Publish to Galaxy -- Code Checkout (published release)
         if: inputs.WORKFLOW_DISPATCH == false
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
