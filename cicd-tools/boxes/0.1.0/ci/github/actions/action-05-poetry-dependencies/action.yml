@@ -53,7 +53,7 @@ runs:
       shell: bash
 
     - name: Dependencies (Python) -- Mount Poetry Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: poetry-py-${{ steps.poetry_python_version.outputs.value }}-${{ hashFiles(format('{0}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: ${{ steps.poetry_venv_path.outputs.POETRY_LOCATION }}

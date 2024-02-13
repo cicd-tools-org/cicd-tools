@@ -106,7 +106,7 @@ jobs:
         shell: bash
 
       - name: Apply Mac Maker Profile -- Setup Homebrew Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ inputs.CACHE_FOLDERS }}
           key: mac_maker-${{ matrix.os }}-${{ matrix.architecture }}-${{ steps.remote_origin_hash.outputs.value }}-${{ env.CACHE_TTL }}
