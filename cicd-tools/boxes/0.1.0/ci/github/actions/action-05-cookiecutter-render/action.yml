@@ -30,7 +30,7 @@ runs:
 
     - name: Cookiecutter -- Mount Poetry Cache
       if: env.TEMPLATE_SKIP_POETRY != '1'
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: poetry-${{ hashFiles(format('{0}/{{{{cookiecutter.project_slug}}}}/pyproject.toml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: ~/.cache/pypoetry/virtualenvs

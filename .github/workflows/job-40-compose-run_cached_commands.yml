@@ -194,7 +194,7 @@ jobs:
 
       - name: Compose Command Sequence -- Populate the Mounted Cache Folder -- '${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}'
         if: inputs.COMPOSE_MOUNTED_CACHE_FOLDER != '' && inputs.COMPOSE_MOUNTED_CACHE_KEY_FILE != ''
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: compose-cache-folder-${{ hashFiles(format('{0}/{1}', inputs.EXECUTION_PATH, inputs.COMPOSE_MOUNTED_CACHE_KEY_FILE )) }}-${{ steps.CACHING_CONFIGURATION.outputs.BUILDX_CACHE_KEY }}-${{ env.CACHE_TTL }}
           path: ${{ inputs.EXECUTION_PATH }}/${{ inputs.COMPOSE_MOUNTED_CACHE_FOLDER }}

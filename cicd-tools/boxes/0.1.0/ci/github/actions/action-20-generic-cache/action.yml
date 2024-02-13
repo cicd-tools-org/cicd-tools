@@ -38,7 +38,7 @@ runs:
       shell: bash
 
     - name: Generic Cache -- Mount Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: ${{ inputs.CACHE_KEY }}
         path: .github/cache/${{ inputs.CACHE_NAME }}
