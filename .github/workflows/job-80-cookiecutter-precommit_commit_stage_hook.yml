@@ -101,7 +101,7 @@ jobs:
           SCENARIO: ${{ matrix.scenario }}
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- (COOKIECUTTER) Mount Pre-Commit Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: pre-commit-${{ hashFiles('./template/.pre-commit-config.yaml') }}-${{ hashFiles('./template/{{cookiecutter.project_slug}}/.pre-commit-config.yaml') }}-${{ runner.os }}-${{ env.CACHE_TTL }}
           path: ~/.cache/pre-commit
