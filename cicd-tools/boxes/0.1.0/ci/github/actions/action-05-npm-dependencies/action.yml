@@ -32,7 +32,7 @@ runs:
       shell: bash
 
     - name: Dependencies (Node) -- Mount NPM Cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: npm-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.CACHE_TTL }}
         path: |
