@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: Push Container -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Push Container -- Setup Environment
         env:

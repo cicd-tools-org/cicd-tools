@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: Create Release -- Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create Release -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
@@ -101,7 +101,7 @@ jobs:
 
       - name: Create Release -- Checkout Repository (All Commits)
         if: steps.filter.outputs.RELEASE_CANDIDATE == 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

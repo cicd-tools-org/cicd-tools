@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Build and Upload Artifact -- Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
