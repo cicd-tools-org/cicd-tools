@@ -61,3 +61,4 @@ LABEL org.opencontainers.image.source=https://github.com/cicd-tools-org/cicd-too
 LABEL org.opencontainers.image.description="FOSS binaries for CICD-Tools."
 
 COPY --from=sha /dist/* /bin/
+COPY --from=sha /etc/ssl/certs/* /etc/ssl/certs/
