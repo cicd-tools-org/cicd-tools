@@ -24,7 +24,27 @@ on:
         type: string
       IMAGE_NAME:
         default: ""
-        description: "Optional, allows you to specify the image and tag name.  A default value is constructed if none is passed."
+        description: "Optional, allows you to specify the image name, otherwise the configured script will generate one."
+        required: false
+        type: string
+      IMAGE_TAG:
+        default: ""
+        description: "Optional, allows you specify the image tag, otherwise the pushed branch or tag will be used."
+        required: false
+        type: string
+      PLATFORM:
+        default: ""
+        description: "Optional, allows you to specify the target platform of the container."
+        required: false
+        type: string
+      POST_BUILD_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the build executes."
+        required: false
+        type: string
+      PRE_BUILD_COMMAND:
+        default: ""
+        description: "Optional, a command to run before build executes."
         required: false
         type: string
       REGISTRY:
@@ -37,6 +57,16 @@ on:
         description: "Optional, allows you to specify different default value creation script."
         required: false
         type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
+        type: string
+      REQUIRES_QEMU:
+        default: false
+        description: "Optional, allows you to use docker support for QEMU as part of your build."
+        required: false
+        type: boolean
       TESTING_MODE:
         default: false
         description: "Optional, allows you to test a workflow failure."
@@ -84,18 +114,27 @@ jobs:
             -o "IMAGE_NAME" \
             -d "${PROJECT_OWNER}/${PROJECT_NAME}" \
             -s "${{ inputs.IMAGE_NAME }}"
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_DEFAULT_SETTER }}" \
+            -o "IMAGE_TAG" \
+            -d "${{ env.BRANCH_OR_TAG }}" \
+            -s "${{ inputs.IMAGE_TAG }}"
         shell: bash
+
+      - name: Container Scan -- Set up QEMU
+        if: inputs.REQUIRES_QEMU == true
+        uses: docker/setup-qemu-action@v3
 
       - name: Container Scan -- Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Container Scan -- Build Container
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
+          platforms: ${{ inputs.PLATFORM }}
           build-args: |
             ${{ inputs.BUILD_ARGS }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
+          cache-to: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
           load: true
