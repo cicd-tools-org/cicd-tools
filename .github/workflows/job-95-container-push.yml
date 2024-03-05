@@ -22,11 +22,6 @@ on:
         description: "Optional, allows you define where the Dockerfile is located with respect to the context."
         required: false
         type: string
-      REGISTRY:
-        default: "ghcr.io"
-        description: "Optional, allows you to specify a Docker registry to use."
-        required: false
-        type: string
       IMAGE_NAME:
         default: ""
         description: "Optional, allows you to specify the image name, otherwise the configured script will generate one."
@@ -55,6 +50,11 @@ on:
       PRE_BUILD_COMMAND:
         default: ""
         description: "Optional, a command to run before build executes."
+        required: false
+        type: string
+      REGISTRY:
+        default: "ghcr.io"
+        description: "Optional, allows you to specify a Docker registry to use."
         required: false
         type: string
       REMOTE_SCRIPT_DEFAULT_SETTER:
@@ -147,7 +147,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Push Container -- Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ inputs.REGISTRY }}
           username: ${{ steps.registry.outputs.REGISTRY_USERNAME }}
