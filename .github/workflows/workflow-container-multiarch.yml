@@ -47,14 +47,32 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - build-args: |
+              BUILD_ARG_ARCH_FORMAT_1=amd64
+              BUILD_ARG_ARCH_FORMAT_2=x86_64
+              BUILD_ARG_ARCH_FORMAT_3=x86_64
+              BUILD_ARG_ARCH_FORMAT_4=64-bit
+            build-platform: linux/amd64
+            build-tag: linux-amd64
+          - build-args: |
+              BUILD_ARG_ARCH_FORMAT_1=arm64
+              BUILD_ARG_ARCH_FORMAT_2=arm64
+              BUILD_ARG_ARCH_FORMAT_3=aarch64
+              BUILD_ARG_ARCH_FORMAT_4=arm64
+            build-platform: linux/arm64
+            build-tag: linux-arm64
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
     uses: ./.github/workflows/job-10-container-security_scan_container.yml
     with:
-      BUILD_ARGS: |
-        BUILD_ARG_ARCH_FORMAT_1=amd64
-        BUILD_ARG_ARCH_FORMAT_2=x86_64
-        BUILD_ARG_ARCH_FORMAT_3=x86_64
-        BUILD_ARG_ARCH_FORMAT_4=64-bit
+      BUILD_ARGS: ${{ matrix.build-args }}
       CONTEXT: .cicd-tools/container
+      IMAGE_TAG: ${{ matrix.build-tag }}
+      PLATFORM: ${{ matrix.build-platform }}
+      REQUIRES_QEMU: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "container"
 
