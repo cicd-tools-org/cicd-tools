@@ -11,6 +11,16 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      POST_HOOK_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the hook executes."
+        required: false
+        type: string
+      PRE_HOOK_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the hook executes."
+        required: false
+        type: string
       PRECOMMIT_HOOK_ID:
         description: "The 'hook id' of the precommit linter you wish to run."
         required: true
@@ -87,9 +97,21 @@ jobs:
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
+      - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Pre Hook Command
+        if: inputs.PRE_HOOK_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_HOOK_COMMAND }}
+        shell: bash
+
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Run '${{ inputs.PRECOMMIT_HOOK_ID }}' pre-commit hook
         run: |
           poetry run pre-commit run ${{ inputs.PRECOMMIT_HOOK_ID }} --all-files
+        shell: bash
+
+      - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Post Hook Command
+        if: inputs.POST_HOOK_COMMAND != ''
+        run: |
+          ${{ inputs.POST_HOOK_COMMAND }}
         shell: bash
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Report Job Status on Success
