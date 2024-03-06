@@ -230,6 +230,7 @@ jobs:
       COMMAND: |
         CICD_COMMIT_MESSAGES_FILE="$(mktemp XXXXXXXX.git_history_file)"
         git log --pretty=format:%s "${PUSHED_COMMIT_REV_RANGE}" > "${CICD_COMMIT_MESSAGES_FILE}"
+        poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
         poetry run pre-commit run --hook-stage commit-msg spelling-commit-message --commit-msg-filename "${CICD_COMMIT_MESSAGES_FILE}"
       COMMAND_NAME: "Commit Message Spelling"
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
