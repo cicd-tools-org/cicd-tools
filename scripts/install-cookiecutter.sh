@@ -28,9 +28,9 @@ main() {
   _installer_actions
   _installer_cookiecutter_symlinks
 
-  _installer_line_in_file ".gitignore" '.cicd-tools/boxes/*'
+  _installer_line_in_file ".gitignore" '.cicd-tools/boxes'
   _installer_line_in_file ".gitignore" '!.cicd-tools/boxes/bootstrap'
-  _installer_line_in_file "{{cookiecutter.project_slug}}/.gitignore" '.cicd-tools/boxes/*'
+  _installer_line_in_file "{{cookiecutter.project_slug}}/.gitignore" '.cicd-tools/boxes'
   _installer_line_in_file "{{cookiecutter.project_slug}}/.gitignore" '!.cicd-tools/boxes/bootstrap'
 
   _installer_poetry_init "."
