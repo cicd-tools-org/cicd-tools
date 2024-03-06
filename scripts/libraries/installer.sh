@@ -149,15 +149,20 @@ _installer_initialize_vale() {
 
   TARGET_FOLDER="${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.vale/Vocab/${VALE_FOLDER}"
 
-  log "DEBUG" "VALE CREATE > '${TARGET_FOLDER}/'"
+  _installer_line_in_file "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.gitignore" '.vale/*'
+  _installer_line_in_file "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.gitignore" '!.vale/Vocab'
 
-  mkdir -p "${TARGET_FOLDER}/"
-  touch "${TARGET_FOLDER}/accept.txt"
+  if [[ -f "${TARGET_FOLDER}" ]]; then
+    log "DEBUG" "VALE CREATE > '${TARGET_FOLDER}/'"
+    mkdir -p "${TARGET_FOLDER}/"
+  fi
+
+  _installer_line_in_file "${TARGET_FOLDER}/accept.txt" "$(basename "${CICD_TOOLS_INSTALL_TARGET_PATH}")"
+  sort "${TARGET_FOLDER}/accept.txt" -o "${TARGET_FOLDER}/accept.txt"
   touch "${TARGET_FOLDER}/reject.txt"
 
   log "DEBUG" "VALE CREATE > '.vale.ini'"
   _installer_jinja_render ".vale.ini"
-
 }
 
 _installer_jinja_render() {

@@ -40,7 +40,7 @@ $ poetry init -q --dev-dependency=commitizen --dev-dependency=pre-commit
 
 Depending on which CICD-Tools integrations you end up using, you may find it useful to explore formatting your `pyproject.toml` file with [tomll](https://github.com/pelletier/go-toml) and including some more advanced [commitizen](https://pypi.org/project/commitizen/) configuration.  You can find examples of this in the [installer.sh](../../scripts/libraries/installer.sh) library file.
 
-Alternatively, the [install-cookiecutter.sh](../../scripts/install-cookiecutter.sh) setup script will automate this process for you giving you sane, usable defaults.
+Alternatively, the [install-cookiecutter.sh](../../scripts/install-cookiecutter.sh) setup script will automate this process for you giving you sensible, usable defaults.
 
 ### Step 3. Add the CICD-Tools Bootstrap Layer
 

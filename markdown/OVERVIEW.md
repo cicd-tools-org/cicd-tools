@@ -13,13 +13,13 @@ End-user projects consume these components to create their own custom CI solutio
 
 ## 1. Pre-Commit Hooks
 
-The [pre-commit hooks](https://github.com/cicd-tools-org/pre-commit) are designed to be consumed by end-user projects directly: integration simply requires creating a [.pre-commit-config.yaml](../.pre-commit-config.yaml) file.
+The [pre-commit hooks](https://github.com/cicd-tools-org/pre-commit) are designed to be consumed by end-user projects directly: integration requires creating a [.pre-commit-config.yaml](../.pre-commit-config.yaml) file.
 
 These hooks form the basic building blocks of your codebase's quality controls and are used in two ways:
 1. To perform standard pre-commit checks when committing code locally to end-user projects.
-2. As a way of keeping the CI and the local dev experience congruent, the pre-commit hooks that run at various stages are also executed by the CI.  (See the [pre-commit documentation](https://pre-commit.com/#config-stages) for more detail on `stages`.)
+2. As a way of keeping the CI and the local dev experience congruent, the pre-commit hooks that run at various stages are also run by the CI.  (See the [pre-commit documentation](https://pre-commit.com/#config-stages) for more detail on `stages`.)
 
-However, this leads to a problem where the tools used to perform these quality controls now need to be available...
+However, this leads to a problem where the tools used to perform these quality controls now need to be available…
 
 ## 2. Docker Containers
 
@@ -33,7 +33,7 @@ This should help in the elimination of `environment drift` (where the codebase o
 
 ## 3. GitHub "Jobs"
 
-There is a large collection of remotely consumable [GitHub Jobs](../.github/workflows) that provide various CI/CD services.  These [Jobs](../.github/workflows) are simply [reusable GitHub workflows](https://docs.github.com/actions/using-workflows/reusing-workflows) that are actively maintained as part of the CICD-Tools project.
+There is a large collection of remotely consumable [GitHub Jobs](../.github/workflows) that provide various CI/CD services.  These [Jobs](../.github/workflows) are [reusable GitHub workflows](https://docs.github.com/actions/using-workflows/reusing-workflows) that are actively maintained as part of the CICD-Tools project.
 
 - It's important to stop for a moment and note that ONLY the files named "job" are intended to be consumed by end-user projects.  
 - The "workflow" files are used to provide CI/CD to CICD-Tools itself.
