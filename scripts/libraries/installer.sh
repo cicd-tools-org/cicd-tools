@@ -174,6 +174,7 @@ _installer_jinja_render() {
       "cookiecutter": {
         "optional_toml_linting": "true",
         "optional_workflow_linting": "true",
+        "github_handle": "${CICD_TOOLS_GITHUB_HANDLE}",
         "project_slug": "$(basename "${CICD_TOOLS_INSTALL_TARGET_PATH}")",
         "_GITHUB_CI_DEFAULT_PYTHON_VERSIONS": ["3.9"],
         "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS": false
