@@ -131,6 +131,33 @@ jobs:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
 
+  markdown_lint:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "lint-markdown"
+      PRECOMMIT_HOOK_NAME: "Markdown Linter"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
+  markdown_spelling:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRE_HOOK_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
+      PRECOMMIT_HOOK_ID: "spelling-markdown"
+      PRECOMMIT_HOOK_NAME: "Markdown Spelling"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
   shell_lint:
     needs: [configuration]
     secrets:
@@ -205,7 +232,7 @@ jobs:
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, commit_spell_check, commitizen_hooks, json_metaschema_lint, json_schema_lint, markdown_links, pre-commit_hooks, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
+    needs: [configuration, commit_lint, commit_spell_check, commitizen_hooks, json_metaschema_lint, json_schema_lint, markdown_links, markdown_lint, markdown_spelling, pre-commit_hooks, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-99-poetry-create_release.yml
