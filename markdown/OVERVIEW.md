@@ -7,7 +7,7 @@ CICD-Tools provides four consumable resources that together form the basis for a
 1. Customized [pre-commit hooks](https://github.com/cicd-tools-org/pre-commit) for end-user projects.
 2. A custom [Docker container](../.cicd-tools/container/Dockerfile) which supplies the required binary tools for the pre-commit hooks.
 3. Remotely consumable [GitHub "Jobs"](../.github/workflows) that are actively maintained.
-4. A custom [packaging system](https://github.com/cicd-tools-org/manifest/blob/master/manifest.json.asc) that securely delivers upgradable [Toolboxes](../cicd-tools/boxes) full of scripts for the workflows.
+4. A custom [packaging system](https://github.com/cicd-tools-org/manifest/blob/main/manifest.json.asc) that securely delivers upgradable [Toolboxes](../cicd-tools/boxes) full of scripts for the workflows.
 
 End-user projects consume these components to create their own custom CI solution, all while shifting the maintenance of the CI itself to CICD-Tools.
 
@@ -23,7 +23,7 @@ However, this leads to a problem where the tools used to perform these quality c
 
 ## 2. Docker Containers
 
-The [CICD-Tools container](https://ghcr.io/cicd-tools-org/cicd-tools) provides vetted binaries that are [integrated](https://github.com/cicd-tools-org/pre-commit/blob/master/.pre-commit-hooks.yaml) with the pre-commit hooks.
+The [CICD-Tools container](https://ghcr.io/cicd-tools-org/cicd-tools) provides vetted binaries that are [integrated](https://github.com/cicd-tools-org/pre-commit/blob/main/.pre-commit-hooks.yaml) with the pre-commit hooks.
 
 This allows a [single container definition](../.cicd-tools/container/Dockerfile) to [securely](../.cicd-tools/container/Dockerfile.sha256) provide most third party software. Where necessary, other trusted containers are leveraged to create a complete solution. Together these containers provide a way of leveraging third party tools without polluting your codebase with extra dependencies.
 
@@ -72,7 +72,7 @@ It's important to look at the [Job files](../.github/workflows) themselves befor
 The [CICD-Tools Jobs](../.github/workflows) in turn consume [Toolboxes](../cicd-tools/boxes):
 - These [Toolboxes](../cicd-tools/boxes) are nothing more than [tarballs](https://en.wikipedia.org/wiki/Tar_(computing)) of scripts and custom [GitHub Actions](../cicd-tools/boxes/0.1.0/ci/github/actions).
 - Adding the [action-00-toolbox](../.github/actions/action-00-toolbox/action.yml) GitHub Action to your project's [.github/actions](.github/actions) integrates your project with this packaging system.
-- The [Jobs](../.github/workflows) read the [Toolbox Manifest](https://github.com/cicd-tools-org/manifest/blob/master/manifest.json.asc) and select the [Toolbox version](../cicd-tools/boxes) they require.
+- The [Jobs](../.github/workflows) read the [Toolbox Manifest](https://github.com/cicd-tools-org/manifest/blob/main/manifest.json.asc) and select the [Toolbox version](../cicd-tools/boxes) they require.
 
 ### The Advantages of Decoupling
 
