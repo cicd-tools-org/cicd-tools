@@ -2,7 +2,9 @@
 
 Managed, Centralized CI/CD Components.  A platform in a repository.
 
-#### Master Branch (Please consume this branch.)
+<!-- vale off -->
+## Master Branch Builds
+<!-- vale on -->
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)
 - [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml/badge.svg?branch=master)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml)

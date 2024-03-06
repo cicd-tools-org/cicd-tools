@@ -71,7 +71,7 @@ scenario() {
 
   test_toml_lint_passes() {
     util "git_reset"
-    sed -i.bak "s/python = '^3.9/python = '>=3.10.0,<4.0/g" pyproject.toml
+    sed -i.bak "s/python = '^3.9/python = '>=3.9.1,<4.0/g" pyproject.toml
     git stage pyproject.toml
     git commit -m 'test(PRE-COMMIT): upgrade python without issue'
   }
@@ -135,6 +135,7 @@ util() {
 main() {
 
   pushd "${TEST_PROJECT_NAME}" >> /dev/null
+  poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
   scenario "${1}"
   popd >> /dev/null
 

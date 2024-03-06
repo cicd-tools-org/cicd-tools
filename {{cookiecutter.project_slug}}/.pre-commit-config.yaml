@@ -19,7 +19,7 @@ repos:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: 0.2.0
+    rev: 0.4.0
     hooks:
       - id: format-shell
         args:
@@ -50,6 +50,7 @@ repos:
       - id: security-credentials
       - id: spelling-commit-message
       - id: spelling-markdown
+      - id: spelling-vale-synchronize
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:

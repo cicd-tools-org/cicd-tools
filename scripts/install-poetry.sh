@@ -36,6 +36,8 @@ main() {
 
   _installer_line_in_file ".gitignore" '.cicd-tools/boxes/*'
   _installer_line_in_file ".gitignore" '!.cicd-tools/boxes/bootstrap'
+  _installer_line_in_file ".gitignore" '.vale'
+  _installer_line_in_file ".gitignore" '!.vale/Vocab'
 
   _installer_jinja_render ".github/config/workflows/workflow-push.json"
   _installer_jinja_render ".github/scripts/step-setup-environment.sh"
