@@ -37,6 +37,7 @@ main() {
   _installer_line_in_file ".gitignore" '.cicd-tools/boxes/*'
   _installer_line_in_file ".gitignore" '!.cicd-tools/boxes/bootstrap'
 
+  _installer_jinja_render ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
   _installer_jinja_render ".github/config/workflows/workflow-push.json"
   _installer_jinja_render ".github/scripts/step-setup-environment.sh"
   _installer_jinja_render ".github/workflows/workflow-push.yml"
@@ -48,11 +49,14 @@ main() {
 }
 
 _install_args() {
-  while getopts "d:" OPTION; do
+  while getopts "d:g:" OPTION; do
     case "$OPTION" in
       d)
         CICD_TOOLS_INSTALL_TARGET_PATH="${OPTARG}"
         [[ ! -d "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]] && _install_no_target_path
+        ;;
+      g)
+        CICD_TOOLS_GITHUB_HANDLE="${OPTARG}"
         ;;
       \?)
         _install_usage
@@ -67,7 +71,7 @@ _install_args() {
   done
   shift $((OPTIND - 1))
 
-  if [[ -z "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]]; then
+  if [[ -z "${CICD_TOOLS_INSTALL_TARGET_PATH}" || -z "${CICD_TOOLS_GITHUB_HANDLE}" ]]; then
     _install_usage
   fi
 }
@@ -79,7 +83,7 @@ _install_no_target_path() {
 
 _install_usage() {
   log "ERROR" "install-poetry.sh -- install the bootstrapped CICD-Tools system to an existing poetry repository."
-  log "ERROR" "USAGE: install-poetry.sh -d [DESTINATION PATH]"
+  log "ERROR" "USAGE: install-poetry.sh -d [DESTINATION PATH] -g [GITHUB_HANDLE]"
   exit 127
 }
 
