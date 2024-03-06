@@ -17,14 +17,14 @@ on:
 jobs:
 
   configuration:
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-read_json_file.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-read_json_file.yml@main
     with:
       JSON_FILE_PATH: ".github/config/workflows/workflow-push.json"
 
   start:
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@main
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
       NOTIFICATION_MESSAGE: "Workflow has started!"
@@ -33,7 +33,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-10-generic-security_scan_credentials.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-10-generic-security_scan_credentials.yml@main
     with:
       EXTRA_BINARY_ARGS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_trufflehog_extra_scan_args }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
@@ -42,7 +42,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-30-generic-markdown_links.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-30-generic-markdown_links.yml@main
     with:
       CONFIG_FILE: ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
@@ -51,7 +51,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-50-poetry-test_basic_precommit_hooks.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-50-poetry-test_basic_precommit_hooks.yml@main
     with:
       CHECK_CREDENTIALS: true
       CHECK_TOML: true
@@ -64,7 +64,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-rev_range_command.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-rev_range_command.yml@main
     with:
       COMMAND: |
         poetry run cz check --rev-range "${PUSHED_COMMIT_REV_RANGE}"
@@ -78,7 +78,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-rev_range_command.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-rev_range_command.yml@main
     with:
       COMMAND: |
         CICD_COMMIT_MESSAGES_FILE="$(mktemp XXXXXXXX.git_history_file)"
@@ -95,7 +95,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "check-jsonschema"
@@ -107,7 +107,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "lint-markdown"
@@ -119,7 +119,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRE_HOOK_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
@@ -141,7 +141,7 @@ jobs:
           - id: "lint-shell"
             name: "Shell Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -155,7 +155,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "format-toml"
@@ -179,7 +179,7 @@ jobs:
           - id: "lint-github-workflow-header"
             name: "Workflow Header Linting"
       max-parallel: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
@@ -193,7 +193,7 @@ jobs:
     needs: [configuration]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
       PRECOMMIT_HOOK_ID: "yamllint"
@@ -207,7 +207,7 @@ jobs:
     needs: [commit_lint, commit_spell_check, configuration, json_schema_lint, markdown_links, markdown_lint, markdown_spelling, pre-commit_hooks, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-99-poetry-create_release.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-99-poetry-create_release.yml@main
     with:
       JSON_APPENDED_CONTENT: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_extra_release_content) }}
 
@@ -215,7 +215,7 @@ jobs:
     needs: [create_release]
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@master
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-00-generic-notification.yml@main
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "Workflow has completed successfully!"

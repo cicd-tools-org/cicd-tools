@@ -240,7 +240,7 @@ jobs:
       APPENDED_CONTENT: |
         ## Release Checklist
         - [ ] Ensure all remote references have been updated.
-        - [ ] Ensure master is synchronized with the release tag.
+        - [ ] Ensure main is synchronized with the release tag.
       WORKFLOW_NAME: "cookiecutter"
 
   success:
