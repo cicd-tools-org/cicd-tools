@@ -143,10 +143,13 @@ _installer_initialize_vale() {
 
   TARGET_FOLDER="${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.vale/Vocab/${VALE_FOLDER}"
 
+  _installer_line_in_file "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.gitignore" '.vale/*'
+  _installer_line_in_file "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}/.gitignore" '!.vale/Vocab'
+
   log "DEBUG" "VALE CREATE > '${TARGET_FOLDER}/'"
 
   mkdir -p "${TARGET_FOLDER}/"
-  touch "${TARGET_FOLDER}/accept.txt"
+  basename "${CICD_TOOLS_INSTALL_TARGET_PATH}" > "${TARGET_FOLDER}/accept.txt"
   touch "${TARGET_FOLDER}/reject.txt"
 
   log "DEBUG" "VALE CREATE > '.vale.ini'"
