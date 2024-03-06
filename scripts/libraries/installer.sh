@@ -52,13 +52,8 @@ _installer_conditional_recursive_copy() {
   log "DEBUG" "RECURSIVE COPY > Destination: '${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}'"
 
   if [[ ! -e "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}" ]]; then
-    if [[ -d "{{cookiecutter.project_slug}}/${1}" ]]; then
-      set -x
-      mkdir -p "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}"
-      { set +x; } 2> /dev/null
-    fi
-    mkdir -p "$(dirname "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}")"
     set -x
+    mkdir -p "$(dirname "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}")"
     cp -rp "{{cookiecutter.project_slug}}/${1}" "${CICD_TOOLS_INSTALL_TARGET_PATH}/${1}"
     { set +x; } 2> /dev/null
   else
