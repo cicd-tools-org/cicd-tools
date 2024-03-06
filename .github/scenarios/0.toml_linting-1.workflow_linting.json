@@ -3,7 +3,7 @@
     "optional_workflow_linting": ["true", "false"],
     "project_name": "cicd-tool-box",
     "project_slug": "{{ cookiecutter.project_name|slugify }}",
-    "github_handle": "niall-byrne",
+    "github_handle": "cicd-tools-org",
     "_BRANCH_NAME_BASE": "main",
     "_BRANCH_NAME_DEVELOPMENT": "dev",
     "_DOCKER_DEFAULT_CONTAINER": "ghcr.io/cicd-tools-org/cicd-tools:main",
