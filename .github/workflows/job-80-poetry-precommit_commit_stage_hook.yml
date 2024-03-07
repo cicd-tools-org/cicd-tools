@@ -29,9 +29,24 @@ on:
         description: "The plaintext name of the precommit linter you wish to run."
         required: true
         type: string
+      PRECOMMIT_HOOK_STAGE:
+        default: ""
+        description: "Optional, run the hook in the specified stage."
+        required: false
+        type: string
+      PRECOMMIT_HOOK_VERBOSE:
+        default: false
+        description: "Optional, set the hook to verbose output mode."
+        required: false
+        type: boolean
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
+        type: string
+      REMOTE_SCRIPT_SET_VALUE:
+        default: "ci/github/scripts/step-set-value.sh"
+        description: "Optional, allows you to specify a workflow set value script."
+        required: false
         type: string
       REMOTE_SCRIPT_USE_POETRY:
         default: "ci/generic/scripts/use-poetry.sh"
@@ -111,6 +126,30 @@ jobs:
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
 
+      - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Configure Hook Verbosity
+        id: hook-verbosity
+        run: |
+          if [[ "${{ inputs.PRECOMMIT_HOOK_VERBOSE }}" == "true" ]]; then
+            bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+              echo "--verbose"
+          else
+            bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+              echo ""
+          fi
+        shell: bash
+
+      - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Configure Hook Stage
+        id: hook-manual
+        run: |
+          if [[ -n "${{ inputs.PRECOMMIT_HOOK_STAGE }}" ]]; then
+            bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+              echo "--hook-stage=${{ inputs.PRECOMMIT_HOOK_STAGE }}"
+          else
+            bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
+              echo ""
+          fi
+        shell: bash
+
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Pre Hook Command
         if: inputs.PRE_HOOK_COMMAND != ''
         run: |
@@ -119,7 +158,7 @@ jobs:
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Run '${{ inputs.PRECOMMIT_HOOK_ID }}' pre-commit hook
         run: |
-          poetry run pre-commit run ${{ inputs.PRECOMMIT_HOOK_ID }} --all-files
+          poetry run pre-commit run ${{ steps.hook-manual.outputs.VALUE }} ${{ inputs.PRECOMMIT_HOOK_ID }} --all-files ${{ steps.hook-verbosity.outputs.VALUE }}
         shell: bash
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Post Hook Command
