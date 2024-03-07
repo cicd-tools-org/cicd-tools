@@ -54,9 +54,23 @@ on:
         required: false
         type: string
     secrets:
+      ENV_SECRET_1:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_2:
+        description: "Optional, content to save to the environment."
+        required: false
+      ENV_SECRET_3:
+        description: "Optional, content to save to the environment."
+        required: false
       SLACK_WEBHOOK:
         description: "Optional, enables Slack notifications."
         required: false
+
+env:
+  ENV_SECRET_1: ${{ secrets.ENV_SECRET_1 }}
+  ENV_SECRET_2: ${{ secrets.ENV_SECRET_2 }}
+  ENV_SECRET_3: ${{ secrets.ENV_SECRET_3 }}
 
 jobs:
 
