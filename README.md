@@ -2,25 +2,27 @@
 
 Managed, Centralized CI/CD Components.  A platform in a repository.
 
-## Main Branch Builds
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml)
+| Builds: [main](https://github.com/cicd-tools-org/cicd-tools/tree/main)                                                                                                                                                                         |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml) |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)             |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml)     |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml) |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)                         |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml)                       |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml)   |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml/badge.svg?branch=main)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml)               |
 
-#### Dev Branch
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml)
-- [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml)
+| Builds: [dev](https://github.com/cicd-tools-org/cicd-tools/tree/dev)                                                                                                                                                                          |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-ansible-role-molecule.yml) |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-compose-command.yml)             |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-container-multiarch.yml)     |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-cookiecutter-template.yml) |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-mac_maker.yml)                         |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-meta_tests.yml)                       |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-npm-node_application.yml)   |
+| [![workflow-link](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml/badge.svg?branch=dev)](https://github.com/cicd-tools-org/cicd-tools/actions/workflows/workflow-poetry-command.yml)               |
 
 ## About
 
