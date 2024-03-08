@@ -1,0 +1,47 @@
+---
+name: action-00-generic-alert_opsgenie
+description: "Sends alerts to OpsGenie via the selected alert script."
+author: niall@niallbyrne.ca
+
+inputs:
+  ALERT_ALIAS:
+    description: "The alias of the created alert."
+    required: true
+  ALERT_PRIORITY:
+    default: "P1"
+    description: "Optional, allows you to set the priority of the created alert."
+    required: false
+  ALERT_MESSAGE:
+    description: "The message that will sent as a alert, in the event the job succeeds."
+    required: true
+  NOTIFICATION_API_KEY:
+    description: "The API key for the OpsGenie notification."
+    required: true
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+  REMOTE_SCRIPT_ALERT:
+    default: "ci/notifications/scripts/opsgenie.sh"
+    description: "Optional, allows you to specify a notification script."
+    required: false
+  TESTING_MODE:
+    default: "false"
+    description: "Optional, allows you to test a workflow failure."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Alert -- Create OpsGenie Alert
+      if: inputs.TESTING_MODE != 'true'
+      env:
+        NOTIFICATION_API_KEY: ${{ inputs.NOTIFICATION_API_KEY }}
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_ALERT }}" \
+          -a "${{ inputs.ALERT_ALIAS }}" \
+          -l "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+          -m "${{ inputs.ALERT_MESSAGE }}" \
+          -p "${{ inputs.ALERT_PRIORITY }}"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
