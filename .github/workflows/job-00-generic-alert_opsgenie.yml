@@ -1,0 +1,112 @@
+---
+name: job-00-generic-alert_opsgenie
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+on:
+  workflow_call:
+    inputs:
+      FORCE_HALT_WORKFLOW:
+        default: false
+        description: "Optional, allows you to use the notification to halt the workflow."
+        required: false
+        type: string
+      ALERT_ALIAS:
+        description: "Optional, allows you to set the alias of the created alert."
+        required: true
+        type: string
+      ALERT_PRIORITY:
+        default: "P1"
+        description: "Optional, allows you to set the priority of the created alert."
+        required: false
+        type: string
+      ALERT_MESSAGE:
+        description: "The message that will sent as a notification, in the event the job succeeds."
+        required: true
+        type: string
+      NOTIFICATION_EMOJI_FAILURE:
+        default: ":x:"
+        description: "Optional, allows you to specify a notification emoji for your notification platform."
+        required: false
+        type: string
+      NOTIFICATION_MESSAGE_ALERT_FAILURE:
+        default: "Failed to create an alert via OpsGenie!"
+        description: "The message that will sent as a notification, in the event the alert fails to be created."
+        required: false
+        type: string
+      NOTIFICATION_MESSAGE_NOTIFICATION_FAILURE:
+        default: "there was an error reporting the workflow's status!"
+        description: "The message that will sent as a notification, in the event that the fallback notification fails."
+        required: false
+        type: string
+      REMOTE_SCRIPT_NOTIFICATION:
+        default: "ci/notifications/scripts/slack.sh"
+        description: "Optional, allows you to specify a notification script."
+        required: false
+        type: string
+      REMOTE_SCRIPT_ALERT:
+        default: "ci/notifications/scripts/opsgenie.sh"
+        description: "Optional, allows you to specify a notification script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+    secrets:
+      OPSGENIE_API_KEY:
+        description: "Allows Ops Genie notifications."
+        required: true
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  send_opsgenie_alert:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Alert -- Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Alert -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Alert -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Alert -- Run Ops Gen Action
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-alert_opsgenie
+        with:
+          ALERT_ALIAS: ${{ inputs.ALERT_ALIAS }}
+          ALERT_PRIORITY: ${{ inputs.ALERT_PRIORITY }}
+          ALERT_MESSAGE: ${{ inputs.ALERT_MESSAGE }}
+          NOTIFICATION_API_KEY: ${{ secrets.OPSGENIE_API_KEY }}
+          REMOTE_SCRIPT_ALERT: ${{ inputs.REMOTE_SCRIPT_ALERT }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: Alert -- Notification Alert Failed
+        if: failure()
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          FORCE_HALT_WORKFLOW: ${{ inputs.FORCE_HALT_WORKFLOW }}
+          NOTIFICATION_EMOJI: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}
+          NOTIFICATION_EMOJI_FAILURE: ${{ inputs.NOTIFICATION_EMOJI_FAILURE }}
+          NOTIFICATION_MESSAGE: ${{ inputs.NOTIFICATION_MESSAGE_ALERT_FAILURE }}
+          NOTIFICATION_MESSAGE_FAILURE: ${{ inputs.NOTIFICATION_MESSAGE_NOTIFICATION_FAILURE }}
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          REMOTE_SCRIPT_NOTIFICATION: ${{ inputs.REMOTE_SCRIPT_NOTIFICATION }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
