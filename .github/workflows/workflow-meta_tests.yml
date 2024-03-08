@@ -9,6 +9,9 @@ on:
 
 
 #  secrets:
+#    OPSGENIE_API_KEY:
+#      description: "Optional, enables Ops Genie alerts."
+#      required: false
 #    SLACK_WEBHOOK:
 #      description: "Optional, enables Slack notifications."
 #      required: false
@@ -155,6 +158,44 @@ jobs:
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: true
 
+  send_alert_test_failure_action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Alert (Local Action Test) -- Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Alert (Local Action Test) -- Setup Environment
+        env:
+          WORKFLOW_NAME: "test"
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Alert (Local Action Test) -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Alert (Local Action Test) -- Run Alert Action (Testing Locally)
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-alert_opsgenie
+        with:
+          ALERT_ALIAS: "test_alias"
+          ALERT_PRIORITY: "P0"
+          ALERT_MESSAGE: "Just a test alert."
+          NOTIFICATION_API_KEY: ${{ secrets.OPSGENIE_API_KEY }}
+          TESTING_MODE: true
+
+  send_alert_test_failure_workflow:
+    needs: [configuration]
+    secrets:
+      OPSGENIE_API_KEY: ${{ secrets.OPSGENIE_API_KEY }}
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-alert_opsgenie.yml
+    with:
+      ALERT_ALIAS: "test_alias"
+      ALERT_PRIORITY: "P0"
+      ALERT_MESSAGE: "Just a test alert."
+      TESTING_MODE: true
+      WORKFLOW_NAME: "test"
+
   security_test_failure:
     needs: [configuration]
     secrets:
@@ -162,7 +203,6 @@ jobs:
     uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
       TESTING_MODE: true
-      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "test"
 
   markdown_links_test_failure:
@@ -323,7 +363,7 @@ jobs:
       WORKFLOW_NAME: "test"
 
   success:
-    needs: [commit_lint_test_failure, commit_spell_check_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, secrets_data_test, security_test_failure, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
+    needs: [commit_lint_test_failure, commit_spell_check_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, secrets_data_test, security_test_failure, send_alert_test_failure_action, send_alert_test_failure_workflow, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository
