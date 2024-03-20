@@ -23,7 +23,7 @@ repos:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev:  0.4.0
+    rev:  0.5.0
     hooks:
       - id: format-shell
         args:
@@ -32,6 +32,7 @@ repos:
           - "-ci"
           - "-sr"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
+      - id: git-conflict-markers
       - id: format-toml
       - id: lint-github-workflow
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
@@ -53,7 +54,8 @@ repos:
       - id: spelling-commit-message
       - id: spelling-markdown
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-      - id: spelling-vale-synchronize
+      - id: spelling-vale-sync
+      - id: spelling-vale-vocab
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:
@@ -63,10 +65,3 @@ repos:
           - "./{{cookiecutter.project_slug}}/.yamllint.yml"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
         stages: [commit]
-  - repo: local
-    hooks:
-      - id: spelling-vale-vocab
-        name: "spelling-vale-vocab"
-        entry: /bin/bash -c 'for FILE in "$@"; do sort -u -o ${FILE} ${FILE}; done' --
-        files: "^.vale/Vocab/.+/(accept|reject)\\.txt$"
-        language: system
