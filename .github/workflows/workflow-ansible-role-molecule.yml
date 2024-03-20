@@ -35,7 +35,8 @@ jobs:
       WORKFLOW_NAME: "ansible"
 
   markdown_links:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-generic-markdown_links.yml
@@ -45,7 +46,8 @@ jobs:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
 
   ansible_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-cookiecutter-ansible_lint.yml
@@ -58,7 +60,9 @@ jobs:
       WORKFLOW_NAME: "ansible"
 
   molecule_test:
-    needs: [configuration, ansible_lint]
+    needs:
+      - configuration
+      - ansible_lint
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-cookiecutter-molecule_command.yml
@@ -72,7 +76,11 @@ jobs:
       WORKFLOW_NAME: "ansible"
 
   success:
-    needs: [configuration, markdown_links, molecule_test, start]
+    needs:
+      - configuration
+      - markdown_links
+      - molecule_test
+      - start
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
