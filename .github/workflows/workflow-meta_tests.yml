@@ -25,14 +25,16 @@ jobs:
     uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
 
   scenarios:
-    needs: [configuration]
+    needs:
+      - configuration
     uses: ./.github/workflows/job-00-generic-identify_molecule_scenarios.yml
     with:
       MOLECULE_EXCLUSION_REGEX: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_MOLECULE_EXCLUDED_SCENARIOS_REGEX }}
       MOLECULE_SCENARIO_PATH: "{{cookiecutter.project_slug}}/ansible_role/molecule"
 
   scenarios_data_test:
-    needs: [scenarios]
+    needs:
+      - scenarios
     runs-on: ubuntu-latest
 
     steps:
@@ -77,7 +79,9 @@ jobs:
     uses: ./.github/workflows/job-00-generic-identify_secret_exists.yml
 
   secrets_data_test:
-    needs: [secret_exists, secret_does_not_exist]
+    needs:
+      - secret_exists
+      - secret_does_not_exist
     runs-on: ubuntu-latest
 
     steps:
@@ -197,7 +201,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   security_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
@@ -206,7 +211,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   markdown_links_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-cookiecutter-markdown_links.yml
@@ -219,7 +225,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   pre-commit_hooks_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-50-cookiecutter-test_precommit_hooks.yml
@@ -233,7 +240,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   commitizen_hooks_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-50-poetry-test_commitizen_hooks.yml
@@ -247,7 +255,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   commit_lint_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
@@ -262,7 +271,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   commit_spell_check_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
@@ -280,7 +290,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   shell_lint_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
@@ -303,7 +314,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   toml_lint_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
@@ -317,7 +329,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   workflow_lint_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
@@ -340,7 +353,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   yaml_lint_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
@@ -354,7 +368,8 @@ jobs:
       WORKFLOW_NAME: "test"
 
   create_release_test_failure:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-99-poetry-create_release.yml
@@ -363,7 +378,24 @@ jobs:
       WORKFLOW_NAME: "test"
 
   success:
-    needs: [commit_lint_test_failure, commit_spell_check_test_failure, commitizen_hooks_test_failure, create_release_test_failure, markdown_links_test_failure, pre-commit_hooks_test_failure, scenarios_data_test, secrets_data_test, security_test_failure, send_alert_test_failure_action, send_alert_test_failure_workflow, send_notification_test_failure, send_notification_test_success, shell_lint_test_failure, toml_lint_test_failure, workflow_lint_test_failure, yaml_lint_test_failure]
+    needs:
+      - commit_lint_test_failure
+      - commit_spell_check_test_failure
+      - commitizen_hooks_test_failure
+      - create_release_test_failure
+      - markdown_links_test_failure
+      - pre-commit_hooks_test_failure
+      - scenarios_data_test
+      - secrets_data_test
+      - security_test_failure
+      - send_alert_test_failure_action
+      - send_alert_test_failure_workflow
+      - send_notification_test_failure
+      - send_notification_test_success
+      - shell_lint_test_failure
+      - toml_lint_test_failure
+      - workflow_lint_test_failure
+      - yaml_lint_test_failure
     runs-on: ubuntu-latest
     steps:
       - name: Notification (Local Action Test) -- Checkout Repository

@@ -35,7 +35,8 @@ jobs:
       WORKFLOW_NAME: "node_npm"
 
   npm_test:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-npm-run_cached_command.yml
@@ -47,7 +48,9 @@ jobs:
       WORKFLOW_NAME: "node_npm"
 
   success:
-    needs: [npm_test, start]
+    needs:
+      - npm_test
+      - start
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
