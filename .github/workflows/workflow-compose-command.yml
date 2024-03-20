@@ -32,7 +32,8 @@ jobs:
       WORKFLOW_NAME: "compose"
 
   compose_commands:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-compose-run_cached_commands.yml
@@ -50,7 +51,10 @@ jobs:
       WORKFLOW_NAME: "compose"
 
   success:
-    needs: [configuration, compose_commands, start]
+    needs:
+      - configuration
+      - compose_commands
+      - start
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml

@@ -33,7 +33,8 @@ jobs:
       WORKFLOW_NAME: "mac_maker"
 
   mac_maker_test:
-    needs: [configuration] # remote_push
+    needs:
+      - configuration # remote_push
     secrets:
       REMOTE_ORIGIN: "osx-provisioner/profile-example"
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -50,7 +51,9 @@ jobs:
       WORKFLOW_NAME: "mac_maker"
 
   success:
-    needs: [mac_maker_test, start]
+    needs:
+      - mac_maker_test
+      - start
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml

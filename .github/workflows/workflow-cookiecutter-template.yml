@@ -27,7 +27,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   security:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
@@ -36,7 +37,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   markdown_links:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-cookiecutter-markdown_links.yml
@@ -48,7 +50,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   pre-commit_hooks:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-50-cookiecutter-test_precommit_hooks.yml
@@ -61,7 +64,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   commitizen_hooks:
-    needs: [configuration]
+    needs:
+      - configuration
     if: startsWith(github.ref, 'refs/heads')
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -75,7 +79,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   commit_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
@@ -89,7 +94,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   commit_spell_check:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-rev_range_command.yml
@@ -106,7 +112,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   json_metaschema_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
@@ -119,7 +126,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   json_schema_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
@@ -159,7 +167,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   shell_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
@@ -181,7 +190,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   toml_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
@@ -194,7 +204,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   workflow_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
@@ -216,7 +227,8 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   yaml_lint:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-cookiecutter-precommit_commit_stage_hook.yml
@@ -232,7 +244,23 @@ jobs:
   create_release:
     permissions:
       contents: write
-    needs: [configuration, commit_lint, commit_spell_check, commitizen_hooks, json_metaschema_lint, json_schema_lint, markdown_links, markdown_lint, markdown_spelling, pre-commit_hooks, security, shell_lint, start, toml_lint, workflow_lint, yaml_lint]
+    needs:
+      - configuration
+      - commit_lint
+      - commit_spell_check
+      - commitizen_hooks
+      - json_metaschema_lint
+      - json_schema_lint
+      - markdown_links
+      - markdown_lint
+      - markdown_spelling
+      - pre-commit_hooks
+      - security
+      - shell_lint
+      - start
+      - toml_lint
+      - workflow_lint
+      - yaml_lint
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-99-poetry-create_release.yml
@@ -244,7 +272,9 @@ jobs:
       WORKFLOW_NAME: "cookiecutter"
 
   success:
-    needs: [create_release, configuration]
+    needs:
+      - create_release
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml

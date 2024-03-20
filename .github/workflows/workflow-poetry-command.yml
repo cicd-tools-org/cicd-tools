@@ -32,7 +32,8 @@ jobs:
       WORKFLOW_NAME: "poetry"
 
   markdown_links:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-generic-markdown_links.yml
@@ -43,7 +44,8 @@ jobs:
       WORKFLOW_NAME: "poetry"
 
   poetry_commands:
-    needs: [configuration]
+    needs:
+      - configuration
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-40-poetry-run_cached_commands.yml
@@ -57,7 +59,11 @@ jobs:
       WORKFLOW_NAME: "poetry"
 
   success:
-    needs: [configuration, markdown_links, poetry_commands, start]
+    needs:
+      - configuration
+      - markdown_links
+      - poetry_commands
+      - start
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-00-generic-notification.yml
