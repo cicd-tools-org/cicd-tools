@@ -103,10 +103,23 @@ jobs:
       COMMAND: |
         CICD_COMMIT_MESSAGES_FILE="$(mktemp XXXXXXXX.git_history_file)"
         git log --pretty=format:%s "${PUSHED_COMMIT_REV_RANGE}" > "${CICD_COMMIT_MESSAGES_FILE}"
-        poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
+        poetry run pre-commit run --hook-stage manual spelling-vale-sync
         poetry run pre-commit run --hook-stage commit-msg spelling-commit-message --commit-msg-filename "${CICD_COMMIT_MESSAGES_FILE}"
       COMMAND_NAME: "Commit Message Spelling"
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
+  git_conflict_markers:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "git-conflict-markers"
+      PRECOMMIT_HOOK_NAME: "Git conflict markers"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
@@ -159,7 +172,7 @@ jobs:
     uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-      PRE_HOOK_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-synchronize
+      PRE_HOOK_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-sync
       PRECOMMIT_HOOK_ID: "spelling-markdown"
       PRECOMMIT_HOOK_NAME: "Markdown Spelling"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
@@ -185,6 +198,19 @@ jobs:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
       PRECOMMIT_HOOK_ID: ${{ matrix.hook.id }}
       PRECOMMIT_HOOK_NAME: ${{ matrix.hook.name }}
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
+  spelling_vocabularies:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "spelling-vale-vocab"
+      PRECOMMIT_HOOK_NAME: "Spelling vocabularies"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
@@ -249,6 +275,7 @@ jobs:
       - commit_lint
       - commit_spell_check
       - commitizen_hooks
+      - git_conflict_markers
       - json_metaschema_lint
       - json_schema_lint
       - markdown_links
@@ -257,6 +284,7 @@ jobs:
       - pre-commit_hooks
       - security
       - shell_lint
+      - spelling_vocabularies
       - start
       - toml_lint
       - workflow_lint
