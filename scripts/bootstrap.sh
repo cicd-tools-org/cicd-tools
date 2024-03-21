@@ -58,12 +58,15 @@ _link_symlink_directory_contents() {
   log "DEBUG" "LINK > Source: '${1}/*'"
 
   mkdir -p "${2}"
-  pushd "${2}" >> /dev/null
 
+  pushd "${2}" >> /dev/null
   for SOURCE_FILE in "$(_link_relative_path_new)/${1}/"*; do
-    LINK_NAME="${SOURCE_FILE}"
-    LINK_SOURCE="$(basename "${SOURCE_FILE}")"
-    _link_symlink_write "${LINK_NAME}" "${LINK_SOURCE}"
+    LINK_SOURCE="${SOURCE_FILE}"
+    LINK_NAME="$(basename "${SOURCE_FILE}")"
+    if [[ -d "${LINK_SOURCE}" ]]; then
+      continue
+    fi
+    _link_symlink_write "${LINK_SOURCE}" "${LINK_NAME}"
   done
   popd >> /dev/null
 }
@@ -83,6 +86,7 @@ _link_symlinks() {
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/commitizen" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/commitizen"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/libraries" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/libraries"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/pre-commit" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/pre-commit"
+  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/pre-commit/lint_makefile" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/pre-commit/lint_makefile"
   _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schemas" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/schemas"
 
 }

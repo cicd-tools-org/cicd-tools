@@ -24,6 +24,8 @@ main() {
   # shellcheck source=./scripts/libraries/installer.sh
   source "$(dirname -- "${BASH_SOURCE[0]}")/libraries/installer.sh"
 
+  _installer_clean_pycache
+
   _installer_bootstrap
   _installer_actions
   _installer_cookiecutter_symlinks

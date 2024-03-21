@@ -1,11 +1,10 @@
 #!/usr/bin/make -f
 
-.PHONY: help clean fmt lint security spelling test clean-git clean-pycache format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
+.PHONY: help clean fmt lint security spelling clean-git format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of:"
 	@echo "  clean-git         to run git clean"
-	@echo "  clean-pycache     to clean Python cache files."
 	@echo "  format-python     to format Python scripts"
 	@echo "  format-shell      to format shell scripts"
 	@echo "  format-toml       to format TOML files"
@@ -21,21 +20,15 @@ help:
 	@echo "  spelling-sync     to synchronize vale packages"
 	@echo "  test-python       to test the Python scripts"
 
-clean: clean-git clean-pycache
+clean: clean-git
 fmt: format-shell format-toml format-python
 lint: lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml
 security: security-leaks
 spelling: spelling-markdown
-test: test-python
 
 clean-git:
 	@echo "Cleaning git content ..."
 	@git clean -fd
-	@echo "Done."
-
-clean-pycache:
-	@echo "Cleaning __pycache__ content ..."
-	@$(call p, "find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete")
 	@echo "Done."
 
 format-shell:

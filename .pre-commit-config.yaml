@@ -22,6 +22,14 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        types: []
+        files: "^.+\\.pyi?$"
+        stages: [pre-commit]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
     rev:  0.5.0
     hooks:
@@ -33,6 +41,8 @@ repos:
           - "-sr"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
       - id: git-conflict-markers
+        exclude: "^.+/fixtures/invalid_makefile_\\d+\\.txt"
+        pass_filenames: true
       - id: format-toml
       - id: lint-github-workflow
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
@@ -56,6 +66,7 @@ repos:
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
       - id: spelling-vale-sync
       - id: spelling-vale-vocab
+      - id: poetry-lint-python
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:
@@ -64,4 +75,25 @@ repos:
           - "-c"
           - "./{{cookiecutter.project_slug}}/.yamllint.yml"
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-        stages: [commit]
+        stages: [pre-commit]
+  - repo: https://github.com/google/yapf
+    rev: v0.40.2
+    hooks:
+      - id: yapf
+        name: "yapf"
+        args:
+          - "-i"
+          - "--parallel"
+        types: []
+        files: "^.+\\.pyi?$"
+        stages: [pre-commit]
+        require_serial: true
+  - repo: local
+    hooks:
+      - id: lint-makefile
+        name: lint-makefile
+        entry: .cicd-tools/boxes/bootstrap/pre-commit/lint-makefile.sh
+        language: system
+        files: "^(.+/)*Makefile$"
+        pass_filenames: true
+        stages: [pre-commit]

@@ -40,6 +40,17 @@ _installer_bootstrap_folder() {
   { set +x; } 2> /dev/null
 }
 
+_installer_bootstrap_prune() {
+  log "DEBUG" "COPY > Pruning '${1}' from the Boot-Strapped content ..."
+  set -x
+  { set +x; } 2> /dev/null
+}
+
+_installer_clean_pycache() {
+  log "DEBUG" "CLEAN > pycache"
+  find "$(git rev-parse --show-toplevel)" -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
+}
+
 _installer_conditional_recursive_copy() {
   # 1: source / destination
   log "DEBUG" "RECURSIVE COPY > Source: '{{cookiecutter.project_slug}}/${1}'"

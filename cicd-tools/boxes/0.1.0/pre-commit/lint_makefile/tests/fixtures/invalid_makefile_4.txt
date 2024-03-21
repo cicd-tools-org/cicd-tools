@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+.PHONY: help clean fmt lint security spelling clean-git format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
+
+help:
+	@echo "Please use `make <target>' where <target> is one of:"
+	@echo "  clean-git         to run git clean"
+	@echo "  format-python     to format Python scripts"
+# Invalid help section ending

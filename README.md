@@ -1,5 +1,8 @@
 # CICD-Tools
 
+[![cicd-tools](https://img.shields.io/badge/ci/cd:-cicd_tools-blue)](https://github.com/cicd-tools-org/cicd-tools)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 Managed, Centralized CI/CD Components.  A platform in a repository.
 
 | Builds: [main](https://github.com/cicd-tools-org/cicd-tools/tree/main)                                                                                                                                                                         |

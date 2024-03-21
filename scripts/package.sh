@@ -47,6 +47,7 @@ _package_args() {
 _package_tarball() {
   pushd "${CICD_TOOLS_BUNDLE_PATH}" >> /dev/null
   log "DEBUG" "PACKAGE > Packaging version ${CICD_TOOLS_TOOLBOX_VERSION} ..."
+  find "${CICD_TOOLS_TOOLBOX_VERSION}" -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
   gtar c --mtime="${CICD_TOOLS_BUNDLE_TIME}" -v "${CICD_TOOLS_TOOLBOX_VERSION}" | gzip -n > "${CICD_TOOLS_TOOLBOX_VERSION}.tar.gz"
   log "DEBUG" "PACKAGE > Tarball has been generated."
 }

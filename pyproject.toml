@@ -30,6 +30,7 @@ commitizen = '<3.16.0'
 jinja-cli = '^1.2.2'
 molecule = '^5.0.0'
 pre-commit = '^3.1.1'
+pylint = '^3.1.0'
 
 [tool.poetry.group.dev.dependencies.ansible-lint]
 markers = "platform_system != 'Windows'"
@@ -38,3 +39,95 @@ version = '^6.12.2'
 [tool.poetry.group.dev.dependencies.molecule-plugins]
 extras = ['docker']
 version = '^23.4.1'
+
+[tool.pylint]
+[tool.pylint.basic]
+argument-rgx = '[a-z_][a-z0-9_]{1,40}$|^(concrete|test)_[a-z0-9_]{2,70}$'
+attr-rgx = '(^[a-z_][a-z0-9_]{1,30})$|^(FLAG)_[A-Z0-9_]{1,30}$'
+bad-names = 'foo,bar,baz,toto,tutu,tata'
+class-attribute-rgx = '([A-Za-z_][A-Za-z0-9_]{1,50}|(__.{2,30}__))$'
+class-rgx = '[A-Z_][a-zA-Z0-9]+$'
+const-rgx = '(([A-Z_][A-Z0-9_]*)|(__.*__))$|^(ReturnType|ApiEnabled)$'
+docstring-min-length = '-1'
+function-rgx = '[A-Za-z_][A-Za-z0-9_]{1,50}$'
+good-names = 'i,j,k,ex,Run,_'
+inlinevar-rgx = '[A-Za-z_][A-Za-z0-9_]*$'
+method-rgx = '^[A-Za-z_][A-Za-z0-9_]{2,40}$|^(build_mock|build_logging|concrete|test)_[A-Za-z0-9_]{2,70}$'
+module-rgx = '(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$'
+no-docstring-rgx = '.*'
+variable-rgx = '^[a-z_][a-z0-9_]{1,40}$'
+
+[tool.pylint.classes]
+defining-attr-methods = '__init__,__new__,setUp'
+valid-classmethod-first-arg = 'cls'
+valid-metaclass-classmethod-first-arg = 'mcs'
+
+[tool.pylint.design]
+max-args = 6
+max-attributes = 8
+max-branches = 12
+max-locals = 15
+max-parents = 10
+max-public-methods = 200
+max-returns = 6
+max-statements = 50
+min-public-methods = 2
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = 'builtins.Exception'
+
+[tool.pylint.format]
+ignore-long-lines = '^\s*(# )?<?https?://\S+>?$'
+indent-string = '  '
+max-line-length = 80
+max-module-lines = 1000
+single-line-if-stmt = 'no'
+
+[tool.pylint.imports]
+deprecated-modules = 'regsub,TERMIOS,Bastion,rexec'
+ext-import-graph = ''
+import-graph = ''
+int-import-graph = ''
+
+[tool.pylint.master]
+ignore = ''
+ignore-patterns = '.*_pb2.py'
+load-plugins = ''
+persistent = 'yes'
+
+[tool.pylint.message_control]
+disable = 'locally-disabled,fixme,too-few-public-methods,C0411,E1101'
+
+[tool.pylint.miscellaneous]
+notes = 'FIXME,XXX,TODO'
+
+[tool.pylint.reports]
+evaluation = '10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)'
+output-format = 'text'
+reports = 'no'
+
+[tool.pylint.similarities]
+ignore-comments = 'yes'
+ignore-docstrings = 'no'
+ignore-imports = 'yes'
+ignore-signatures = 'yes'
+min-similarity-lines = 5
+
+[tool.pylint.typecheck]
+generated-members = 'REQUEST,acl_users,aq_parent'
+ignore-mixin-members = 'yes'
+ignored-classes = 'SQLObject'
+
+[tool.pylint.variables]
+additional-builtins = ''
+dummy-variables-rgx = '_$|dummy'
+ignored-argument-names = '_.*'
+init-import = 'no'
+
+[tool.yapf]
+align_closing_bracket_with_visual_indent = false
+based_on_style = 'google'
+dedent_closing_brackets = true
+force_multiline_dict = false
+indent_width = 2
+split_before_logical_operator = true

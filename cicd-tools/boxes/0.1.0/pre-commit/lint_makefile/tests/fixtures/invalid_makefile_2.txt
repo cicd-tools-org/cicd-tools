@@ -1,0 +1,5 @@
+#!/usr/bin/make -f
+
+.PHONY: help CLEAN fmt lint security spelling clean-git format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
+
+# Invalid phonies

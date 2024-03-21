@@ -1,0 +1,1 @@
+"""CICD-Tools Makefile linter."""
