@@ -1,113 +1,147 @@
 """Test the Linter class."""
 
-from unittest import TestCase
+import json
+import pathlib
+from io import StringIO
+from unittest import mock
+import pytest
 
-try:
-  from linter import Linter
-except ImportError:
-  from ..linter import Linter
+from .. import linter, rules
+from . import schemas
+
+MockReadText = mock.Mock()
 
 
-class TestLinter(TestCase):
+@mock.patch(linter.__name__ + ".pathlib.Path.read_text", MockReadText)
+class TestLinter:
   """Test the Linter class."""
 
-  def test_assert_equal__equal__raises_no_exception(self) -> None:
-    linter = Linter()
+  def setup_method(self) -> None:
+    self.mock_schema = pathlib.Path("mock_schema.yml")
+    self.mock_file_handle = StringIO()
+    MockReadText.reset_mock()
+    __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
 
-    linter.assert_equal(
-        "test 1",
-        "test 1",
-        "test values should match",
-    )
+  def test_initialize__attributes(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.one_simple_rule)
 
-  def test_assert_equal__unequal__raises_exception(self) -> None:
-    linter = Linter()
+    instance = linter.Linter(self.mock_schema)
 
-    with self.assertRaises(ValueError) as exc:
-      linter.assert_equal(
-          "test 1",
-          "test 1\r\t\n",
-          "test values should match",
+    assert instance.schema_path == self.mock_schema
+    assert instance.index == 0
+    assert instance.loop_index is None
+
+  def test_initialize__rule_classes(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.one_simple_rule)
+
+    instance = linter.Linter(self.mock_schema)
+
+    assert instance.rule_classes == [
+        rules.AssertBlankLine,
+        rules.AssertEqual,
+        rules.AssertRegex,
+        rules.CreateSectionFromRegex,
+        rules.UntilEOF,
+    ]
+
+  def test_initialize__rule_instances(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.two_simple_rules)
+
+    instance = linter.Linter(self.mock_schema)
+
+    test_rules = schemas.two_simple_rules["rules"]
+    for index, rule_instance in enumerate(instance.rule_instances):
+      assert rule_instance.name == test_rules[index]["name"]
+      assert rule_instance.operation == test_rules[index]["operation"]
+
+  def test_initialize__until_eof__loop_index(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.three_simple_rules)
+
+    instance = linter.Linter(self.mock_schema)
+
+    assert instance.rule_instances[2].operation == "until_eof"
+    assert instance.loop_index == 3
+
+  def test_initialize__invalid_operation__raises_exception(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.invalid_operation)
+    invalid_operation = schemas.invalid_operation["rules"][0]
+
+    with pytest.raises(linter.SchemaError) as exc:
+      linter.Linter(self.mock_schema)
+
+    assert exc.value.args[0] == (
+          "rule #0 unknown operation\n"
+          f"  SCHEMA FILE: {self.mock_schema}\n"
+          f"  RULE DEFINITION:\n" + "\n".join(
+              [
+                  f"    {key}: {value}"
+                  for key, value in invalid_operation.items()
+              ]
+          ) + "\n"
+          "  CONTEXT: None\n"
       )
 
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: test values should match\n"
-            "  EXPECTED: 'test 1'\n"
-            "  RECEIVED: 'test 1\\r\\t\\n'\n"
+  def test_initialize__key_error__raises_exception(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.key_error)
+    key_error = schemas.key_error["rules"][0]
+
+    with pytest.raises(linter.SchemaError) as exc:
+      linter.Linter(self.mock_schema)
+
+    assert exc.value.args[0] == (
+            "rule #0 unknown syntax\n"
+            f"  SCHEMA FILE: {self.mock_schema}\n"
+            f"  RULE DEFINITION:\n" + "\n".join(
+                [
+                    f"    {key}: {value}"
+                    for key, value in key_error.items()
+                ]
+            ) + "\n"
+            "  CONTEXT: 'operation'\n"
         )
-    )
 
-  def test_assert_in__present__raises_no_exception(self) -> None:
-    linter = Linter()
+  def test_initialize__type_error__raises_exception(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.type_error)
+    type_error = schemas.type_error["rules"][0]
+    del type_error["operation"]
 
-    linter.assert_in(1, [1, 2, 3], "list_of_numbers")
+    with pytest.raises(linter.SchemaError) as exc:
+      linter.Linter(self.mock_schema)
 
-  def test_assert_in__missing__raises_exception(self) -> None:
-    linter = Linter()
-
-    with self.assertRaises(ValueError) as exc:
-      linter.assert_in("a", [1, 2, 3], "list_of_numbers")
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: unexpectedly missing\n"
-            "  MEMBER: 'a'\n"
-            "  CONTAINER: 'list_of_numbers'\n"
+    assert exc.value.args[0] == (
+            "rule #0 unknown syntax\n"
+            f"  SCHEMA FILE: {self.mock_schema}\n"
+            f"  RULE DEFINITION:\n" + "\n".join(
+                [
+                    f"    {key}: {value}"
+                    for key, value in type_error.items()
+                ]
+            ) + "\n"
+            "  CONTEXT: __init__() got an unexpected keyword argument "
+            "'wrong_field'\n"
         )
-    )
 
-  def test_assert_not_in__missing__raises_no_exception(self) -> None:
-    linter = Linter()
+  def test_next__iter__returns_iterator(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.one_simple_rule)
 
-    linter.assert_not_in("a", [1, 2, 3], "list_of_numbers")
+    instance = linter.Linter(self.mock_schema)
 
-  def test_assert_not_in__present__raises_exception(self) -> None:
-    linter = Linter()
+    assert iter(instance) == instance
 
-    with self.assertRaises(ValueError) as exc:
-      linter.assert_not_in(1, [1, 2, 3], "list_of_numbers")
+  def test_next__one_rule__returns_next_operation_(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.one_simple_rule)
 
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: unexpectedly present\n"
-            "  MEMBER: '1'\n"
-            "  CONTAINER: 'list_of_numbers'\n"
-        )
-    )
+    instance = linter.Linter(self.mock_schema)
 
-  def test_assert_regex__equal__raises_no_exception(self) -> None:
-    linter = Linter()
+    lines = list(instance)
+    assert lines == instance.rule_instances
+    assert len(lines) == 1
 
-    result = linter.assert_regex(
-        r'(test) [0-9\s]+',
-        "test 1 2 3",
-        "regex should match",
-    )
+  def test_next__two_rules__returns_next_operation(self) -> None:
+    MockReadText.return_value = json.dumps(schemas.two_simple_rules)
 
-    assert result.group(1) == "test"
+    instance = linter.Linter(self.mock_schema)
 
-  def test_assert_regex__unequal__raises_exception(self) -> None:
-    linter = Linter()
-
-    with self.assertRaises(ValueError) as exc:
-      linter.assert_regex(
-          r'(test) [0-9\s]+',
-          "test a b c\n",
-          "regex should match",
-      )
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: regex should match\n"
-            "  REGEX: '(test) [0-9\\s]+'\n"
-            "  DATA: 'test a b c\\n'\n"
-        )
-    )
-
-  def test_visible_whitespace__replaces_whitespace(self) -> None:
-    linter = Linter()
-
-    self.assertEqual(linter.visible_whitespace("1\n"), "1\\n")
-    self.assertEqual(linter.visible_whitespace("1\r"), "1\\r")
-    self.assertEqual(linter.visible_whitespace("1\t"), "1\\t")
+    lines = list(instance)
+    assert lines == instance.rule_instances
+    assert len(lines) == 2

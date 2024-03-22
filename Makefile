@@ -107,4 +107,5 @@ spelling-sync:
 
 test-python:
 	@echo "Testing Python scripts ..."
-	@cd cicd-tools/boxes/0.1.0/pre-commit/lint_makefile; python -m unittest discover -v -t ..
+	@cd cicd-tools/boxes/0.1.0/pre-commit/lint_makefile; export PYTHONPATH=$(pwd); poetry run pytest
+

@@ -23,7 +23,13 @@ class Makefile:
     if self.index + 1 < len(self.lines):
       self.index += 1
       next_line = self.lines[self.index]
-      if next_line.startswith("#") and not next_line.startswith("#!"):
+      if not self.is_shebang(next_line) and self.is_comment(next_line):
         return self.__next__()
       return next_line
     raise StopIteration
+
+  def is_comment(self, next_line: str) -> bool:
+    return next_line.startswith("#")
+
+  def is_shebang(self, next_line: str) -> bool:
+    return self.index == 0 and next_line.startswith("#!")

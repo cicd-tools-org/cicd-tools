@@ -28,7 +28,7 @@ class SchemaError(ValueError):
     )
     for key, value in rule.items():
       message += f"    {key}: {rules.RuleBase.visible_whitespace(value)}\n"
-    message += f"  CONTEXT: {str(context)}"
+    message += f"  CONTEXT: {str(context)}\n"
     super().__init__(message)
 
 
@@ -43,7 +43,7 @@ class Linter:
       rules.UntilEOF,
   ]
 
-  rule_instances: List[rules.RuleBase] = []
+  rule_instances: List[rules.RuleBase]
 
   def __init__(self, schema_path: pathlib.Path) -> None:
     """Initialize the Linter class."""
@@ -56,15 +56,16 @@ class Linter:
         map(int, (self.schema["version"].split(".")))
     )
     self.index = 0
-    self.loop: Optional[int] = None
+    self.loop_index: Optional[int] = None
+    self.rule_instances = []
 
     for index, rule in enumerate(self.schema["rules"]):
       try:
         linter_operation = rule["operation"]
         if linter_operation == "until_eof":
-          self.loop = index + 1
+          self.loop_index = index + 1
         for operation_class in self.rule_classes:
-          if operation_class.lint == linter_operation:
+          if operation_class.operation == linter_operation:
             del rule["operation"]
             self.rule_instances.append(operation_class(**rule))
             break
@@ -91,7 +92,7 @@ class Linter:
     if self.index < len(self.rule_instances):
       self.index += 1
       return self.rule_instances[self.index - 1]
-    if self.loop:
-      self.index = self.loop
+    if self.loop_index:
+      self.index = self.loop_index
       return self.__next__()
     raise StopIteration

@@ -35,7 +35,7 @@ class MakefileError(ValueError):
 class RuleBase(abc.ABC):
   """Validation rule Base Class"""
 
-  lint: str
+  operation: str
   result: Union[None, List[Match]]
 
   def __init__(
@@ -68,7 +68,7 @@ class RuleBase(abc.ABC):
 class AssertEqual(RuleBase):
   """Assert that the line matches an expected static value."""
 
-  lint = "assert_equal"
+  operation = "assert_equal"
 
   def __init__(
       self,
@@ -97,7 +97,7 @@ class AssertEqual(RuleBase):
 class AssertBlankLine(RuleBase):
   """Assert that the line is blank."""
 
-  lint = "assert_blank"
+  operation = "assert_blank"
 
   def apply(self, makefile: Makefile) -> None:
     """Assert that the line is blank."""
@@ -116,7 +116,7 @@ class AssertBlankLine(RuleBase):
 class AssertRegex(RuleBase):
   """Assert that the line matches a regular expression."""
 
-  lint = "assert_regex"
+  operation = "assert_regex"
 
   def __init__(
       self,
@@ -148,7 +148,7 @@ class AssertRegex(RuleBase):
 class CreateSectionFromRegex(RuleBase):
   """Assert that a sequence of lines matches a regular expression."""
 
-  lint = "create_section_from_regex"
+  operation = "create_section_from_regex"
 
   def __init__(
       self,
@@ -188,7 +188,7 @@ class CreateSectionFromRegex(RuleBase):
 class UntilEOF(RuleBase):
   """Inform the linter to start repeating rules."""
 
-  lint = "until_eof"
+  operation = "until_eof"
 
   def __init__(
       self,

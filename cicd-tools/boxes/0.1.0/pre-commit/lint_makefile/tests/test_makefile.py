@@ -1,224 +1,87 @@
-"""Test the Makefile class."""
+"""Test Makefile class."""
 
 import pathlib
 from io import StringIO
 from unittest import TestCase, mock
 
-try:
-  from linter import Linter
-  from makefile import Makefile
-except ImportError:
-  from ..linter import Linter
-  from ..makefile import Makefile
+from ..makefile import Makefile
 
 MockOpen = mock.MagicMock()
 
 
+@mock.patch("builtins.open", MockOpen)
 class TestMakefile(TestCase):
   """Test the Makefile class."""
 
-  mock_makefile = pathlib.Path("/path/to/Makefile")
+  def setup_method(self) -> None:
+    self.mock_makefile = pathlib.Path("mock.makefile")
+    self.mock_file_handle = StringIO()
+    MockOpen.reset_mock()
+    MockOpen.return_value = self.mock_file_handle
 
-  def setUp(self) -> None:
-    self.file_mock = StringIO()
-    MockOpen.return_value = self.file_mock
+  def test_initialize__attributes(self) -> None:
+    instance = Makefile(self.mock_makefile)
 
-  @mock.patch('builtins.open', MockOpen)
-  def test_intialize__attributes(self) -> None:
-    makefile = Makefile(self.mock_makefile)
+    self.assertEqual(instance.makefile_path, self.mock_makefile)
+    self.assertEqual(instance.index, -1)
 
-    self.assertDictEqual(makefile.aliases, {})
-    self.assertListEqual(makefile.commands, [])
-    self.assertEqual(makefile.filename, self.mock_makefile)
-    self.assertEqual(makefile.index, 0)
-    self.assertListEqual(makefile.lines, [])
-    self.assertIsInstance(makefile.linter, Linter)
-    self.assertListEqual(makefile.phonies, [])
+  def test_initialize__lines(self) -> None:
+    for line in range(0, 10):
+      self.mock_file_handle.write(f"{line}\n")
+    self.mock_file_handle.seek(0)
 
-  @mock.patch('builtins.open', MockOpen)
-  def test_intialize__lines(self) -> None:
-    self.file_mock.write(
-        "#!/usr/bin/make -f\n"
-        "# commented line1"
-        "    # commented line2"
-    )
-    self.file_mock.seek(0)
+    instance = Makefile(self.mock_makefile)
 
-    makefile = Makefile(self.mock_makefile)
-
-    self.assertEqual(makefile.lines, ['#!/usr/bin/make -f\n'])
-
-  def test_lint__invalid_makefile__malformed_shebang(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_1.txt"
+    MockOpen.assert_called_once_with(
+        self.mock_makefile,
+        "r",
+        encoding="utf-8",
     )
 
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: shebang\n"
-            "  EXPECTED: '#!/usr/bin/make -f\\n'\n"
-            "  RECEIVED: '#!/usr/bin/malformed -f\\n'\n"
-        )
+    self.assertListEqual(
+        instance.lines,
+        [f"{line}\n" for line in range(0, 10)],
     )
 
-  def test_lint__invalid_makefile__malformed_phonies(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_2.txt"
+  def test_next__iter__returns_iterator(self) -> None:
+    instance = Makefile(self.mock_makefile)
+
+    assert iter(instance) == instance
+
+  def test_next__returns_next_line(self) -> None:
+    for line in range(0, 10):
+      self.mock_file_handle.write(f"{line}\n")
+    self.mock_file_handle.seek(0)
+
+    instance = Makefile(self.mock_makefile)
+
+    lines = list(instance)
+    self.assertListEqual(lines, [f"{line}\n" for line in range(0, 10)])
+    self.assertEqual(len(lines), 10)
+
+  def test_next__skips_comments(self) -> None:
+    for line in range(0, 10):
+      self.mock_file_handle.write(f"# {line}\n")
+      self.mock_file_handle.write(f"{line}\n")
+    self.mock_file_handle.seek(0)
+
+    instance = Makefile(self.mock_makefile)
+
+    lines = list(instance)
+    self.assertListEqual(lines, [f"{line}\n" for line in range(0, 10)])
+    self.assertEqual(len(lines), 10)
+
+  def test_next__does_not_skip_shebang(self) -> None:
+    shebang = f"#!/usr/bin/make -f\n"
+    self.mock_file_handle.write(shebang)
+    for line in range(0, 10):
+      self.mock_file_handle.write(f"{line}\n")
+    self.mock_file_handle.seek(0)
+
+    instance = Makefile(self.mock_makefile)
+
+    lines = list(instance)
+    self.assertListEqual(
+        lines, [shebang] + [f"{line}\n" for line in range(0, 10)]
     )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    exception_lines = exc.exception.args[0].split("\n")
-    self.assertEqual(
-        exception_lines[0],
-        "ERROR: phonies",
-    )
-    self.assertEqual(
-        exception_lines[1],
-        "  REGEX: '^.PHONY: ([a-z-\\s]+)\\n'",
-    )
-
-  def test_lint__invalid_makefile__malformed_help_1(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_3.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: help section title\n"
-            "  EXPECTED: '\\t@echo \"Please use 'make <target>' where "
-            "<target> is one of:\"\\n'\n"
-            "  RECEIVED: '\\t@echo \"Please use `make <target>' where "
-            "<target> is one of:\"\\n'\n"
-        )
-    )
-
-  def test_lint__invalid_makefile__malformed_help_2(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_4.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0],
-        "Could not find end of 'help' section.",
-    )
-
-  def test_lint__invalid_makefile__malformed_aliases_1(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_5.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: alias definition\n"
-            "  REGEX: '^([a-z]+): ([a-z-\\s]+)\\n'\n"
-            "  DATA: 'clean: CLEAN-GIT\\n'\n"
-        )
-    )
-
-  def test_lint__invalid_makefile__malformed_aliases_2(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_6.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0],
-        "Duplicate alias entry: 'clean'.",
-    )
-
-  def test_lint__invalid_makefile__malformed_aliases_3(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_7.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0],
-        "Duplicate alias member in alias entry: 'clean'.",
-    )
-
-  def test_lint__invalid_makefile__malformed_aliases_4(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_8.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0],
-        "Could not find end of 'aliases' section.",
-    )
-
-  def test_lint__invalid_makefile__malformed_command_1(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_9.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: command section start\n"
-            "  REGEX: '^([a-z-]+):\\n'\n"
-            "  DATA: 'CLEAN-GIT:\\n'\n"
-        )
-    )
-
-  def test_lint__invalid_makefile__malformed_command_2(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_10.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: command section content\n"
-            "  REGEX: '^\\t@.*\\n'\n"
-            "  DATA: '\\tgit clean -fd\\n'\n"
-        )
-    )
-
-  def test_lint__invalid_makefile__malformed_command_3(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "invalid_makefile_11.txt"
-    )
-
-    with self.assertRaises(ValueError) as exc:
-      makefile.lint()
-
-    self.assertEqual(
-        exc.exception.args[0], (
-            "ERROR: command section content\n"
-            "  REGEX: '^\\t@.*\\n'\n"
-            "  DATA: 'format-shell:\\n'\n"
-        )
-    )
-
-  def test_lint__valid_makefile__parses_correctly(self) -> None:
-    makefile = Makefile(
-        pathlib.Path(__file__).parent / "fixtures" / "valid_makefile.txt"
-    )
-
-    makefile.lint()
+    self.assertEqual(len(lines), 11)

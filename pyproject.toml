@@ -31,6 +31,7 @@ jinja-cli = '^1.2.2'
 molecule = '^5.0.0'
 pre-commit = '^3.1.1'
 pylint = '^3.1.0'
+pytest = "^8.1.1"
 
 [tool.poetry.group.dev.dependencies.ansible-lint]
 markers = "platform_system != 'Windows'"
