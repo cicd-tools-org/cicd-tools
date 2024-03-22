@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-.PHONY: help clean fmt lint security spelling test clean-git clean-pycache format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
+.PHONY: help clean fmt lint security spelling test clean-git format-python format-shell format-toml lint-make lint-markdown lint-python lint-shell lint-workflows lint-yaml security-leaks spelling-add spelling-markdown spelling-sync test-python
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of:"

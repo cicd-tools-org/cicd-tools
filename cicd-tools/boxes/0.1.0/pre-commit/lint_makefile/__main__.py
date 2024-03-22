@@ -4,9 +4,9 @@ import argparse
 import pathlib
 
 try:
-  from makefile import Makefile
-except ImportError:
-  from .makefile import Makefile
+  from controller import Controller
+except (ImportError, ModuleNotFoundError):
+  from .controller import Controller
 
 
 def cli() -> None:
@@ -25,8 +25,9 @@ def cli() -> None:
       type=pathlib.Path,
   )
   args = parser.parse_args()
-  mf = Makefile(args.filename)
-  mf.lint()
+
+  ctrl = Controller(args.filename)
+  ctrl.start()
 
 
 if __name__ == "__main__":

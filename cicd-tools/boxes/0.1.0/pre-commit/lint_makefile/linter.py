@@ -1,83 +1,97 @@
 """Linter class."""
 
-import re
-from typing import Any, List, Match
+import pathlib
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
+
+import yaml
+
+try:
+  import rules
+except ImportError:
+  from . import rules
+
+
+class SchemaError(ValueError):
+  """Raised when the linter cannot read a rule from the schema."""
+
+  def __init__(
+      self,
+      description: str,
+      schema: pathlib.Path,
+      rule: Dict[str, Any],
+      context: Optional[Exception],
+  ) -> None:
+    message = (
+        description + "\n"
+        f"  SCHEMA FILE: {schema}\n"
+        "  RULE DEFINITION:\n"
+    )
+    for key, value in rule.items():
+      message += f"    {key}: {rules.RuleBase.visible_whitespace(value)}\n"
+    message += f"  CONTEXT: {str(context)}"
+    super().__init__(message)
 
 
 class Linter:
-  """Generic linter tools."""
+  """A linter operations iterator."""
 
-  def assert_equal(
-      self,
-      expected: Any,
-      received: Any,
-      description: str,
-  ) -> None:
-    """Assert that two strings are equal."""
+  rule_classes: List[Type[rules.RuleBase]] = [
+      rules.AssertBlankLine,
+      rules.AssertEqual,
+      rules.AssertRegex,
+      rules.CreateSectionFromRegex,
+      rules.UntilEOF,
+  ]
 
-    if expected != received:
-      raise ValueError(
-          f"ERROR: {description}\n"
-          f"  EXPECTED: '{self.visible_whitespace(expected)}'\n"
-          f"  RECEIVED: '{self.visible_whitespace(received)}'\n"
-      )
+  rule_instances: List[rules.RuleBase] = []
 
-  def assert_in(
-      self,
-      member: Any,
-      container: List[Any],
-      container_name: str,
-  ) -> None:
-    """Assert a container has a specific member."""
+  def __init__(self, schema_path: pathlib.Path) -> None:
+    """Initialize the Linter class."""
 
-    if member not in container:
-      raise ValueError(
-          "ERROR: unexpectedly missing\n"
-          f"  MEMBER: '{self.visible_whitespace(member)}'\n"
-          f"  CONTAINER: '{container_name}'\n"
-      )
-
-  def assert_not_in(
-      self,
-      member: Any,
-      container: List[Any],
-      container_name: str,
-  ) -> None:
-    """Assert a container does NOT have a specific member."""
-
-    if member in container:
-      raise ValueError(
-          "ERROR: unexpectedly present\n"
-          f"  MEMBER: '{self.visible_whitespace(member)}'\n"
-          f"  CONTAINER: '{container_name}'\n"
-      )
-
-  def assert_regex(
-      self,
-      regex: str,
-      data: str,
-      description: str,
-  ) -> Match[str]:
-    """Assert a regex matches the given data."""
-
-    match = re.match(regex, data, re.DOTALL)
-
-    if not match:
-      raise ValueError(
-          f"ERROR: {description}\n"
-          f"  REGEX: '{regex}'\n"
-          f"  DATA: '{self.visible_whitespace(data)}'\n"
-      )
-
-    return match
-
-  @staticmethod
-  def visible_whitespace(value: Any) -> str:
-    """Make a string's whitespace visible."""
-
-    string = (
-        str(value).replace("\n", "\\n").replace("\r",
-                                                "\\r").replace("\t", "\\t")
+    self.schema_path = schema_path
+    self.schema = yaml.safe_load(
+        pathlib.Path(schema_path).read_text(encoding="utf-8")
     )
+    self.version: Tuple[int, ...] = tuple(
+        map(int, (self.schema["version"].split(".")))
+    )
+    self.index = 0
+    self.loop: Optional[int] = None
 
-    return string
+    for index, rule in enumerate(self.schema["rules"]):
+      try:
+        linter_operation = rule["operation"]
+        if linter_operation == "until_eof":
+          self.loop = index + 1
+        for operation_class in self.rule_classes:
+          if operation_class.lint == linter_operation:
+            del rule["operation"]
+            self.rule_instances.append(operation_class(**rule))
+            break
+        else:
+          raise SchemaError(
+              description=f"rule #{index} unknown operation",
+              schema=self.schema_path,
+              rule=rule,
+              context=None,
+          )
+      except (AttributeError, TypeError, KeyError) as exc:
+        # pylint: disable=raise-missing-from
+        raise SchemaError(
+            description=f"rule #{index} unknown syntax",
+            schema=self.schema_path,
+            rule=rule,
+            context=exc,
+        )
+
+  def __iter__(self) -> Iterator[rules.RuleBase]:
+    return self
+
+  def __next__(self) -> rules.RuleBase:
+    if self.index < len(self.rule_instances):
+      self.index += 1
+      return self.rule_instances[self.index - 1]
+    if self.loop:
+      self.index = self.loop
+      return self.__next__()
+    raise StopIteration

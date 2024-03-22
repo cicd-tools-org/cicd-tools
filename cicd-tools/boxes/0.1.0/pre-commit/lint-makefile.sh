@@ -11,13 +11,16 @@ set -eo pipefail
 # shellcheck source=/dev/null
 source "$(dirname -- "${BASH_SOURCE[0]}")/../libraries/tools.sh"
 
+export PYTHONPATH
+
 main() {
   local TARGET
   local TARGET_PATHS=${*-"."}
 
   for TARGET in ${TARGET_PATHS}; do
     log "DEBUG" "PRE-COMMIT > Executing 'lint_makefile' on '${TARGET}' ..."
-    python "$(dirname -- "${BASH_SOURCE[0]}")/lint_makefile" -f "${TARGET}"
+    PYTHONPATH="$(dirname -- "${BASH_SOURCE[0]}")"
+    python -m "lint_makefile" -f "${TARGET}"
   done
 }
 

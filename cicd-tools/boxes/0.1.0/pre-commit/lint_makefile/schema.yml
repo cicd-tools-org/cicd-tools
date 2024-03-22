@@ -1,0 +1,49 @@
+---
+version: "0.1.0"
+
+rules:
+  - name: shebang is first line and properly index
+    operation: assert_equal
+    expected: "#!/usr/bin/make -f\n"
+
+  - name: blank line after shebang
+    operation: assert_blank
+
+  - name: read all phonies
+    operation: assert_regex
+    regex: "^.PHONY: ([a-z-\\s]+)\\n"
+    save: phonies
+    split: " "
+
+  - name: blank line after phonies
+    operation: assert_blank
+
+  - name: read help entry
+    operation: assert_equal
+    expected: "help:\n"
+
+  - name: read help title
+    operation: assert_equal
+    expected: "\t@echo \"Please use 'make <target>' where <target> is one of:\"\n"
+
+  - name: read help content
+    operation: create_section_from_regex
+    regex: "\\t@echo \"  ([a-z-]+)\\s+.+\n"
+    save: helps
+
+  - name: read aliases
+    operation: create_section_from_regex
+    regex: "^([a-z]+): ([a-z-\\s]+)\n"
+    save: aliases
+
+  - name: read all commands
+    operation: until_eof
+
+  - name: read command entry
+    operation: assert_regex
+    regex: "^([a-z-]+):\n"
+    save: commands
+
+  - name: read command contents
+    operation: create_section_from_regex
+    regex: "^\t@.+\n"
