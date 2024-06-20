@@ -1,0 +1,19 @@
+---
+name: action-01-generic-debug
+description: "Allows SSH connections to the GitHub runner in the event of a workflow failure."
+author: niall@niallbyrne.ca
+
+inputs:
+  ENABLE:
+    default: "false"
+    description: "Optional, allows you to troubleshoot failed workflow runs with tmate."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Debug -- Start SSH server
+      if: inputs.ENABLE != 'false'
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
