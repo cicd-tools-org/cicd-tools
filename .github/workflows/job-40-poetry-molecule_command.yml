@@ -11,6 +11,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      DEBUG:
+        default: false
+        description: "Optional, allows you to troubleshoot failed workflow runs with tmate."
+        required: false
+        type: boolean
       GALAXY_REQUIREMENTS_PATH:
         default: "requirements.yml"
         description: "Optional, allows you to specify a relative path, within the repository, to the Ansible Galaxy requirements file used by this role."
@@ -179,6 +184,12 @@ jobs:
         with:
           NOTIFICATION_MESSAGE: "Molecule Command '${{ inputs.MOLECULE_COMMAND }}' on scenario '${{ inputs.MOLECULE_SCENARIO }}' has passed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Troubleshoot on Failure
+        if: failure() && inputs.TESTING_MODE != true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-01-generic-debug
+        with:
+          ENABLE: inputs.DEBUG
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Report Job Status on Failure
         if: failure() || inputs.TESTING_MODE == true
