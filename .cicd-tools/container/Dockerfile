@@ -21,7 +21,7 @@ ENV SHFMT_VERSION "https://github.com/mvdan/sh/releases/download/v3.7.0/shfmt_v3
 ENV SHELLCHECK_VERSION "https://github.com/koalaman/shellcheck/releases/download/v0.9.0/shellcheck-v0.9.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
 ENV TOMLL_VERSION "https://github.com/pelletier/go-toml/releases/download/v2.1.1/tomll_2.1.1_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
 ENV VALE_VERSION "https://github.com/errata-ai/vale/releases/download/v2.30.0/vale_2.30.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV VALE3_VERSION "https://github.com/errata-ai/vale/releases/download/v3.2.1/vale_3.2.1_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
+ENV VALE3_VERSION "https://github.com/errata-ai/vale/releases/download/v3.6.0/vale_3.6.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
 
 RUN mkdir -p /dist
 
