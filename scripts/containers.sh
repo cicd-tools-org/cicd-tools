@@ -13,20 +13,24 @@ main() {
   log "INFO" "Building the CICD-Tools utility containers ..."
 
   pushd .cicd-tools/container >> /dev/null
+  log "INFO" "Building AMD64 ..."
   docker build \
+    --no-cache \
     --platform linux/amd64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_1=amd64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_2=x86_64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_3=x86_64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_4=64-bit \
     -t ghcr.io/cicd-tools-org/cicd-tools:linux-amd .
+  log "INFO" "Building ARM64 ..."
   docker build \
+    --no-cache \
     --platform linux/arm64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_1=arm64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_2=arm64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_3=aarch64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_4=arm64 \
-    -t ghcr.io/cicd-tools-org/cicd-tools:linux-amd .
+    -t ghcr.io/cicd-tools-org/cicd-tools:linux-arm .
   popd >> /dev/null
 
   log "INFO" "Containers successfully built."
