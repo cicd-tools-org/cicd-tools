@@ -72,6 +72,9 @@ jobs:
     with:
       BUILD_ARGS: ${{ matrix.build-args }}
       CONTEXT: .cicd-tools/container
+      FAIL_BUILD: true
+      FAIL_THRESHOLD: "critical"
+      FIXED_ONLY: true
       IMAGE_TAG: ${{ matrix.build-tag }}
       PLATFORM: ${{ matrix.build-platform }}
       REQUIRES_QEMU: true
