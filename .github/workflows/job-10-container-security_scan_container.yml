@@ -22,6 +22,21 @@ on:
         description: "Optional, allows you define where the Dockerfile is located with respect to the context."
         required: false
         type: string
+      FAIL_BUILD:
+        default: false
+        description: "Optional, allows you to fail the build if security vulnerabilities are detected above the threshold."
+        required: false
+        type: boolean
+      FAIL_THRESHOLD:
+        default: "critical"
+        description: "Optional, specifies the vulnerability level that can trigger a failed build. (Valid values are: 'critical', 'high', 'medium', 'low' or 'negligible')"
+        required: false
+        type: string
+      FIXED_ONLY:
+        default: false
+        description: "Optional, allows you to filter the report by vulnerabilities that have been patched and have a fixed version made available."
+        required: false
+        type: boolean
       IMAGE_NAME:
         default: ""
         description: "Optional, allows you to specify the image name, otherwise the configured script will generate one."
@@ -146,9 +161,10 @@ jobs:
         id: scan
         uses: anchore/scan-action@v3
         with:
-          fail-build: true
+          fail-build: ${{ inputs.FAIL_BUILD }}
           image: localbuild/test:${{ env.BRANCH_OR_TAG }}
-          severity-cutoff: critical
+          only-fixed: ${{ inputs.FIXED_ONLY }}
+          severity-cutoff: ${{ inputs.FAIL_THRESHOLD }}
 
       - name: Container Scan -- Upload SARIF Report
         uses: github/codeql-action/upload-sarif@v3
