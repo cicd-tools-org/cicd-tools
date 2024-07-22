@@ -19,6 +19,10 @@ environment() {
 }
 
 _environment_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "m:o:d:" OPTION; do
     case "$OPTION" in
       m)
