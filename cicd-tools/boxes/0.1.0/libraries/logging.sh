@@ -45,6 +45,7 @@ function log() {
 }
 
 function _log_args() {
+  local OPTARG
   local OPTIND
   local OPTION
 

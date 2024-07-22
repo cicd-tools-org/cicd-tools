@@ -12,8 +12,8 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/librari
 main() {
   log "INFO" "Building the CICD-Tools utility containers ..."
 
-  pushd .cicd-tools/container >> /dev/null
-  log "INFO" "Building AMD64 ..."
+  pushd .cicd-tools/containers/utilities >> /dev/null
+  log "INFO" "  Building AMD64 ..."
   docker build \
     --no-cache \
     --platform linux/amd64 \
@@ -22,7 +22,7 @@ main() {
     --build-arg BUILD_ARG_ARCH_FORMAT_3=x86_64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_4=64-bit \
     -t ghcr.io/cicd-tools-org/cicd-tools:linux-amd .
-  log "INFO" "Building ARM64 ..."
+  log "INFO" "  Building ARM64 ..."
   docker build \
     --no-cache \
     --platform linux/arm64 \
@@ -31,6 +31,21 @@ main() {
     --build-arg BUILD_ARG_ARCH_FORMAT_3=aarch64 \
     --build-arg BUILD_ARG_ARCH_FORMAT_4=arm64 \
     -t ghcr.io/cicd-tools-org/cicd-tools:linux-arm .
+  popd >> /dev/null
+
+  log "INFO" "Building the CICD-Tools gettext containers ..."
+
+  pushd .cicd-tools/containers/gettext >> /dev/null
+  log "INFO" "  Building AMD64 ..."
+  docker build \
+    --no-cache \
+    --platform linux/amd64 \
+    -t ghcr.io/cicd-tools-org/cicd-tools-gettext:linux-amd .
+  log "INFO" "  Building ARM64 ..."
+  docker build \
+    --no-cache \
+    --platform linux/arm64 \
+    -t ghcr.io/cicd-tools-org/cicd-tools-gettext:linux-arm .
   popd >> /dev/null
 
   log "INFO" "Containers successfully built."

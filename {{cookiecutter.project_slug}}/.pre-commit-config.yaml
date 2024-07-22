@@ -19,7 +19,7 @@ repos:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: 0.5.0
+    rev: c58cb72acbf89070f7496957599e79ce17afe9f8
     hooks:
       - id: format-shell
         args:
@@ -30,6 +30,29 @@ repos:
 {%- if cookiecutter.optional_toml_linting == 'true' %}
       - id: format-toml
 {%- endif %}
+      - id: gettext-translations-add
+        args:
+          - "-p"
+          - "python/locales"
+      - id: gettext-translations-compile
+        args:
+          - "-p"
+          - "python/locales"
+      - id: gettext-translations-missing
+        args:
+          - "-p"
+          - "python/locales"
+          - "-s"
+          - "en"
+      - id: gettext-translations-update
+        args:
+          - "-p"
+          - "python/locales"
+          - "-c"
+          - "python"
+          - "-e"
+          - "niall@niallbyrne.ca"
+          - "-u"
       - id: git-conflict-markers
 {%- if cookiecutter.optional_workflow_linting == 'true' %}
       - id: lint-github-workflow-header

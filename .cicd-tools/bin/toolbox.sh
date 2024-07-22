@@ -39,6 +39,10 @@ main() {
 }
 
 _toolbox_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "b:m:r:t:" OPTION; do
     case "$OPTION" in
       b)
