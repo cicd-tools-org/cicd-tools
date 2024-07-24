@@ -68,7 +68,6 @@ _installer_cookiecutter_symlinks() {
   _installer_cookiecutter_symlink_directory ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
   _installer_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/commitizen" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/commitizen"
   _installer_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/libraries" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/libraries"
-  _installer_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/pre-commit" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/pre-commit"
   _installer_cookiecutter_symlink_directory ".cicd-tools/boxes/bootstrap/schemas" "{{cookiecutter.project_slug}}/.cicd-tools/boxes/bootstrap/schemas"
   _installer_cookiecutter_symlink_directory ".cicd-tools/pgp" "{{cookiecutter.project_slug}}/.cicd-tools/pgp"
 

@@ -19,7 +19,7 @@ repos:
       - id: commitizen
         stages: [commit-msg]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: c58cb72acbf89070f7496957599e79ce17afe9f8
+    rev: 5aeaec0edd575dff880284b174ea95c19c10df1e
     hooks:
       - id: format-shell
         args:
