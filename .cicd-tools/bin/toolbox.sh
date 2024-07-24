@@ -20,8 +20,6 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/environme
   -d "3 30"
 
 main() {
-  OPTIND=1
-
   local MANIFEST_ASC
   local MANIFEST_DISABLE_SECURITY="false"
   local TARGET_TOOLBOX_VERSION
@@ -39,6 +37,10 @@ main() {
 }
 
 _toolbox_args() {
+  local OPTARG
+  local OPTIND=1
+  local OPTION
+
   while getopts "b:m:r:t:" OPTION; do
     case "$OPTION" in
       b)

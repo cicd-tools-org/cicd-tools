@@ -16,6 +16,10 @@ manifest() {
 }
 
 _manifest_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "m:" OPTION; do
     case "$OPTION" in
       m)

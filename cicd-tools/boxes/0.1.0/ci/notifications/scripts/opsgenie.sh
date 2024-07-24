@@ -27,7 +27,6 @@ main() {
   local OPSGENIE_REQUEST_BODY
 
   OPSGENIE_PRIORITY="P1"
-  OPTIND=1
 
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 
@@ -45,6 +44,10 @@ main() {
 }
 
 _opsgenie_args() {
+  local OPTARG
+  local OPTIND=1
+  local OPTION
+
   while getopts "a:l:m:p:" OPTION; do
     case "$OPTION" in
       a)

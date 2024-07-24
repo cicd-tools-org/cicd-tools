@@ -19,6 +19,10 @@ main() {
 }
 
 _verify_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "k:" OPTION; do
     case "$OPTION" in
       k)
