@@ -21,6 +21,10 @@ main() {
 }
 
 _default_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "d:o:s:" OPTION; do
     case "$OPTION" in
       d)

@@ -23,8 +23,6 @@ main() {
   local SLACK_GITHUB_CI_LINK
   local SLACK_MESSAGE
 
-  OPTIND=1
-
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 
   _slack_args "$@"
@@ -41,6 +39,10 @@ main() {
 }
 
 _slack_args() {
+  local OPTARG
+  local OPTIND=1
+  local OPTION
+
   while getopts "l:m:" OPTION; do
     case "$OPTION" in
       l)
