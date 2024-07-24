@@ -21,6 +21,10 @@ main() {
 }
 
 _package_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "b:d" OPTION; do
     case "$OPTION" in
       b)

@@ -22,7 +22,12 @@ main() {
 }
 
 _execute_serial_commands_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "c:e:p:" OPTION; do
+
     case "$OPTION" in
       c)
         SERIAL_COMMANDS_INPUT="${OPTARG}"
