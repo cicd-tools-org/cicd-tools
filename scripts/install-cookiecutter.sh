@@ -45,6 +45,10 @@ main() {
 }
 
 _install_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "d:" OPTION; do
     case "$OPTION" in
       d)

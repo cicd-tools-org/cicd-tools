@@ -24,6 +24,10 @@ main() {
 }
 
 _link_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "b:" OPTION; do
     case "$OPTION" in
       b)
