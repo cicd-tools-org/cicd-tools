@@ -41,6 +41,10 @@ main() {
 }
 
 _slack_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "l:m:" OPTION; do
     case "$OPTION" in
       l)

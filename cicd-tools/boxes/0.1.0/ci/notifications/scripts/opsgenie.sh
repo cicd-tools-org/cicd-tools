@@ -45,6 +45,10 @@ main() {
 }
 
 _opsgenie_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "a:l:m:p:" OPTION; do
     case "$OPTION" in
       a)

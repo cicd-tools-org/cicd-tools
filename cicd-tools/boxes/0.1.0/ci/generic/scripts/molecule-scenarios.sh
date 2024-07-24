@@ -18,6 +18,10 @@ main() {
 }
 
 _molecule_scenarios_args() {
+  local OPTARG
+  local OPTIND
+  local OPTION
+
   while getopts "e:p:" OPTION; do
     case "$OPTION" in
       e)
