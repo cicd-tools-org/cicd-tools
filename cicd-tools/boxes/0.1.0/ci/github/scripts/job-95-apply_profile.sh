@@ -12,14 +12,16 @@
 
 set -eo pipefail
 
+# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh"
+
 # shellcheck source=./cicd-tools/boxes/0.1.0/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/logging.sh"
 
-# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh" \
-  -m "MAC_MAKER_ARCHITECTURE MAC_MAKER_VERSION MAC_MAKER_OS_VERSION PROJECT_OWNER TEST_PROFILE_ORIGIN"
-
 main() {
+
+  environment \
+    -m "MAC_MAKER_ARCHITECTURE MAC_MAKER_VERSION MAC_MAKER_OS_VERSION PROJECT_OWNER TEST_PROFILE_ORIGIN"
 
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 

@@ -10,17 +10,19 @@
 
 set -eo pipefail
 
+# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh"
+
 # shellcheck source=./cicd-tools/boxes/0.1.0/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/logging.sh"
-
-# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh" \
-  -m "GITHUB_CONTEXT"
 
 PUSH_FALLBACK_INDEX="${PUSH_FALLBACK_INDEX-"$(git rev-list --max-parents=0 HEAD)"}"
 PUSH_FALLBACK_REV_RANGE="${PUSH_FALLBACK_REV_RANGE-"HEAD"}"
 
 main() {
+  environment \
+    -m "GITHUB_CONTEXT"
+
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 
   local COMMIT_COUNT

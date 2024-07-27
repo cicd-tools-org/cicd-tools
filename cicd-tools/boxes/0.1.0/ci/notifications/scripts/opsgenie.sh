@@ -11,13 +11,11 @@
 
 set -eo pipefail
 
+# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh"
+
 # shellcheck source=./cicd-tools/boxes/0.1.0/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/logging.sh"
-
-# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh" \
-  -o "NOTIFICATION_RETRIES NOTIFICATION_MAX_TIME" \
-  -d "3 30"
 
 main() {
   local OPSGENIE_ALIAS
@@ -25,6 +23,10 @@ main() {
   local OPSGENIE_MESSAGE
   local OPSGENIE_PRIORITY
   local OPSGENIE_REQUEST_BODY
+
+  environment \
+    -o "NOTIFICATION_RETRIES NOTIFICATION_MAX_TIME" \
+    -d "3 30"
 
   OPSGENIE_PRIORITY="P1"
 
