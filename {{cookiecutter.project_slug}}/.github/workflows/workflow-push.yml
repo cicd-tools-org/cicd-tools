@@ -202,6 +202,33 @@ jobs:
   {%- endraw %}{% endif %}
   {%- if cookiecutter.optional_workflow_linting == 'true' %}{% raw %}
 
+  translations_missing:
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
+      PRECOMMIT_HOOK_ID: "gettext-translations-missing"
+      PRECOMMIT_HOOK_NAME: "Missing Translations"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_python_versions) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
+
+  translations_updates:
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml@main
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
+      PRE_HOOK_COMMAND: "sed -i.bak 's,#: /Volumes/Code/Code/cicd-tools/cicd-tools/cicd-tool-box/,#/home/runner/cicd-tool-box/,g' python/locales/base.pot"
+      PRECOMMIT_HOOK_ID: "gettext-translations-update"
+      PRECOMMIT_HOOK_NAME: "Translation Updates"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_python_versions) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
+
   workflow_lint:
     needs:
       - configuration
@@ -256,6 +283,8 @@ jobs:
       - shell_lint
       - spelling_vocabularies
       - start
+      - translations_missing
+      - translations_updates
 {%- endraw %}{% if cookiecutter.optional_toml_linting == 'true' %}
       - toml_lint
 {%- endif %}{% raw %}

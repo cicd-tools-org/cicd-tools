@@ -1,0 +1,143 @@
+---
+name: cicd-tooling-github-workflow-container-gettext-multiarch
+
+on:
+  push:
+    paths:
+      - ".cicd-tools/containers/gettext"
+      - ".github/workflows/workflow-container-gettext-multiarch.yml"
+      - ".github/workflows/job-*-container-*.yml"
+      - "scripts/containers.sh"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+#  secrets:
+#    SLACK_WEBHOOK:
+#      description: "Optional, enables Slack notifications."
+#      required: false
+
+jobs:
+
+  configuration:
+    uses: ./.github/workflows/job-00-cookiecutter-read_configuration.yml
+
+  start:
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":vertical_traffic_light:"
+      NOTIFICATION_MESSAGE: "Multi-arch container build has started!"
+      WORKFLOW_NAME: "gettext-container"
+
+  security:
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
+    with:
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "gettext-container"
+
+  scan:
+    permissions:
+      security-events: write
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - build-platform: linux/amd64
+            build-tag: linux-amd64
+          - build-platform: linux/arm64
+            build-tag: linux-arm64
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-10-container-security_scan_container.yml
+    with:
+      CONTEXT: .cicd-tools/containers/gettext
+      FAIL_BUILD: true
+      FAIL_THRESHOLD: "critical"
+      FIXED_ONLY: true
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gettext
+      IMAGE_TAG: ${{ matrix.build-tag }}
+      PLATFORM: ${{ matrix.build-platform }}
+      REQUIRES_QEMU: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "gettext-container"
+
+  lint:
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-container-dockerfile_linter.yml
+    with:
+      DOCKERFILE: .cicd-tools/containers/gettext/Dockerfile
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "gettext-container"
+
+  push:
+    needs:
+      - configuration
+      - lint
+      - scan
+      - security
+      - start
+    permissions:
+      packages: write
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - build-platform: linux/amd64
+            build-tag: linux-amd64
+          - build-platform: linux/arm64
+            build-tag: linux-arm64
+      max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+    uses: ./.github/workflows/job-95-container-push.yml
+    with:
+      CONTEXT: .cicd-tools/containers/gettext
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gettext
+      IMAGE_TAG: ${{ matrix.build-tag }}
+      PLATFORM: ${{ matrix.build-platform }}
+      REQUIRES_QEMU: true
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "gettext-container"
+
+  multiarch:
+    needs:
+      - configuration
+      - push
+    permissions:
+      packages: write
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-95-container-multiarch.yml
+    with:
+      IMAGE_GIT: true
+      IMAGE_LATEST: true
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gettext
+      MULTIARCH_TAG: "multiarch"
+      SOURCE_TAGS: |
+        linux-amd64
+        linux-arm64
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "gettext-container"
+
+  success:
+    needs:
+      - multiarch
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-00-generic-notification.yml
+    with:
+      NOTIFICATION_EMOJI: ":checkered_flag:"
+      NOTIFICATION_MESSAGE: "Multi-arch container build has completed successfully!"
+      WORKFLOW_NAME: "gettext-container"
