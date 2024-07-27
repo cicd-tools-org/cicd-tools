@@ -11,13 +11,11 @@ TOOLBOX_PATH="$(pwd)/.cicd-tools"
 TOOLBOX_REMOTES_FOLDER="boxes"
 TOOLBOX_MANIFEST_FILE="${TOOLBOX_PATH}/manifest.json"
 
+# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/environment.sh"
+
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/logging.sh"
-
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../boxes/bootstrap/libraries/environment.sh" \
-  -o "DOWNLOAD_RETRIES DOWNLOAD_MAX_TIME" \
-  -d "3 30"
 
 main() {
   local MANIFEST_ASC
@@ -27,6 +25,10 @@ main() {
   local TEMP_DIRECTORY
 
   TEMP_DIRECTORY="$(mktemp -d)"
+
+  environment \
+    -o "DOWNLOAD_RETRIES DOWNLOAD_MAX_TIME" \
+    -d "3 30"
 
   _toolbox_args "$@"
   _toolbox_manifest_download
