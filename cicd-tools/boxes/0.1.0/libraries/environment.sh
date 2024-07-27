@@ -15,7 +15,7 @@ environment() {
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
 
   _environment_args "$@"
-  _environment_defaults
+  _environment_set_defaults
 }
 
 _environment_args() {
@@ -23,16 +23,16 @@ _environment_args() {
   local OPTIND
   local OPTION
 
-  while getopts "m:o:d:" OPTION; do
+  while getopts "d:m:o:" OPTION; do
     case "$OPTION" in
+      d)
+        _environment_parse_defaults "${OPTARG}"
+        ;;
       m)
         _environment_parse_mandatory "${OPTARG}"
         ;;
       o)
         _environment_parse_optional "${OPTARG}"
-        ;;
-      d)
-        _environment_parse_defaults "${OPTARG}"
         ;;
       \?)
         _environment_usage
@@ -49,10 +49,36 @@ _environment_args() {
   fi
 }
 
-_environment_defaults() {
-  log "DEBUG" "ENVIRONMENT > Setting DEFAULT environment variable values."
+_environment_parse_defaults() {
+  log "DEBUG" "ENVIRONMENT > Parsing DEFAULT environment variable values."
+  IFS=' ' read -r -a DEFAULTS <<< "${1}"
+}
+
+_environment_parse_mandatory() {
+  local ENVIRONMENT_VARIABLE
+
+  log "DEBUG" "ENVIRONMENT > Parsing MANDATORY environment variables."
+  IFS=' ' read -r -a MANDATORY <<< "${1}"
+  for ENVIRONMENT_VARIABLE in "${MANDATORY[@]}"; do
+    if [[ -z ${!ENVIRONMENT_VARIABLE} ]]; then
+      log "ERROR" "ENVIRONMENT > The environment variable '${ENVIRONMENT_VARIABLE}' is required!"
+      exit 127
+    fi
+  done
+}
+
+_environment_parse_optional() {
+  log "DEBUG" "ENVIRONMENT > Parsing OPTIONAL environment variables."
+  IFS=' ' read -r -a OPTIONAL <<< "${1}"
+}
+
+_environment_set_defaults() {
   local INDEX=-1
-  for VARIABLE in "${DEFAULTS[@]}"; do
+  local ENVIRONMENT_VARIABLE
+
+  log "DEBUG" "ENVIRONMENT > Setting DEFAULT environment variable values."
+
+  for ENVIRONMENT_VARIABLE in "${DEFAULTS[@]}"; do
     ((INDEX++)) || true
     if [[ -z "${!OPTIONAL[${INDEX}]}" ]]; then
       export "${OPTIONAL[${INDEX}]}"
@@ -62,35 +88,12 @@ _environment_defaults() {
   done
 }
 
-_environment_parse_mandatory() {
-  log "DEBUG" "ENVIRONMENT > Parsing MANDATORY environment variables."
-  # shellcheck disable=SC2034
-  IFS=' ' read -r -a MANDATORY <<< "${1}"
-  for VARIABLE in "${MANDATORY[@]}"; do
-    if [[ -z ${!VARIABLE} ]]; then
-      log "ERROR" "ENVIRONMENT > The environment variable '${VARIABLE}' is required!"
-      exit 127
-    fi
-  done
-}
-
-_environment_parse_optional() {
-  log "DEBUG" "ENVIRONMENT > Parsing OPTIONAL environment variables."
-  # shellcheck disable=SC2034
-  IFS=' ' read -r -a OPTIONAL <<< "${1}"
-}
-
-_environment_parse_defaults() {
-  log "DEBUG" "ENVIRONMENT > Parsing DEFAULT environment variable values."
-  # shellcheck disable=SC2034
-  IFS=' ' read -r -a DEFAULTS <<< "${1}"
-}
-
 _environment_usage() {
-  log "ERROR" "environment.sh -- enforce environment variables."
-  log "ERROR" "USAGE: source environment.sh -m [MANDATORY] -o [OPTIONAL] -d [DEFAULTS]"
-  log "ERROR" "  Multiple items should be specified as space separated quoted strings."
+  log "ERROR" "environment.sh -- require and set defaults for environment variables."
+  log "ERROR" "---------------------------------------------------------------------"
+  log "ERROR" "environment.sh"
+  log "ERROR" "           -d (SPACE SEPARATED LIST OF DEFAULT VALUES FOR OPTIONALS)"
+  log "ERROR" "           -m (SPACE SEPARATED LIST OF NAMES FOR MANDATORY ENV VARS)"
+  log "ERROR" "           -o (SPACE SEPARATED LIST OF NAMES FOR OPTIONAL ENV VARS)"
   exit 127
 }
-
-environment "$@"

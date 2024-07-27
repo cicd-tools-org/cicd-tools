@@ -2,12 +2,11 @@
 
 # Library for CICD-Tools installers.
 
+# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../../.cicd-tools/boxes/bootstrap/libraries/environment.sh"
+
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
-
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../../.cicd-tools/boxes/bootstrap/libraries/environment.sh" \
-  -m "CICD_TOOLS_BOOTSTRAP_PATH CICD_TOOLS_TEMPLATE_PATH CICD_TOOLS_INSTALL_TARGET_PATH"
 
 # shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/tools.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../.cicd-tools/boxes/bootstrap/libraries/tools.sh"
@@ -16,6 +15,9 @@ set -eo pipefail
 
 # shellcheck disable=SC2034
 CICD_TOOLS_ROOT_PATH="${CICD_TOOLS_ROOT_PATH-"$(realpath "$(dirname -- "${BASH_SOURCE[0]}")")/../.."}"
+
+environment \
+  -m "CICD_TOOLS_BOOTSTRAP_PATH CICD_TOOLS_TEMPLATE_PATH CICD_TOOLS_INSTALL_TARGET_PATH"
 
 _installer_actions() {
   log "INFO" "INSTALL > Installing the GitHub Actions to '${CICD_TOOLS_INSTALL_TARGET_PATH}/.github/actions' ..."
