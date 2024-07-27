@@ -10,14 +10,16 @@
 
 set -eo pipefail
 
+# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh"
+
 # shellcheck source=./cicd-tools/boxes/0.1.0/libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/logging.sh"
 
-# shellcheck source=./cicd-tools/boxes/0.1.0/libraries/environment.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../../../libraries/environment.sh" \
-  -m "GITHUB_TOKEN REMOTE_ORIGIN TEST_PUSH_TAG"
-
 main() {
+  environment \
+    -m "GITHUB_TOKEN REMOTE_ORIGIN TEST_PUSH_TAG"
+
   log "DEBUG" "${BASH_SOURCE[0]} '$*'"
   while _prune_releases_check_releases; do
     sleep 0.5
