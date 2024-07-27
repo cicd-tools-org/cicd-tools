@@ -14,7 +14,7 @@
     "_GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS": true,
     "_*DO_NOT_MODIFY_THIS_FILE*": "This file is created to assist with upgrading to future versions of this template.",
     "_copy_without_render": [
-        ".cicd-tools/boxes/bootstrap/libraries/environment.sh",
+        ".cicd-tools/**/*",
         ".github/actions",
         "ansible_role/*",
         "scripts/*"

@@ -33,6 +33,21 @@ main() {
     -t ghcr.io/cicd-tools-org/cicd-tools:linux-arm .
   popd >> /dev/null
 
+  log "INFO" "Building the CICD-Tools gettext container ..."
+
+  pushd .cicd-tools/containers/gettext >> /dev/null
+  log "INFO" "  Building AMD64 ..."
+  docker build \
+    --no-cache \
+    --platform linux/amd64 \
+    -t ghcr.io/cicd-tools-org/cicd-tools-gettext:linux-amd .
+  log "INFO" "  Building ARM64 ..."
+  docker build \
+    --no-cache \
+    --platform linux/arm64 \
+    -t ghcr.io/cicd-tools-org/cicd-tools-gettext:linux-arm .
+  popd >> /dev/null
+
   log "INFO" "Building the CICD-Tools gpg container ..."
 
   pushd .cicd-tools/containers/gpg >> /dev/null
