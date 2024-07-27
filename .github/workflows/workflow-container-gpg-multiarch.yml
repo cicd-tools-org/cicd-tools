@@ -1,13 +1,12 @@
 ---
-name: cicd-tooling-github-workflow-container-multiarch
+name: cicd-tooling-github-workflow-container-gpg-multiarch
 
 on:
   push:
     paths:
-      - ".github/workflows/workflow-container-multiarch.yml"
+      - ".cicd-tools/containers/gpg"
+      - ".github/workflows/workflow-container-gpg-multiarch.yml"
       - ".github/workflows/job-*-container-*.yml"
-      - ".cicd-tools/container/Dockerfile"
-      - ".cicd-tools/container/Dockerfile.sha256"
       - "scripts/containers.sh"
   schedule:
     - cron: "0 6 * * 1"
@@ -30,7 +29,7 @@ jobs:
     with:
       NOTIFICATION_EMOJI: ":vertical_traffic_light:"
       NOTIFICATION_MESSAGE: "Multi-arch container build has started!"
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   security:
     needs:
@@ -40,7 +39,7 @@ jobs:
     uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   scan:
     permissions:
@@ -53,33 +52,23 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - build-args: |
-              BUILD_ARG_ARCH_FORMAT_1=amd64
-              BUILD_ARG_ARCH_FORMAT_2=x86_64
-              BUILD_ARG_ARCH_FORMAT_3=x86_64
-              BUILD_ARG_ARCH_FORMAT_4=64-bit
-            build-platform: linux/amd64
+          - build-platform: linux/amd64
             build-tag: linux-amd64
-          - build-args: |
-              BUILD_ARG_ARCH_FORMAT_1=arm64
-              BUILD_ARG_ARCH_FORMAT_2=arm64
-              BUILD_ARG_ARCH_FORMAT_3=aarch64
-              BUILD_ARG_ARCH_FORMAT_4=arm64
-            build-platform: linux/arm64
+          - build-platform: linux/arm64
             build-tag: linux-arm64
       max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
     uses: ./.github/workflows/job-10-container-security_scan_container.yml
     with:
-      BUILD_ARGS: ${{ matrix.build-args }}
-      CONTEXT: .cicd-tools/container
+      CONTEXT: .cicd-tools/containers/gpg
       FAIL_BUILD: true
       FAIL_THRESHOLD: "critical"
       FIXED_ONLY: true
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gpg
       IMAGE_TAG: ${{ matrix.build-tag }}
       PLATFORM: ${{ matrix.build-platform }}
       REQUIRES_QEMU: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   lint:
     needs:
@@ -88,9 +77,9 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-80-container-dockerfile_linter.yml
     with:
-      DOCKERFILE: .cicd-tools/container/Dockerfile
+      DOCKERFILE: .cicd-tools/containers/gpg/Dockerfile
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   push:
     needs:
@@ -107,30 +96,20 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - build-args: |
-              BUILD_ARG_ARCH_FORMAT_1=amd64
-              BUILD_ARG_ARCH_FORMAT_2=x86_64
-              BUILD_ARG_ARCH_FORMAT_3=x86_64
-              BUILD_ARG_ARCH_FORMAT_4=64-bit
-            build-platform: linux/amd64
+          - build-platform: linux/amd64
             build-tag: linux-amd64
-          - build-args: |
-              BUILD_ARG_ARCH_FORMAT_1=arm64
-              BUILD_ARG_ARCH_FORMAT_2=arm64
-              BUILD_ARG_ARCH_FORMAT_3=aarch64
-              BUILD_ARG_ARCH_FORMAT_4=arm64
-            build-platform: linux/arm64
+          - build-platform: linux/arm64
             build-tag: linux-arm64
       max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
     uses: ./.github/workflows/job-95-container-push.yml
     with:
-      BUILD_ARGS: ${{ matrix.build-args }}
-      CONTEXT: .cicd-tools/container
+      CONTEXT: .cicd-tools/containers/gpg
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gpg
       IMAGE_TAG: ${{ matrix.build-tag }}
       PLATFORM: ${{ matrix.build-platform }}
       REQUIRES_QEMU: true
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   multiarch:
     needs:
@@ -144,12 +123,13 @@ jobs:
     with:
       IMAGE_GIT: true
       IMAGE_LATEST: true
+      IMAGE_NAME: cicd-tools-org/cicd-tools-gpg
       MULTIARCH_TAG: "multiarch"
       SOURCE_TAGS: |
         linux-amd64
         linux-arm64
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
 
   success:
     needs:
@@ -160,4 +140,4 @@ jobs:
     with:
       NOTIFICATION_EMOJI: ":checkered_flag:"
       NOTIFICATION_MESSAGE: "Multi-arch container build has completed successfully!"
-      WORKFLOW_NAME: "container"
+      WORKFLOW_NAME: "gpg-container"
