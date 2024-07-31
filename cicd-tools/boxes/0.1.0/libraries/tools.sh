@@ -56,8 +56,10 @@ _cicd_tools_poetry() {
 
 _cicd_tools_usage() {
   log "ERROR" "tools.sh -- CICD-Tools project helpers."
-  log "ERROR" "USAGE: tools.sh [COMMAND]"
-  log "ERROR" "  COMMANDS:"
-  log "ERROR" "  is_template                          -- Evaluates whether the current context is a cookiecutter project."
-  log "ERROR" "  config_value [JSON FILE PATH] [KEY]  -- Reads the given JSON file, and returns the value of the given key."
+  log "ERROR" "-----------------------------------------------------------------------------"
+  log "ERROR" "tools.sh is_template  < Check if the current path is a cookiecutter project."
+  log "ERROR" "-----------------------------------------------------------------------------"
+  log "ERROR" "tools.sh config_value < Extract a value from a JSON file with a specific key."
+  log "ERROR" "               [JSON FILE PATH]"
+  log "ERROR" "               [KEY NAME]"
 }
