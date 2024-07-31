@@ -5,7 +5,7 @@
 
 set -eo pipefail
 
-# shellcheck source=/dev/null
+# shellcheck source=./colours.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/colours.sh"
 
 LOGGING_LEVEL=${LOGGING_LEVEL-"DEBUG"}
