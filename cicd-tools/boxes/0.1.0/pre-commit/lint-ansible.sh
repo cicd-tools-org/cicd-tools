@@ -8,7 +8,7 @@
 
 set -eo pipefail
 
-# shellcheck source=/dev/null
+# shellcheck source=../libraries/tools.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../libraries/tools.sh"
 
 main() {
