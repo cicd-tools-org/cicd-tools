@@ -9,7 +9,7 @@
 
 set -eo pipefail
 
-# shellcheck source=/dev/null
+# shellcheck source=../libraries/logging.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../libraries/logging.sh"
 
 main() {
