@@ -48,14 +48,18 @@ _colour_clear() {
   tput sgr0 2> /dev/null
 }
 
-_colour_usage() {
+_cicd_tools_usage() {
   {
-    echo "colour.sh -- set the desired terminal colour."
-    echo "USAGE: colour.sh [COMMAND]"
-    echo "  COMMANDS:"
-    echo "  bg [BLACK|RED|GREEN|YELLOW|BLUE|PURPLE|CYAN|WHITE]   -- set background colour"
-    echo "  bold                                                 -- set bold text"
-    echo "  fg [BLACK|RED|GREEN|YELLOW|BLUE|PURPLE|CYAN|WHITE]   -- set foreground colour"
-    echo "  clear                                                -- set default terminal colours"
+    echo "colour -- set the desired terminal colour."
+    echo "--------------------------------------------------------"
+    echo "colour bg     < Set the background colour."
+    echo "         [BLACK|RED|GREEN|YELLOW|BLUE|PURPLE|CYAN|WHITE]"
+    echo "--------------------------------------------------------"
+    echo "colour bold   < Set the text to bold."
+    echo "--------------------------------------------------------"
+    echo "colour clear  < Restore the terminal defaults."
+    echo "--------------------------------------------------------"
+    echo "colour fg     < Set the foreground colour."
+    echo "         [BLACK|RED|GREEN|YELLOW|BLUE|PURPLE|CYAN|WHITE]"
   } >> /dev/stderr
 }
