@@ -9,9 +9,6 @@ set -eo pipefail
 CICD_TOOLS_BUNDLE_PATH="${CICD_TOOLS_BUNDLE_PATH-"cicd-tools/boxes"}"
 CICD_TOOLS_BUNDLE_TIME="2023-01-01"
 
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
-
 main() {
   local CICD_TOOLS_TOOLBOX_VERSION
 
@@ -48,6 +45,13 @@ _package_args() {
   fi
 }
 
+_package_import_support_libraries() {
+  # 1:  The toolbox version to use during import.
+
+  # shellcheck source=/dev/null
+  source "$(dirname -- "${BASH_SOURCE[0]}")/../cicd-tools/boxes/${1}/libraries/logging.sh"
+}
+
 _package_tarball() {
   pushd "${CICD_TOOLS_BUNDLE_PATH}" >> /dev/null
   log "DEBUG" "PACKAGE > Packaging version ${CICD_TOOLS_TOOLBOX_VERSION} ..."
@@ -60,5 +64,7 @@ _package_usage() {
   log "ERROR" "USAGE: package.sh -b [TOOLBOX VERSION]"
   exit 127
 }
+
+_package_import_support_libraries "0.1.0"
 
 main "$@"

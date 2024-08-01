@@ -18,9 +18,6 @@ CICD_TOOLS_SOURCE="${CICD_TOOLS_SOURCE-"${CICD_TOOLS_BRANCH}"}"
 MANIFEST_FILE=".cicd-tools/manifest.json"
 MANIFEST_REPOSITORY_PATH="../manifest"
 
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
-
 main() {
   _manifest_args "$@"
 }
@@ -65,6 +62,13 @@ _manifest_commands() {
       _manifest_usage
       ;;
   esac
+}
+
+_manifest_import_support_libraries() {
+  # 1:  The toolbox version to use during import.
+
+  # shellcheck source=/dev/null
+  source "$(dirname -- "${BASH_SOURCE[0]}")/../cicd-tools/boxes/${1}/libraries/logging.sh"
 }
 
 _manifest_is_security_disabled() {
@@ -147,5 +151,7 @@ _manifest_usage_publish() {
   log "ERROR" "The '-d' flag cannot be used with the 'publish' command, as it has no effect."
   exit 127
 }
+
+_manifest_import_support_libraries "0.1.0"
 
 main "$@"
