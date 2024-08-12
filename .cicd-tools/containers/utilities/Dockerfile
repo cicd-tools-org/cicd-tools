@@ -22,6 +22,7 @@ ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download
 ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.1.1/tomll_2.1.1_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
 ENV VALE_VERSION="https://github.com/errata-ai/vale/releases/download/v2.30.0/vale_2.30.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
 ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.6.0/vale_3.6.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
+ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
 
 RUN mkdir -p /dist
 
@@ -53,6 +54,9 @@ RUN curl -sL --retry 3 "${VALE_VERSION}" -o /tmp/vale.tar.gz \
 RUN curl -sL --retry 3 "${VALE3_VERSION}" -o /tmp/vale3.tar.gz \
     && tar xvzf /tmp/vale3.tar.gz vale \
     && mv vale /dist/vale3
+
+RUN curl -sL --retry 3 "${YQ_VERSION}" -o /dist/yq \
+    && chmod +x /dist/yq
 
 COPY ${BUILD_ARG_ARCH_FORMAT_1}/Dockerfile.sha256 /dist
 
