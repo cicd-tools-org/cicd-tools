@@ -6,20 +6,20 @@
 
 set -eo pipefail
 
+source "$(dirname -- "${BASH_SOURCE[0]}")/libraries/toolbox.sh"
+
 CICD_TOOLS_BRANCH=$(git branch --show-current)
-CICD_TOOLS_KEY_NAME="F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
 CICD_TOOLS_DISABLE_SECURITY="false"
-CICD_TOOLS_TOOLBOX_PATH="${CICD_TOOLS_TOOLBOX_PATH-"cicd-tools/boxes"}"
+CICD_TOOLS_KEY_NAME="F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
+CICD_TOOLS_LATEST_TOOLBOX_VERSION="$(get_latest_toolbox_version)"
 CICD_TOOLS_REPOSITORY="cicd-tools-org/cicd-tools"
+
+CICD_TOOLS_SOURCE="${CICD_TOOLS_SOURCE-"${CICD_TOOLS_BRANCH}"}"
 CICD_TOOLS_REMOTE_HOSTNAME="${CICD_TOOLS_REMOTE_HOSTNAME-"raw.githubusercontent.com"}"
 CICD_TOOLS_REMOTE_PREFIX="${CICD_TOOLS_REMOTE_PREFIX-"https://${CICD_TOOLS_REMOTE_HOSTNAME}/${CICD_TOOLS_REPOSITORY}"}"
-CICD_TOOLS_SOURCE="${CICD_TOOLS_SOURCE-"${CICD_TOOLS_BRANCH}"}"
 
 MANIFEST_FILE=".cicd-tools/manifest.json"
 MANIFEST_REPOSITORY_PATH="../manifest"
-
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
 
 main() {
   _manifest_args "$@"
@@ -67,6 +67,11 @@ _manifest_commands() {
   esac
 }
 
+_manifest_import_support_libraries() {
+  # shellcheck source=/dev/null
+  source "$(dirname -- "${BASH_SOURCE[0]}")/../${CICD_TOOLS_TOOLBOX_ROOT_PATH}/${CICD_TOOLS_LATEST_TOOLBOX_VERSION}/libraries/logging.sh"
+}
+
 _manifest_is_security_disabled() {
   test "${CICD_TOOLS_DISABLE_SECURITY}" == "true"
 }
@@ -74,7 +79,7 @@ _manifest_is_security_disabled() {
 _manifest_build() {
   local MANIFEST_CONTENT
 
-  pushd "${CICD_TOOLS_TOOLBOX_PATH}" >> /dev/null
+  pushd "${CICD_TOOLS_TOOLBOX_ROOT_PATH}" >> /dev/null
   # shellcheck disable=SC2016
   log "DEBUG" "MANIFEST > Regenerating manifest checksums ..."
   MANIFEST_CONTENT="$(
@@ -82,7 +87,7 @@ _manifest_build() {
     sha256sum *.tar.gz |
       jq -R 'split("  ") | { (select(.[0])[1]): select(.[0])[0] }' |
       jq -eMs \
-        --arg path "${CICD_TOOLS_TOOLBOX_PATH}" \
+        --arg path "${CICD_TOOLS_TOOLBOX_ROOT_PATH}" \
         --arg security "${CICD_TOOLS_DISABLE_SECURITY}" \
         --arg sha "${CICD_TOOLS_SOURCE}" \
         --arg source "${CICD_TOOLS_REMOTE_PREFIX}" \
@@ -100,7 +105,7 @@ _manifest_build() {
   log "DEBUG" "MANIFEST > Manifest has been written."
   poetry run check-jsonschema \
     .cicd-tools/manifest.json \
-    --schemafile .cicd-tools/boxes/bootstrap/schemas/manifest.json
+    --schemafile "${CICD_TOOLS_TOOLBOX_ROOT_PATH}/${CICD_TOOLS_LATEST_TOOLBOX_VERSION}/schemas/manifest.json"
   log "DEBUG" "MANIFEST > Manifest has passed JSON schema validation."
 }
 
@@ -147,5 +152,7 @@ _manifest_usage_publish() {
   log "ERROR" "The '-d' flag cannot be used with the 'publish' command, as it has no effect."
   exit 127
 }
+
+_manifest_import_support_libraries
 
 main "$@"
