@@ -5,7 +5,7 @@ requires = ['poetry-core']
 [tool]
 [tool.commitizen]
 bump_message = 'bump(RELEASE): $current_version → $new_version'
-pre_bump_hooks = ['.cicd-tools/boxes/bootstrap/commitizen/pre_bump.sh']
+pre_bump_hooks = ['poetry run pre-commit run --hook-stage=manual commitizen-pre-bump --files pyproject.toml -c .cicd-tools/configuration/pre-commit-bootstrap.yaml || true']
 version = '0.1.0'
 version_files = ['pyproject.toml:version']
 version_provider = 'poetry'
