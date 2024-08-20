@@ -1,1 +1,0 @@
-../../../.cicd-tools/bin/verify.sh

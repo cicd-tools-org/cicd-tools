@@ -1,0 +1,97 @@
+---
+name: action-00-toolbox
+description: "Fetches the specified remote toolbox."
+author: niall@niallbyrne.ca
+
+inputs:
+  CICD_TOOLS_GPG_KEY:
+    default: "F07A79647E91E561A786B6D0D9020F7FEE20DBF2"
+    description: "Optional, allows you to specify the public key used to sign the remote CICD-Tools manifest."
+    required: false
+  CICD_TOOLS_GPG_KEYSERVER_PRIMARY:
+    default: "keys.openpgp.org"
+    description: "Optional, allows you to specify a keyserver being used to host the public GPG key."
+    required: false
+  CICD_TOOLS_GPG_KEYSERVER_SECONDARY:
+    default: "keyserver.ubuntu.com"
+    description: "Optional, allows you to specify a keyserver being used to host the public GPG key."
+    required: false
+  CICD_TOOLS_REMOTE_MANIFEST:
+    default: "https://raw.githubusercontent.com/cicd-tools-org/manifest/main/manifest.json.asc"
+    description: "Optional, allows you to specify the URL of the remote manifest used to coordinate CICD-Tools toolbox installs."
+    required: false
+  CICD_TOOLS_TOOLBOX_VERSION:
+    default: "0.1.0"
+    description: "Optional, allows you to specify a toolbox version to fetch from the manifest."
+    required: false
+  PROJECT_ROOT_PATH:
+    default: "."
+    description: "Optional, allows you to specify a path to the project's root."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Toolbox -- Install Required Software (Mac OSX Only)
+      if: runner.os == 'macOS'
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+      shell: bash
+
+    - name: Toolbox -- Configure Toolbox Cache
+      run: |
+        TOOLBOX_CACHE_ROOT="${HOME}/.toolbox"
+        TOOLBOX_CACHE_TTL="$(date +%d)"
+        TOOLBOX_PYTHON_VERSION="$(python --version | cut -d" " -f2)"
+        echo "TOOLBOX_CACHE_ROOT=${TOOLBOX_CACHE_ROOT}" >> "${GITHUB_ENV}"
+        echo "TOOLBOX_CACHE_TTL=${TOOLBOX_CACHE_TTL}" >> "${GITHUB_ENV}"
+        echo "TOOLBOX_PYTHON_VERSION=${TOOLBOX_PYTHON_VERSION}" >> "${GITHUB_ENV}"
+      shell: bash
+
+    - name: Toolbox -- Initialize Toolbox Cache
+      run: |
+        mkdir -p "${TOOLBOX_CACHE_ROOT}/venv"
+        mkdir -p "${TOOLBOX_CACHE_ROOT}/pre-commit"
+      shell: bash
+
+    - name: Toolbox -- Mount Toolbox Cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.TOOLBOX_CACHE_ROOT }}
+        key: toolbox-py-${{ env.TOOLBOX_PYTHON_VERSION }}-${{ hashFiles(format('{0}/.cicd-tools/configuration/pre-commit-bootstrap.yaml', inputs.PROJECT_ROOT_PATH)) }}-${{ runner.os }}-${{ env.TOOLBOX_CACHE_TTL }}
+
+    - name: Toolbox -- Install Pre-Commit To Virtual Environment
+      run: |
+        if [[ ! -e "${TOOLBOX_CACHE_ROOT}/venv/bin/python" ]]; then
+            python -m venv "${TOOLBOX_CACHE_ROOT}/venv" &&
+            source "${TOOLBOX_CACHE_ROOT}/venv/bin/activate" &&
+            pip install -v pre-commit
+        fi
+      shell: bash
+
+    - name: Toolbox -- Import GPG Key
+      run: |
+        source "${TOOLBOX_CACHE_ROOT}/venv/bin/activate"
+        PRE_COMMIT_HOME="${TOOLBOX_CACHE_ROOT}/pre-commit" \
+          pre-commit run --hook-stage=manual cicd-tools-key --verbose -c .cicd-tools/configuration/pre-commit-bootstrap.yaml
+      shell: bash
+      env:
+        TOOLBOX_OVERRIDE_DOCKER_IMAGE_GPG: "system"
+        TOOLBOX_OVERRIDE_GPG_KEY_SERVER_PRIMARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_PRIMARY }}
+        TOOLBOX_OVERRIDE_GPG_KEY_SERVER_SECONDARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_SECONDARY }}
+        TOOLBOX_OVERRIDE_GPG_KEY_NAME: ${{ inputs.CICD_TOOLS_GPG_KEY }}
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Toolbox -- Install the Project's Toolbox
+      run: |
+        source "${TOOLBOX_CACHE_ROOT}/venv/bin/activate"
+        PRE_COMMIT_HOME="${TOOLBOX_CACHE_ROOT}/pre-commit" \
+          pre-commit run --hook-stage=manual cicd-tools-box --verbose -c .cicd-tools/configuration/pre-commit-bootstrap.yaml
+      shell: bash
+      env:
+        TOOLBOX_OVERRIDE_DOCKER_IMAGE_CURL: "system"
+        TOOLBOX_OVERRIDE_DOCKER_IMAGE_GPG: "system"
+        TOOLBOX_OVERRIDE_DOCKER_IMAGE_JQ: "system"
+        TOOLBOX_OVERRIDE_MANIFEST_URL: ${{ inputs.CICD_TOOLS_REMOTE_MANIFEST }}
+        TOOLBOX_OVERRIDE_TOOLBOX_VERSION: ${{ inputs.CICD_TOOLS_TOOLBOX_VERSION }}
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}

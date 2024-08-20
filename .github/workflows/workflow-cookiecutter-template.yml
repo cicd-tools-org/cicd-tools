@@ -138,7 +138,7 @@ jobs:
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
 
-  json_schema_lint:
+  json_schema_lint_cookiecutter:
     needs:
       - configuration
     secrets:
@@ -146,7 +146,7 @@ jobs:
     uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
     with:
       CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
-      PRECOMMIT_HOOK_ID: "check-jsonschema"
+      PRECOMMIT_HOOK_ID: "cicd-tools-schema-cookiecutter"
       PRECOMMIT_HOOK_NAME: "Cookiecutter JSON Schema Linter"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
@@ -175,6 +175,19 @@ jobs:
       PRE_HOOK_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-sync
       PRECOMMIT_HOOK_ID: "spelling-markdown"
       PRECOMMIT_HOOK_NAME: "Markdown Spelling"
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
+      WORKFLOW_NAME: "cookiecutter"
+
+  pre-commit_lint_config:
+    needs: [configuration]
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: ./.github/workflows/job-80-poetry-precommit_commit_stage_hook.yml
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
+      PRECOMMIT_HOOK_ID: "pre-commit-sort-config"
+      PRECOMMIT_HOOK_NAME: "Pre-Commit Config Linting"
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "cookiecutter"
@@ -277,11 +290,12 @@ jobs:
       - commitizen_hooks
       - git_conflict_markers
       - json_metaschema_lint
-      - json_schema_lint
+      - json_schema_lint_cookiecutter
       - markdown_links
       - markdown_lint
       - markdown_spelling
       - pre-commit_hooks
+      - pre-commit_lint_config
       - security
       - shell_lint
       - spelling_vocabularies
