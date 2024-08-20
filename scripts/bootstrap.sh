@@ -6,52 +6,87 @@
 
 set -eo pipefail
 
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
-
 CICD_TOOLS_TOOLBOX_PATH="${CICD_TOOLS_TOOLBOX_PATH-"cicd-tools/boxes"}"
-CICD_TOOLS_INSTALL_SUB_PATH="boxes/bootstrap"
 
 main() {
+  local CICD_TOOLS_INSTALL_TARGET_PATH
   local CICD_TOOLS_TOOLBOX_VERSION
 
-  _link_args "$@"
-  _link_symlinks ".cicd-tools"
-  _link_symlinks "{{cookiecutter.project_slug}}/.cicd-tools"
-  _link_symlinks_template
+  _bootstrap_args "$@"
+  _bootstrap_import_installer_libraries "${CICD_TOOLS_TOOLBOX_VERSION}"
 
-  log "INFO" "All symlinks have been updated."
+  _installer_update_precommit_repo
+  _installer_update_legacy_bootstrap "${CICD_TOOLS_INSTALL_TARGET_PATH}"
+
+  _bootstrap_restore_precommit_repo_configuration "${CICD_TOOLS_INSTALL_TARGET_PATH}"
+
+  _installer_update_legacy_bootstrap "."
+  _installer_precommit_hooks_update "."
+
+  _installer_update_legacy_bootstrap "{{cookiecutter.project_slug}}"
+
+  _bootstrap_symlinks_template_configuration
+
+  log "INFO" "This repository and '${CICD_TOOLS_INSTALL_TARGET_PATH}' have been successfully bootstrapped with version '${CICD_TOOLS_TOOLBOX_VERSION}'."
 }
 
-_link_args() {
+_bootstrap_args() {
   local OPTARG
   local OPTIND
   local OPTION
 
-  while getopts "b:" OPTION; do
+  while getopts "b:d:" OPTION; do
     case "$OPTION" in
       b)
         CICD_TOOLS_TOOLBOX_VERSION="${OPTARG}"
         ;;
+      d)
+        CICD_TOOLS_INSTALL_TARGET_PATH="${OPTARG}"
+        ;;
       \?)
-        _link_usage
+        _bootstrap_usage
         ;;
       :)
-        _link_usage
+        _bootstrap_usage
         ;;
       *)
-        _link_usage
+        _bootstrap_usage
         ;;
     esac
   done
   shift $((OPTIND - 1))
 
-  if [[ -z "${CICD_TOOLS_TOOLBOX_VERSION}" ]]; then
-    _link_usage
+  if [[ -z "${CICD_TOOLS_TOOLBOX_VERSION}" ]] ||
+    [[ -z "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]]; then
+    _bootstrap_usage
   fi
+
+  _installer_validate_folder "${CICD_TOOLS_TOOLBOX_ROOT_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}"
+  _installer_validate_folder "${CICD_TOOLS_INSTALL_TARGET_PATH}"
 }
 
-_link_symlink_directory_contents() {
+_bootstrap_import_installer_libraries() {
+  # 1:  The toolbox version to use during import.
+
+  # shellcheck source=./scripts/libraries/installer.sh
+  source "$(dirname -- "${BASH_SOURCE[0]}")/libraries/installer.sh"
+
+  _installer_import_support_libraries
+}
+
+_bootstrap_relative_path() {
+  realpath --relative-to="$(pwd)" "$(git rev-parse --show-toplevel)"
+}
+
+_bootstrap_restore_precommit_repo_configuration() {
+  # 1: Precommit repo path
+
+  pushd "${1}" >> /dev/null
+  git checkout "${CICD_TOOLS_CONFIGURATION_ROOT_PATH}/configuration/pre-commit-bootstrap.yaml"
+  popd >> /dev/null
+}
+
+_bootstrap_symlink_directory_contents() {
   # 1:  Source
   # 2:  Destination
 
@@ -64,55 +99,39 @@ _link_symlink_directory_contents() {
   mkdir -p "${2}"
   pushd "${2}" >> /dev/null
 
-  for SOURCE_FILE in "$(_link_relative_path_new)/${1}/"*; do
+  for SOURCE_FILE in "$(_bootstrap_relative_path)/${1}/"*; do
     LINK_NAME="${SOURCE_FILE}"
     LINK_SOURCE="$(basename "${SOURCE_FILE}")"
-    _link_symlink_write "${LINK_NAME}" "${LINK_SOURCE}"
+    _bootstrap_symlink_write "${LINK_NAME}" "${LINK_SOURCE}"
   done
   popd >> /dev/null
 }
 
-_link_relative_path_new() {
-  realpath --relative-to="$(pwd)" "$(git rev-parse --show-toplevel)"
-}
-
-_link_symlinks() {
-  # 1: Installation Folder
-
-  local LINK_NAME
-  local LINK_SOURCE
-
-  log "DEBUG" "SYMLINK > Destination: '${1}': ..."
-
-  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/commitizen" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/commitizen"
-  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/libraries" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/libraries"
-  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/pre-commit" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/pre-commit"
-  _link_symlink_directory_contents "${CICD_TOOLS_TOOLBOX_PATH}/${CICD_TOOLS_TOOLBOX_VERSION}/schemas" "${1}/${CICD_TOOLS_INSTALL_SUB_PATH}/schemas"
-
-}
-
-_link_symlinks_template() {
+_bootstrap_symlinks_template_configuration() {
   local SOURCE_FILE
   local LINK_NAME
   local LINK_SOURCE
 
   log "DEBUG" "SYMLINK > Destination: '{{cookiecutter.project_slug}}/.cicd-tools': ..."
 
-  _link_symlink_directory_contents ".cicd-tools/bin" "{{cookiecutter.project_slug}}/.cicd-tools/bin"
-  _link_symlink_directory_contents ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
-  _link_symlink_directory_contents ".cicd-tools/pgp" "{{cookiecutter.project_slug}}/.cicd-tools/pgp"
+  _bootstrap_symlink_directory_contents ".cicd-tools/configuration" "{{cookiecutter.project_slug}}/.cicd-tools/configuration"
 }
 
-_link_symlink_write() {
+_bootstrap_symlink_write() {
   set -x
   ln -sf "${1}" "${2}"
   { set +x; } 2> /dev/null
 }
 
-_link_usage() {
-  log "ERROR" "bootstrap.sh -- bootstrap the CICD-Tools system with the specified toolbox version."
-  log "ERROR" "USAGE: link.sh -b [TOOLBOX VERSION]"
+_bootstrap_usage() {
+  log "ERROR" "bootstrap.sh -- bootstrap CICD-Tools with a specific toolbox."
+  log "ERROR" "-------------------------------------------------------------"
+  log "ERROR" "bootstrap.sh"
+  log "ERROR" "           -b [TOOLBOX VERSION]"
+  log "ERROR" "           -d [PRE-COMMIT REPOSITORY PATH]"
   exit 127
 }
+
+_bootstrap_import_installer_libraries
 
 main "$@"
