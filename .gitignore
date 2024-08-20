@@ -1,8 +1,7 @@
 .cicd-tools/boxes/*
-!.cicd-tools/boxes/bootstrap
 .cicd-tools/manifest.json
 .cicd-tools/manifest.json.asc
 .vale/*
 !.vale/Vocab
-poetry.lock
 node_modules/*
+poetry.lock

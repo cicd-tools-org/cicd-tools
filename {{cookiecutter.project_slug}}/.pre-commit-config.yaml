@@ -3,23 +3,16 @@ default_install_hook_types:
   - pre-commit
   - commit-msg
 repos:
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.22.0
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
     hooks:
-      - id: check-jsonschema
-        name: check-github-workflow-push-schema
-        files: "^\\.github/config/workflows/workflow-push.json$"
+      - id: yamllint
         args:
-          - "--schemafile"
-          - ".github/config/schemas/workflows/workflow-push.json"
-        stages: [commit]
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.2.2
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
+          - "-c"
+          - "./.yamllint.yml"
+        stages: [pre-commit]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev: c58cb72acbf89070f7496957599e79ce17afe9f8
+    rev: 0.6.0
     hooks:
       - id: format-shell
         args:
@@ -30,10 +23,33 @@ repos:
 {%- if cookiecutter.optional_toml_linting == 'true' %}
       - id: format-toml
 {%- endif %}
+      - id: gettext-translations-add
+        args:
+          - "-p"
+          - "python/locales"
+      - id: gettext-translations-compile
+        args:
+          - "-p"
+          - "python/locales"
+      - id: gettext-translations-missing
+        args:
+          - "-p"
+          - "python/locales"
+          - "-s"
+          - "en"
+      - id: gettext-translations-update
+        args:
+          - "-p"
+          - "python/locales"
+          - "-c"
+          - "python"
+          - "-e"
+          - "niall@niallbyrne.ca"
+          - "-u"
       - id: git-conflict-markers
 {%- if cookiecutter.optional_workflow_linting == 'true' %}
-      - id: lint-github-workflow-header
       - id: lint-github-workflow
+      - id: lint-github-workflow-header
 {%- endif %}
       - id: lint-markdown
         args:
@@ -45,19 +61,27 @@ repos:
           - "--source-path=SCRIPTDIR"
           - "--exclude=SC2317"
           - "-x"
+      - id: poetry-lint-ansible
+        args:
+          - ansible_role
+      - id: pre-commit-sort-config
       - id: security-credentials
       - id: spelling-commit-message
       - id: spelling-markdown
       - id: spelling-vale-sync
       - id: spelling-vale-vocab
-      - id: poetry-lint-ansible
-        args:
-          - ansible_role
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.2.2
     hooks:
-      - id: yamllint
+      - id: commitizen
+        stages: [commit-msg]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.22.0
+    hooks:
+      - id: check-jsonschema
+        name: check-github-workflow-push-schema
+        files: "^\\.github/config/workflows/workflow-push.json$"
         args:
-          - "-c"
-          - "./.yamllint.yml"
-        stages: [commit]
+          - "--schemafile"
+          - ".github/config/schemas/workflows/workflow-push.json"
+        stages: [pre-commit]
