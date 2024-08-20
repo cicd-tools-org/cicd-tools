@@ -32,33 +32,32 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Toolbox -- Install Required Software (Mac OSX Only)
-      if: runner.os == 'macOS'
+    - name: Toolbox -- Legacy Scripting Compatibility Shim
+      id: identify_legacy_install
       run: |
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+        [[ -f "${{ inputs.PROJECT_ROOT_PATH }}/.cicd-tools/bin/toolbox.sh" ]] \
+          && echo "CICD_TOOLS_LEGACY_INSTALL=1" >> "${GITHUB_OUTPUT}" \
+          || echo "CICD_TOOLS_LEGACY_INSTALL=0" >> "${GITHUB_OUTPUT}"
       shell: bash
 
-    - name: Toolbox -- Import GPG Key
-      run: |
-        gpg \
-          --keyserver "${{ inputs.CICD_TOOLS_GPG_KEYSERVER_PRIMARY }}" \
-          --recv-key "${{ inputs.CICD_TOOLS_GPG_KEY }}" ||
-        gpg \
-          --keyserver "${{ inputs.CICD_TOOLS_GPG_KEYSERVER_SECONDARY }}" \
-          --recv-key "${{ inputs.CICD_TOOLS_GPG_KEY }}"
-      shell: bash
+    - name: Toolbox - Install CICD-Tools Toolbox (Legacy Scripting)
+      if: steps.identify_legacy_install.outputs.CICD_TOOLS_LEGACY_INSTALL == '1'
+      uses: cicd-tools-org/cicd-tools/.github/actions/action-00-toolbox-legacy@main
+      with:
+        CICD_TOOLS_GPG_KEY: ${{ inputs.CICD_TOOLS_GPG_KEY }}
+        CICD_TOOLS_GPG_KEYSERVER_PRIMARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_PRIMARY }}
+        CICD_TOOLS_GPG_KEYSERVER_SECONDARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_SECONDARY }}
+        CICD_TOOLS_REMOTE_MANIFEST: ${{ inputs.CICD_TOOLS_REMOTE_MANIFEST }}
+        CICD_TOOLS_TOOLBOX_VERSION: ${{ inputs.CICD_TOOLS_TOOLBOX_VERSION }}
+        PROJECT_ROOT_PATH: ${{ inputs.PROJECT_ROOT_PATH }}
 
-    - name: Toolbox -- Verify Imported Key
-      run: |
-        ./.cicd-tools/bin/verify.sh \
-          -k "${{ inputs.CICD_TOOLS_GPG_KEY }}"
-      shell: bash
-      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
-
-    - name: Toolbox -- Install CICD-Tools Toolbox Version '${{ inputs.VERSION }}'
-      run: |
-        ./.cicd-tools/bin/toolbox.sh \
-          -b "${{ inputs.CICD_TOOLS_TOOLBOX_VERSION }}" \
-          -m "${{ inputs.CICD_TOOLS_REMOTE_MANIFEST }}"
-      shell: bash
-      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+    - name: Toolbox - Install CICD-Tools Toolbox (Pre-Commit)
+      if: steps.identify_legacy_install.outputs.CICD_TOOLS_LEGACY_INSTALL == '0'
+      uses: cicd-tools-org/cicd-tools/.github/actions/action-00-toolbox-pre-commit@main
+      with:
+        CICD_TOOLS_GPG_KEY: ${{ inputs.CICD_TOOLS_GPG_KEY }}
+        CICD_TOOLS_GPG_KEYSERVER_PRIMARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_PRIMARY }}
+        CICD_TOOLS_GPG_KEYSERVER_SECONDARY: ${{ inputs.CICD_TOOLS_GPG_KEYSERVER_SECONDARY }}
+        CICD_TOOLS_REMOTE_MANIFEST: ${{ inputs.CICD_TOOLS_REMOTE_MANIFEST }}
+        CICD_TOOLS_TOOLBOX_VERSION: ${{ inputs.CICD_TOOLS_TOOLBOX_VERSION }}
+        PROJECT_ROOT_PATH: ${{ inputs.PROJECT_ROOT_PATH }}

@@ -3,37 +3,29 @@ default_install_hook_types:
   - pre-commit
   - commit-msg
 repos:
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.23.0
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.32.0
     hooks:
-      - id: check-metaschema
-        name: check-schema
-        files: "^cicd-tools/boxes/[\\d\\.]+/schemas/.*\\.json$"
-        stages: [commit]
-      - id: check-jsonschema
-        name: check-cookiecutter-schema
-        files: "^(cookiecutter\\.json|\\.github/scenarios/.*\\.json)$"
+      - id: yamllint
         args:
-          - "--schemafile"
-          - ".cicd-tools/boxes/bootstrap/schemas/cookiecutter.json"
-        stages: [commit]
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.2.2
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
+          - "-c"
+          - "./{{cookiecutter.project_slug}}/.yamllint.yml"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+        stages: [pre-commit]
   - repo: https://github.com/cicd-tools-org/pre-commit.git
-    rev:  0.5.0
+    rev: 0.6.0
     hooks:
+      - id: cicd-tools-schema-cookiecutter
+        files: "^(cookiecutter\\.json|\\.github/scenarios/.*\\.json)$"
       - id: format-shell
         args:
           - "-w"
           - "--indent=2"
           - "-ci"
           - "-sr"
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
-      - id: git-conflict-markers
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
       - id: format-toml
+      - id: git-conflict-markers
       - id: lint-github-workflow
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
       - id: lint-github-workflow-header
@@ -49,19 +41,25 @@ repos:
           - "--source-path=SCRIPTDIR"
           - "--exclude=SC2317"
           - "-x"
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$|^\\.cicd-tools/boxes/.+$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
+      - id: pre-commit-sort-config
+        files: "^(.+/)*\\.pre-commit-config\\.yaml$|^(.+/)*pre-commit-bootstrap\\.yaml$"
+        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
       - id: security-credentials
       - id: spelling-commit-message
       - id: spelling-markdown
         exclude: "^{{cookiecutter\\.project_slug}}/.+$"
       - id: spelling-vale-sync
       - id: spelling-vale-vocab
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.2.2
     hooks:
-      - id: yamllint
-        args:
-          - "-c"
-          - "./{{cookiecutter.project_slug}}/.yamllint.yml"
-        exclude: "^{{cookiecutter\\.project_slug}}/.+$"
-        stages: [commit]
+      - id: commitizen
+        stages: [commit-msg]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.23.0
+    hooks:
+      - id: check-metaschema
+        name: check-schema
+        files: "^cicd-tools/boxes/[\\d\\.]+/schemas/.*\\.json$"
+        stages: [pre-commit]
