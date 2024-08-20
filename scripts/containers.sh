@@ -6,9 +6,6 @@
 
 set -eo pipefail
 
-# shellcheck source=./.cicd-tools/boxes/bootstrap/libraries/logging.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/../.cicd-tools/boxes/bootstrap/libraries/logging.sh"
-
 main() {
   log "INFO" "Building the CICD-Tools utility container ..."
 
@@ -65,5 +62,14 @@ main() {
 
   log "INFO" "Containers successfully built."
 }
+
+_containers_import_support_libraries() {
+  # 1:  The toolbox version to use during import.
+
+  # shellcheck source=/dev/null
+  source "$(dirname -- "${BASH_SOURCE[0]}")/../cicd-tools/boxes/${1}/libraries/logging.sh"
+}
+
+_containers_import_support_libraries "0.1.0"
 
 main "$@"
