@@ -79,4 +79,4 @@ The [CICD-Tools Jobs](../.github/workflows) in turn consume [Toolboxes](../cicd-
 The Packaging System allows the API of each [Job](../.github/workflows) to be decoupled from its actual implementation:
 - This allows multiple [Jobs](../.github/workflows) to reuse the same [Toolbox](../cicd-tools/boxes) components.
 - This also allows the [Toolboxes](../cicd-tools/boxes) to be developed independently of the [Jobs](../.github/workflows).
-- Finally, it's possible to customize your project's [action-00-toolbox](../.github/actions/action-00-toolbox/action.yml) GitHub Action to use your own manifest.  In this way you can create your own Toolbox tarballs and customize the CI even further- while adhering to the same API.
+- Finally, it's possible to customize your project's [action-00-toolbox](../.github/actions/action-00-toolbox/action.yml) GitHub Action to use your own manifest.  In this way you can create your own Toolbox tarballs and customize the CI even further; all while adhering to the same API.
