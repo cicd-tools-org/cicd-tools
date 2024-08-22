@@ -28,11 +28,13 @@ Alternatively, the [install-poetry.sh](../../scripts/install-poetry.sh) setup sc
 
 ### Step 2. Add the CICD-Tools Bootstrap Layer
 
-In order to integrate with CICD-Tools, a minimal amount of scripting is required.
+In order to integrate with CICD-Tools, a minimal amount of configuration is required.
 
-#### Step 2a. The Scripting
+#### Step 2a. Add the CICD-Tools Configuration Files
 
-Your project should contain the [.cicd-tools](../../.cicd-tools) folder at the root level.  This takes care of the scripting requirement and allows [Toolboxes](../../cicd-tools/boxes) to be used.
+Your project should contain the [.cicd-tools](../../.cicd-tools) folder at the root level.  This is where global configuration is kept for CICD-Tools, and it's also where [Toolboxes](../../cicd-tools/boxes) are installed ephemerally during CI/CD.
+
+The `configuration` sub-folder needs to be populated with the [CICD-Tools configuration files](../../.cicd-tools/configuration) to facilitate and customize global CI tasks such as how Toolboxes are installed and how changelogs are generated.
 
 The [install-poetry.sh](../../scripts/install-poetry.sh) script will perform this installation for you.
 
@@ -42,7 +44,6 @@ Once you've copied the above content, you should also add a couple of lines to y
 
 ```.gitignore
 .cicd-tools/boxes/*
-!.cicd-tools/boxes/bootstrap
 ```
 
 The [install-poetry.sh](../../scripts/install-poetry.sh) script will create this file if it doesn't exist or add these lines if it does.

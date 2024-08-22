@@ -44,24 +44,24 @@ Alternatively, the [install-cookiecutter.sh](../../scripts/install-cookiecutter.
 
 ### Step 3. Add the CICD-Tools Bootstrap Layer
 
-In order to integrate with CICD-Tools, a minimal amount of scripting is required.
+In order to integrate with CICD-Tools, a minimal amount of configuration is required.
 
-#### Step 3a. The Scripting
+#### Step 3a. Add the CICD-Tools Configuration Files
 
-Both your Template and the projects it spawns should contain the [.cicd-tools](../../.cicd-tools) folder, in two locations:
+The template and the projects it spawns should contain a [.cicd-tools](../../.cicd-tools) folder at the root level.  This is where global configuration is kept for CICD-Tools, and it's also where [Toolboxes](../../cicd-tools/boxes) are installed ephemerally during CI/CD.
 
-1. At the root template level ([.cicd-tools](../../.cicd-tools)).
-2. At the spawned project level ([{{cookiecutter.project_slug}}/.cicd-tools](../../{{cookiecutter.project_slug}}/.cicd-tools)). It's recommended to symlink this content, to avoid duplication.
+The `configuration` sub-folder needs to be populated with the [CICD-Tools configuration files](../../.cicd-tools/configuration) to facilitate and customize global CI tasks such as how Toolboxes are installed and how changelogs are generated.
+
+It's recommended to symlink the inner [{{cookiecutter.project_slug}}/.cicd-tools](../../{{cookiecutter.project_slug}}/.cicd-tools) folder from the root template level [.cicd-tools](../../.cicd-tools) folder to avoid duplication.
 
 The [install-cookiecutter.sh](../../scripts/install-cookiecutter.sh) script will perform this installation for you.
 
 #### Step 3b. .gitignore Changes
 
-Once you've copied the above content, you should also add a couple of lines to your [.gitignore](../../.gitignore) files:
+Once you've added the above content, you should append a line to your [.gitignore](../../.gitignore) files:
 
 ```.gitignore
 .cicd-tools/boxes/*
-!.cicd-tools/boxes/bootstrap
 ```
 
 Add this content to both your template's [.gitignore](../../.gitignore) file and your [{{cookiecutter.project_slug}}/.gitignore](../../{{cookiecutter.project_slug}}/.gitignore) file.
