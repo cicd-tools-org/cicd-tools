@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install the bootstrapped CICD-Tools system to an existing cookiecutter repository.
+# Install CICD-Tools with CI/CD and pre-commit into an existing cookiecutter repository.
 
 # CICD-Tools Development script.
 
