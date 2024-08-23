@@ -1,6 +1,8 @@
 # CICD-Tools
 
-## API Documentation for Cookiecutter Projects
+This is documentation for an installation that sets up [cookiecutter](https://github.com/cookiecutter/cookiecutter) template CI/CD, [poetry](https://python-poetry.org/) and [pre-commit](https://pre-commit.com/) for your project.
+
+## Installation Into Cookiecutter Projects
 
 For [cookiecutter](https://github.com/cookiecutter/cookiecutter) projects, CICD-Tools actually provides two "layers" of CI coverage:
 

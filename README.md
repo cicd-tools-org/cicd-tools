@@ -47,14 +47,24 @@ CICD-Tools provides four consumables to end-user projects that together form the
 
 For more details on these components, please read the complete [Technical Overview](./markdown/OVERVIEW.md).
 
-### Supported Project Types
+### Supported Project Installations
 
-CICD-Tools supports the following types of projects:
+CICD-Tools supports the following types of installs:
 
-1. [cookiecutter](https://github.com/cookiecutter/cookiecutter) templates.
-   - Please see the [implementation documentation](markdown/project_types/COOKIECUTTER.md).
-2. [poetry](https://python-poetry.org/) based projects, that may use Python, Shell or other languages.
-   - Please see the [implementation documentation](markdown/project_types/POETRY.md).
+1. Cookiecutter Template Installs
+   - Please see the [cookiecutter installation guide](markdown/project_types/COOKIECUTTER.md) for details on:
+     - installing CICD-Tools into cookiecutter templates
+     - setting up CI/CD for templates and spawned projects
+     - setting up pre-commit for templates and spawned projects
+2. Standard Project Installs (Projects may use Python, Shell or other languages.)
+   - Please see the [standard installation guide](markdown/project_types/STANDARD.md) for details on:
+     - installing CICD-Tools into existing projects
+     - setting up CI/CD for existing projects
+     - setting up pre-commit for existing projects
+3. Lightweight Project Installs (Projects may use Python, Shell or other languages.)
+   - Please see the [light installation guide](markdown/project_types/LIGHT.md) for details on:
+     - installing CICD-Tools into existing projects
+     - setting up pre-commit for existing projects
 
 ## License
 
