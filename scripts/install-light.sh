@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install the bootstrapped CICD-Tools system to an existing poetry based repository.
+# Install CICD-Tools with pre-commit into an existing repository.
 
 # CICD-Tools Development script.
 
@@ -24,29 +24,21 @@ main() {
 
   _installer_update_legacy_bootstrap "${CICD_TOOLS_INSTALL_TARGET_PATH}"
 
-  _installer_actions
   _installer_poetry_init "."
-
-  _installer_conditional_recursive_copy ".github/config/schemas"
-  _installer_conditional_recursive_copy ".github/scripts/job-50-test-precommit.sh"
-  _installer_conditional_recursive_copy ".gitignore"
-  _installer_conditional_recursive_copy ".markdownlint.yml"
-  _installer_conditional_recursive_copy ".yamllint.yml"
 
   _installer_line_in_file ".gitignore" '.cicd-tools/boxes'
   _installer_line_in_file ".gitignore" '.cicd-tools/manifest.json'
 
-  _installer_jinja_render ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
-  _installer_jinja_render ".github/config/workflows/workflow-push.json"
-  _installer_jinja_render ".github/scripts/step-setup-environment.sh"
-  _installer_jinja_render ".github/workflows/workflow-push.yml"
+  _installer_conditional_recursive_copy ".markdownlint.yml"
+  _installer_conditional_recursive_copy ".yamllint.yml"
+
   _installer_jinja_render ".pre-commit-config.yaml"
 
   _installer_initialize_vale "."
 
   _installer_precommit_hooks_update "${CICD_TOOLS_INSTALL_TARGET_PATH}"
 
-  log "INFO" "Successfully installed CICD-Tools."
+  log "INFO" "Successfully installed CICD-Tools precommit hooks."
 }
 
 _install_args() {
@@ -54,7 +46,7 @@ _install_args() {
   local OPTIND
   local OPTION
 
-  while getopts "b:d:g:" OPTION; do
+  while getopts "b:d:" OPTION; do
     case "$OPTION" in
       b)
         CICD_TOOLS_TOOLBOX_VERSION="${OPTARG}"
@@ -62,9 +54,6 @@ _install_args() {
       d)
         CICD_TOOLS_INSTALL_TARGET_PATH="${OPTARG}"
         [[ ! -d "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]] && _install_no_target_path
-        ;;
-      g)
-        CICD_TOOLS_GITHUB_HANDLE="${OPTARG}"
         ;;
       \?)
         _install_usage
@@ -79,8 +68,7 @@ _install_args() {
   done
   shift $((OPTIND - 1))
 
-  if [[ -z "${CICD_TOOLS_GITHUB_HANDLE}" ]] ||
-    [[ -z "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]] ||
+  if [[ -z "${CICD_TOOLS_INSTALL_TARGET_PATH}" ]] ||
     [[ -z "${CICD_TOOLS_TOOLBOX_VERSION}" ]]; then
     _install_usage
   fi
@@ -101,11 +89,10 @@ _install_no_target_path() {
 }
 
 _install_usage() {
-  log "ERROR" "install-poetry.sh -- install CICD-Tools to an poetry cookiecutter repo."
-  log "ERROR" "-----------------------------------------------------------------------"
-  log "ERROR" "install-poetry.sh"
+  log "ERROR" "install-light.sh -- install the CICD-Tools pre-commit config to a repo."
+  log "ERROR" "---------------------------------------------------------------------------"
+  log "ERROR" "install-light.sh"
   log "ERROR" "           -b [TOOLBOX VERSION]"
-  log "ERROR" "           -g [GITHUB HANDLE]"
   log "ERROR" "           -d [DESTINATION REPOSITORY PATH]"
   exit 127
 }
