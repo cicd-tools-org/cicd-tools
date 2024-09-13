@@ -1,0 +1,133 @@
+---
+name: job-97-poetry-verify_artifact
+
+# Consuming Projects Must Implement:
+# - ./.github/scripts/step-setup-environment.sh
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT_NAME_PATTERN:
+        default: ""
+        description: "Optional, a glob pattern to identify artifacts that should be downloaded prior to upload."
+        required: false
+        type: string
+      COMMANDS:
+        description: "A newline separated string containing the commands to execute."
+        required: true
+        type: string
+      CONCURRENCY:
+        description: "The maximum allowable parallel executions."
+        required: true
+        type: number
+      EXECUTION_PATH:
+        default: "."
+        description: "Optional, allows you to specify a path to execute the command in."
+        required: false
+        type: string
+      PLATFORM:
+        default: "ubuntu-latest"
+        description: "Optional, allows you to specify the OS platform that will be used to run the molecule command."
+        required: false
+        type: string
+      PYTHON_VERSIONS:
+        description: "A string encoded JSON array of valid python versions."
+        required: true
+        type: string
+      REMOTE_SCRIPT_USE_POETRY:
+        default: "ci/generic/scripts/use-poetry.sh"
+        description: "Optional, allows you to specify a use poetry script."
+        required: false
+        type: string
+      TESTING_MODE:
+        default: false
+        description: "Optional, allows you to test a workflow failure."
+        required: false
+        type: boolean
+      WORKFLOW_NAME:
+        default: ""
+        description: "Identifies this workflow in notifications."
+        required: false
+        type: string
+      VERBOSE_NOTIFICATIONS:
+        default: false
+        description: "Optional, allows you to enable verbose notifications."
+        required: false
+        type: boolean
+    secrets:
+      SLACK_WEBHOOK:
+        description: "Optional, enables Slack notifications."
+        required: false
+
+jobs:
+
+  verify_artifact:
+    runs-on: ${{ inputs.PLATFORM }}
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
+      max-parallel: ${{ inputs.CONCURRENCY }}
+
+    steps:
+      - name: Verify Artifact -- Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verify Artifact -- Setup Environment
+        env:
+          WORKFLOW_NAME: ${{ inputs.WORKFLOW_NAME }}
+        run: |
+          bash "./.github/scripts/step-setup-environment.sh"
+        shell: bash
+
+      - name: Verify Artifact -- Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Verify Artifact -- Install Toolbox
+        uses: ./.github/actions/action-00-toolbox
+
+      - name: Verify Artifact -- Install Poetry
+        run: |
+          bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+            "install-poetry"
+        shell: bash
+
+      - name: Verify Artifact -- Download Artifacts
+        if: inputs.ARTIFACT_NAME_PATTERN != ''
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          pattern: ${{ inputs.ARTIFACT_NAME_PATTERN }}
+          merge-multiple: true
+
+      - name: Verify Artifact -- Unpack Artifacts
+        if: inputs.ARTIFACT_NAME_PATTERN != ''
+        run: |
+          for FILE in ./*.tar.gz; do tar xvzf "${FILE}"; done
+
+      - name: Verify Artifact -- Execute Verification Commands
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-serial_commands
+        with:
+          COMMAND_SUFFIX: ""
+          COMMANDS: ${{ inputs.COMMANDS }}
+          EXECUTION_PATH: ${{ inputs.EXECUTION_PATH }}
+
+      - name: Verify Artifact -- Report Job Status on Success
+        if: inputs.VERBOSE_NOTIFICATIONS == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_MESSAGE: "Poetry Build and Verify has passed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Verify Artifact -- Report Job Status on Failure
+        if: failure() || inputs.TESTING_MODE == true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
+        with:
+          NOTIFICATION_EMOJI: ":x:"
+          NOTIFICATION_MESSAGE: "Poetry Build and Verify has failed!"
+          NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          TESTING_MODE: ${{ inputs.TESTING_MODE }}
