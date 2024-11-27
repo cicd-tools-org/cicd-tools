@@ -154,7 +154,7 @@ jobs:
           APPENDED_CONTENT: ${{ inputs.APPENDED_CONTENT }}
           JSON_APPENDED_CONTENT: ${{ inputs.JSON_APPENDED_CONTENT }}
         if: steps.filter.outputs.RELEASE_CANDIDATE == 'true' && inputs.TESTING_MODE == false
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
