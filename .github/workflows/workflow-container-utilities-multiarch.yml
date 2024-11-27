@@ -7,6 +7,7 @@ on:
       - ".cicd-tools/containers/utilities"
       - ".github/workflows/workflow-container-utilities-multiarch.yml"
       - ".github/workflows/job-*-container-*.yml"
+      - ".grype.yaml"
       - "scripts/containers.sh"
   schedule:
     - cron: "0 6 * * 1"
