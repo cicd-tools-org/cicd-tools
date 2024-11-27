@@ -115,14 +115,14 @@ jobs:
         shell: bash
 
       - name: GCP Cloud Run Deploy -- Authenticate with GCP
-        uses: "google-github-actions/auth@v1"
+        uses: "google-github-actions/auth@v2"
         with:
           export_environment_variables: true
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
 
       - name: GCP Cloud Run Deploy -- Set up Cloud SDK
-        uses: "google-github-actions/setup-gcloud@v1"
+        uses: "google-github-actions/setup-gcloud@v2"
         with:
           version: ">= 454.0.0"
 

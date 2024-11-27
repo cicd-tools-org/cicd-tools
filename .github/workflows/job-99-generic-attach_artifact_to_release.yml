@@ -89,7 +89,7 @@ jobs:
           RELEASE_CONTEXT: ${{ inputs.RELEASE_CONTEXT }}
           UPLOAD_FOLDERS: ${{ inputs.UPLOAD_FOLDERS }}
         if: inputs.TESTING_MODE == false
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
