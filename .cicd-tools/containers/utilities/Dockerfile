@@ -14,15 +14,15 @@ RUN apt-get update \
        xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-ENV ACTIONLINT_VERSION="https://github.com/rhysd/actionlint/releases/download/v1.6.26/actionlint_1.6.26_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.gz"
+ENV ACTIONLINT_VERSION="https://github.com/rhysd/actionlint/releases/download/v1.7.4/actionlint_1.7.4_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.gz"
 ENV HADOLINT_VERSION="https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-${BUILD_ARG_ARCH_FORMAT_2}"
 ENV JQ_VERSION="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-${BUILD_ARG_ARCH_FORMAT_1}"
-ENV SHFMT_VERSION="https://github.com/mvdan/sh/releases/download/v3.7.0/shfmt_v3.7.0_linux_${BUILD_ARG_ARCH_FORMAT_1}"
-ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download/v0.9.0/shellcheck-v0.9.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
-ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.1.1/tomll_2.1.1_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
+ENV SHFMT_VERSION="https://github.com/mvdan/sh/releases/download/v3.10.0/shfmt_v3.10.0_linux_${BUILD_ARG_ARCH_FORMAT_1}"
+ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
+ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.2.3/tomll_2.2.3_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
 ENV VALE_VERSION="https://github.com/errata-ai/vale/releases/download/v2.30.0/vale_2.30.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.6.0/vale_3.6.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
+ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.9.1/vale_3.9.1_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
+ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.44.5/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
 
 RUN mkdir -p /dist
 
