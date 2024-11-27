@@ -39,6 +39,16 @@ on:
         description: "Optional, allows you to specify the OS platform that will be used to run the molecule command."
         required: false
         type: string
+      POST_COMMAND:
+        default: ""
+        description: "Optional, a command to run after the molecule command executes."
+        required: false
+        type: string
+      PRE_COMMAND:
+        default: ""
+        description: "Optional, a command to run before the molecule command executes."
+        required: false
+        type: string
       REMOTE_SCRIPT_ROLE_NAME:
         default: "ci/github/scripts/job-40-ansible_role_name.sh"
         description: "Optional, allows you to specify a script to set the ROLE_NAME environment variable."
@@ -172,9 +182,23 @@ jobs:
           rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
         shell: bash
 
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- PRE_COMMAND > '${{ inputs.PRE_COMMAND }}'
+        if: inputs.PRE_COMMAND != ''
+        run: |
+          ${{ inputs.PRE_COMMAND }}
+        shell: bash
+        working-directory: ${{ inputs.TARGET_PATH }}
+
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Run 'molecule ${{ inputs.MOLECULE_COMMAND }}' on the '${{ inputs.MOLECULE_SCENARIO }}' Scenario
         run: |
           poetry run molecule ${{ inputs.MOLECULE_COMMAND }} -s ${{ inputs.MOLECULE_SCENARIO }}
+        shell: bash
+        working-directory: ${{ inputs.TARGET_PATH }}
+
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- POST_COMMAND > '${{ inputs.POST_COMMAND }}'
+        if: inputs.POST_COMMAND != ''
+        run: |
+          ${{ inputs.POST_COMMAND }}
         shell: bash
         working-directory: ${{ inputs.TARGET_PATH }}
 
