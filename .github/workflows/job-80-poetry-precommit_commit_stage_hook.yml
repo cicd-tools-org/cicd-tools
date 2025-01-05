@@ -11,6 +11,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      INSTALL_PROJECT:
+        default: false
+        description: "Optional, install the project itself with the dependencies."
+        required: false
+        type: boolean
       POST_HOOK_COMMAND:
         default: ""
         description: "Optional, a command to run after the hook executes."
@@ -125,6 +130,8 @@ jobs:
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+        with:
+          INSTALL_PROJECT: ${{ inputs.INSTALL_PROJECT }}
 
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- Configure Hook Verbosity
         id: hook-verbosity

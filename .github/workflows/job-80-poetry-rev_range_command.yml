@@ -19,6 +19,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      INSTALL_PROJECT:
+        default: false
+        description: "Optional, install the project itself with the dependencies."
+        required: false
+        type: boolean
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -87,6 +92,8 @@ jobs:
 
       - name: ${{ inputs.COMMAND_NAME }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+        with:
+          INSTALL_PROJECT: ${{ inputs.INSTALL_PROJECT }}
 
       - name: ${{ inputs.COMMAND_NAME }} -- Determine Pushed Commits
         env:

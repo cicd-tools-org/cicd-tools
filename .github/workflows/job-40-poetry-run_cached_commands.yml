@@ -20,6 +20,11 @@ on:
         description: "Optional, allows you to specify a path to execute the command in."
         required: false
         type: string
+      INSTALL_PROJECT:
+        default: false
+        description: "Optional, install the project itself with the dependencies."
+        required: false
+        type: boolean
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -100,6 +105,8 @@ jobs:
 
       - name: Poetry Command Sequence -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+        with:
+          INSTALL_PROJECT: ${{ inputs.INSTALL_PROJECT }}
 
       - name: Poetry Command Sequence -- Execute Commands
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-serial_commands
