@@ -109,7 +109,7 @@ jobs:
       - name: ${{ inputs.PRECOMMIT_HOOK_NAME }} -- (Template) Install pre-commit
         run: |
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
-            "install-project"
+            "install-compatible"
         shell: bash
         working-directory: template
 

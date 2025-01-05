@@ -39,6 +39,11 @@ on:
         description: "Optional, allows you to define the author email that git will assign to any generated commits."
         required: false
         type: string
+      INSTALL_PROJECT:
+        default: false
+        description: "Optional, install the project itself with the dependencies."
+        required: false
+        type: boolean
       PYTHON_VERSIONS:
         description: "A string encoded JSON array of valid python versions."
         required: true
@@ -95,6 +100,8 @@ jobs:
 
       - name: Pre-Commit Test -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
+        with:
+          INSTALL_PROJECT: ${{ inputs.INSTALL_PROJECT }}
 
       - name: Pre-Commit Test -- Mount Pre-Commit Cache
         uses: actions/cache@v4
