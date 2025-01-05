@@ -34,7 +34,7 @@ initialize_git() {
 initialize_poetry() {
 
   if [[ "${TEMPLATE_SKIP_POETRY}" != "1" ]]; then
-    poetry install --verbose
+    poetry install --verbose --no-root
   fi
 
 }

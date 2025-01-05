@@ -4,6 +4,10 @@ description: "Installs a Python project's Poetry dependencies for CI."
 author: niall@niallbyrne.ca
 
 inputs:
+  INSTALL_PROJECT:
+    default: "false"
+    description: "Optional, additionally installs the project itself as well."
+    required: false
   PROJECT_ROOT_PATH:
     default: "."
     description: "Optional, allows you to specify a path to the project's root."
@@ -59,6 +63,14 @@ runs:
         path: ${{ steps.poetry_venv_path.outputs.POETRY_LOCATION }}
 
     - name: Dependencies (Python) -- Install Project Dependencies
+      run: |
+        bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
+          "install-compatible"
+      shell: bash
+      working-directory: ${{ inputs.PROJECT_ROOT_PATH }}
+
+    - name: Dependencies (Python) -- Install Project
+      if: inputs.INSTALL_PROJECT == 'true'
       run: |
         bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_USE_POETRY }}" \
           "install-project"
