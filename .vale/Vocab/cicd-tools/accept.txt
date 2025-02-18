@@ -1,6 +1,7 @@
 anchore
 codebase's
 gettext
+gha
 gpg
 mac_maker
 qemu

@@ -149,12 +149,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Container Scan -- Build Container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: ${{ inputs.PLATFORM }}
           build-args: |
             ${{ inputs.BUILD_ARGS }}
-          cache-from: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
           cache-to: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}

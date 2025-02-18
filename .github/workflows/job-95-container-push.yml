@@ -12,6 +12,11 @@ on:
         description: "Optional, allows you define build arguments for the container build."
         required: false
         type: string
+      BYPASS_CACHE:
+        default: true
+        description: "Optional, allows you to control whether a cached source is used for the container.  Use this feature with the scanning workflow to build your container, scan and then cache it before running this workflow to push it."
+        required: false
+        type: boolean
       CONTEXT:
         default: "."
         description: "Optional, allows you define where the build context is located."
@@ -166,6 +171,7 @@ jobs:
           [[ "${{ inputs.IMAGE_LATEST }}" == "true" ]] && LATEST="${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:latest"
           bash "./.cicd-tools/boxes/active/${{ inputs.REMOTE_SCRIPT_SET_VALUE }}" \
             echo "${LATEST}"
+        shell: bash
 
       - name: Push Container -- Pre Build Command
         if: inputs.PRE_BUILD_COMMAND != ''
@@ -174,14 +180,14 @@ jobs:
         shell: bash
 
       - name: Push Container -- Build and Push (with latest tag)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: ${{ inputs.PLATFORM }}
           build-args: |
             ${{ inputs.BUILD_ARGS }}
           cache-from: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
           cache-to: type=gha,scope=${{ inputs.REGISTRY }}/${{ steps.registry.outputs.IMAGE_NAME }}:${{ steps.registry.outputs.IMAGE_TAG }}
-          no-cache: true
+          no-cache: ${{ inputs.BYPASS_CACHE }}
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.CONTEXT }}/${{ inputs.DOCKERFILE }}
           push: true

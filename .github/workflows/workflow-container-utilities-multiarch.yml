@@ -125,6 +125,7 @@ jobs:
     uses: ./.github/workflows/job-95-container-push.yml
     with:
       BUILD_ARGS: ${{ matrix.build-args }}
+      BYPASS_CACHE: false
       CONTEXT: .cicd-tools/containers/utilities
       IMAGE_TAG: ${{ matrix.build-tag }}
       PLATFORM: ${{ matrix.build-platform }}
