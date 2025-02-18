@@ -3,4 +3,5 @@ codebase's
 gettext
 gpg
 mac_maker
+qemu
 tmate
