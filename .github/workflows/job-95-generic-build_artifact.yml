@@ -151,6 +151,12 @@ jobs:
         if: inputs.REQUIRES_QEMU == true
         uses: docker/setup-qemu-action@v3
 
+      - name: https://github.com/docker/buildx/issues/314
+        if: inputs.REQUIRES_QEMU == true
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes
+        shell: bash
+
       - name: Build and Upload Artifact -- Set up Docker Buildx
         if: inputs.REQUIRES_BUILDX == true
         uses: docker/setup-buildx-action@v3
