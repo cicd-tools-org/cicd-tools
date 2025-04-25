@@ -162,6 +162,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker
+          version: latest
 
       - name: Build and Upload Artifact -- Setup Poetry
         if: inputs.REQUIRES_POETRY == true
