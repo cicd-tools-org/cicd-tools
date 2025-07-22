@@ -1,4 +1,5 @@
 anchore
+buildx
 codebase's
 gettext
 gha

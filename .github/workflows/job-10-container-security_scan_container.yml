@@ -148,7 +148,8 @@ jobs:
       - name: Container Scan -- Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          version: latest
+          # https://github.com/docker/buildx/issues/3328
+          version: v0.25.0
 
       - name: Container Scan -- Build Container
         uses: docker/build-push-action@v6
