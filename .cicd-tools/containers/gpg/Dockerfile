@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install \
       -y \
       --no-install-recommends \
-      gnupg2=2.2.* && \
+      gnupg2=2.4.* && \
     apt-get clean && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/* && \
