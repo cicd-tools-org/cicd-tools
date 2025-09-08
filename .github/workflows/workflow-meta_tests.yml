@@ -207,6 +207,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-10-generic-security_scan_credentials.yml
     with:
+      EXTRA_BINARY_ARGS: "--only-verified"
       TESTING_MODE: true
       WORKFLOW_NAME: "test"
 
