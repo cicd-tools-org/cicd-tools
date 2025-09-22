@@ -85,7 +85,7 @@ jobs:
           PROJECT_ROOT_PATH: "template"
 
       - name: Documentation Test -- (Template) Check Markdown Links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        uses: tcort/github-action-markdown-link-check@v1
         with:
           config-file: 'template/${{ inputs.CONFIG_FILE }}'
           use-quiet-mode: 'no'
@@ -94,7 +94,7 @@ jobs:
           max-depth: 1
 
       - name: Documentation Test -- (Rendered Template) Check Markdown Links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        uses: tcort/github-action-markdown-link-check@v1
         with:
           config-file: 'template/${{ inputs.CONFIG_FILE }}'
           use-quiet-mode: 'no'

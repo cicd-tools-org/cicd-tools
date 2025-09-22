@@ -36,7 +36,7 @@ main() {
   _installer_line_in_file ".gitignore" '.cicd-tools/boxes'
   _installer_line_in_file ".gitignore" '.cicd-tools/manifest.json'
 
-  _installer_jinja_render ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
+  _installer_jinja_render ".github/config/actions/github-action-markdown-link-check.json"
   _installer_jinja_render ".github/config/workflows/workflow-push.json"
   _installer_jinja_render ".github/scripts/step-setup-environment.sh"
   _installer_jinja_render ".github/workflows/workflow-push.yml"
