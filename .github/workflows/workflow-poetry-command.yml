@@ -38,7 +38,7 @@ jobs:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     uses: ./.github/workflows/job-30-generic-markdown_links.yml
     with:
-      CONFIG_FILE: ".github/config/actions/gaurav-nelson-github-action-markdown-link-check.json"
+      CONFIG_FILE: ".github/config/actions/github-action-markdown-link-check.json"
       DOCUMENTATION_PATH: "{{cookiecutter.project_slug}}"
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "poetry"
