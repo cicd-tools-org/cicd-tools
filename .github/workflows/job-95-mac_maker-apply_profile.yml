@@ -37,6 +37,10 @@ on:
         description: "All testable Mac Maker versions for the test runner as a JSON encoded string."
         required: true
         type: string
+      TEST_BINARY_OS_VERSIONS:
+        description: "All testable Mac Maker os version digits for the test runner as a JSON encoded string."
+        required: true
+        type: string
       TEST_OS:
         description: "All testable OS versions for the test runner as a JSON encoded string."
         required: true
@@ -74,6 +78,7 @@ jobs:
       matrix:
         architecture: ${{ fromJSON(inputs.TEST_ARCHITECTURES) }}
         os: ${{ fromJSON(inputs.TEST_OS) }}
+        os_version: ${{ fromJSON(inputs.TEST_BINARY_OS_VERSIONS) }}
         python-version: ${{ fromJSON(inputs.PYTHON_VERSIONS) }}
         version: ${{ fromJSON(inputs.TEST_BINARY_VERSIONS) }}
       max-parallel: ${{ inputs.CONCURRENCY }}
@@ -118,14 +123,14 @@ jobs:
           PROJECT_OWNER: "osx-provisioner"
           MAC_MAKER_ARCHITECTURE: ${{ matrix.architecture }}
           MAC_MAKER_VERSION: ${{ matrix.version }}
-          MAC_MAKER_OS_VERSION: ${{ matrix.os }}
+          MAC_MAKER_OS_VERSION: ${{ matrix.os_version }}
           TEST_PROFILE_ORIGIN: ${{ secrets.REMOTE_ORIGIN }}
 
       - name: Apply Mac Maker Profile -- Report Job Status (Success)
         if: inputs.VERBOSE_NOTIFICATIONS == true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
-          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os }}, Mac Maker: ${{ matrix.version }}, profile application was successful!"
+          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os_version }}, ARCH: ${{ matrix.architecture }}, Mac Maker: ${{ matrix.version }}, profile application was successful!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Apply Mac Maker Profile --  Report Job Status (Failure)
@@ -133,6 +138,6 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-00-generic-notification
         with:
           NOTIFICATION_EMOJI: ":x:"
-          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os }}, Mac Maker: ${{ matrix.version }}, profile application has failed!"
+          NOTIFICATION_MESSAGE: "OSX: ${{ matrix.os_version }}, ARCH: ${{ matrix.architecture }}, Mac Maker: ${{ matrix.version }}, profile application has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
