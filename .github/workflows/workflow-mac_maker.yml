@@ -46,7 +46,8 @@ jobs:
       PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_PYTHON_VERSIONS) }}
       TEST_ARCHITECTURES: '["x86_64"]'
       TEST_BINARY_VERSIONS: '["0.0.7"]'
-      TEST_OS: '[13]'
+      TEST_BINARY_OS_VERSIONS: '[13]'
+      TEST_OS: '["15-intel"]'
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_VERBOSE_NOTIFICATIONS }}
       WORKFLOW_NAME: "mac_maker"
 
