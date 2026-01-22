@@ -4,6 +4,7 @@ codebase's
 gettext
 gha
 gpg
+lodash
 mac_maker
 qemu
 tmate
