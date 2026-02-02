@@ -1,18 +1,27 @@
-FROM ubuntu:22.04 AS sha
+FROM debian:trixie AS sha
 
 ARG BUILD_ARG_ARCH_FORMAT_1
 ARG BUILD_ARG_ARCH_FORMAT_2
 ARG BUILD_ARG_ARCH_FORMAT_3
 ARG BUILD_ARG_ARCH_FORMAT_4
 
+RUN echo "deb http://security.debian.org trixie-security main contrib non-free" >> /etc/apt/sources.list.d/security.list && \
+    echo "deb-src http://security.debian.org trixie-security main contrib non-free" >> /etc/apt/sources.list.d/security.list
+COPY __shared__/security.pref /etc/apt/preferences.d/security.pref
+
+
 # hadolint ignore=DL3008
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
        --no-install-recommends \
        ca-certificates \
        curl \
-       xz-utils \
-    && rm -rf /var/lib/apt/lists/*
+       xz-utils && \
+    apt-get clean && \
+    rm -rf /var/cache/apt/* && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
 
 ENV ACTIONLINT_VERSION="https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.gz"
 ENV HADOLINT_VERSION="https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-${BUILD_ARG_ARCH_FORMAT_2}"
@@ -58,7 +67,7 @@ RUN curl -sL --retry 3 "${VALE3_VERSION}" -o /tmp/vale3.tar.gz \
 RUN curl -sL --retry 3 "${YQ_VERSION}" -o /dist/yq \
     && chmod +x /dist/yq
 
-COPY ${BUILD_ARG_ARCH_FORMAT_1}/Dockerfile.sha256 /dist
+COPY utilities/${BUILD_ARG_ARCH_FORMAT_1}/Dockerfile.sha256 /dist
 
 WORKDIR /dist
 
