@@ -61,7 +61,8 @@ jobs:
       max-parallel: ${{ fromJSON(needs.configuration.outputs.COOKIECUTTER_CONFIGURATION)._GITHUB_CI_DEFAULT_CONCURRENCY }}
     uses: ./.github/workflows/job-10-container-security_scan_container.yml
     with:
-      CONTEXT: .cicd-tools/containers/gettext
+      CONTEXT: .cicd-tools/containers
+      DOCKERFILE: gettext/Dockerfile
       FAIL_BUILD: true
       FAIL_THRESHOLD: "critical"
       FIXED_ONLY: true
@@ -106,7 +107,8 @@ jobs:
     uses: ./.github/workflows/job-95-container-push.yml
     with:
       BYPASS_CACHE: false
-      CONTEXT: .cicd-tools/containers/gettext
+      CONTEXT: .cicd-tools/containers
+      DOCKERFILE: gettext/Dockerfile
       IMAGE_NAME: cicd-tools-org/cicd-tools-gettext
       IMAGE_TAG: ${{ matrix.build-tag }}
       PLATFORM: ${{ matrix.build-platform }}
