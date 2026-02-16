@@ -4,3 +4,4 @@ ignore:
   - vulnerability: CVE-2024-24790  # vale2 was built with an older version of golang
   - vulnerability: GHSA-v778-237x-gjrc  # A cryptography library used in vale and vale3 needs updating.
   - vulnerability: CVE-2025-22871  # some binaries were built with the stdlib of an older version of golang
+  - vulnerability: CVE-2025-68121  # toml is still being built with an older version of golang
