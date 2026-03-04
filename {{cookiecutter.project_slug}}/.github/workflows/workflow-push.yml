@@ -96,6 +96,18 @@ jobs:
       REV_RANGE: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_commit_spelling_rev_range }}
       VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
 
+  run_all_hooks:
+    needs:
+      - configuration
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    uses: cicd-tools-org/cicd-tools/.github/workflows/job-80-poetry-precommit_commit_stage_all_hooks.yml@main
+    with:
+      CONCURRENCY: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_concurrency_limit }}
+      PRE_HOOKS_COMMAND: poetry run pre-commit run --hook-stage manual spelling-vale-sync
+      PYTHON_VERSIONS: ${{ toJSON(fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_python_versions) }}
+      VERBOSE_NOTIFICATIONS: ${{ fromJSON(needs.configuration.outputs.JSON_FILE_DATA).ci_verbose_notifications }}
+
   git_conflict_markers:
     needs:
       - configuration
