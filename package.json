@@ -4,6 +4,7 @@
   "description": "Reusable CI/CD components.",
   "main": "index.js",
   "scripts": {
+    "lint": "echo \"Mock Lint Command\"",
     "test": "echo \"Mock Test Command\""
   },
   "repository": {
