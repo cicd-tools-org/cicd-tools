@@ -167,7 +167,7 @@ jobs:
 
       - name: Container Scan -- Run Anchore Scan
         id: scan
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v7
         with:
           fail-build: ${{ inputs.FAIL_BUILD }}
           image: localbuild/test:${{ env.BRANCH_OR_TAG }}
