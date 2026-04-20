@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2329
 
 # Performs tests on the pre-commit hooks.
 
