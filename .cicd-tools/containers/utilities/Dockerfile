@@ -23,15 +23,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-ENV ACTIONLINT_VERSION="https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.gz"
-ENV HADOLINT_VERSION="https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-${BUILD_ARG_ARCH_FORMAT_2}"
-ENV JQ_VERSION="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-${BUILD_ARG_ARCH_FORMAT_1}"
-ENV SHFMT_VERSION="https://github.com/mvdan/sh/releases/download/v3.11.0/shfmt_v3.11.0_linux_${BUILD_ARG_ARCH_FORMAT_1}"
-ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
-ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.2.4/tomll_2.2.4_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
+ENV ACTIONLINT_VERSION="https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.gz"
+ENV HADOLINT_VERSION="https://github.com/hadolint/hadolint/releases/download/v2.14.0/hadolint-Linux-${BUILD_ARG_ARCH_FORMAT_2}"
+ENV JQ_VERSION="https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-${BUILD_ARG_ARCH_FORMAT_1}"
+ENV SHFMT_VERSION="https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_${BUILD_ARG_ARCH_FORMAT_1}"
+ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
+ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.3.0/tomll_2.3.0_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
 ENV VALE_VERSION="https://github.com/errata-ai/vale/releases/download/v2.30.0/vale_2.30.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.11.2/vale_3.11.2_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.45.1/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
+ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.14.1/vale_3.14.1_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
+ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
 
 RUN mkdir -p /dist
 
