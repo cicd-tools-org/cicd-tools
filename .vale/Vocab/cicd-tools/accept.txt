@@ -7,5 +7,6 @@ gpg
 lodash
 mac_maker
 qemu
+shellcheck
 tmate
 ventura
