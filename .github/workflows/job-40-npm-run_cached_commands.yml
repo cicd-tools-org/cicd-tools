@@ -25,6 +25,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      DEBUG:
+        default: false
+        description: "Optional, allows you to troubleshoot failed workflow runs with tmate."
+        required: false
+        type: boolean
       ERROR_COMMAND:
         default: ""
         description: "Optional, a command to run if the workflow fails."
@@ -169,3 +174,9 @@ jobs:
         run: |
           ${{ inputs.ERROR_COMMAND }}
         shell: bash
+
+      - name: NPM Command Sequence -- Troubleshoot on Failure
+        if: failure()
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-01-generic-debug
+        with:
+          ENABLE: ${{ inputs.DEBUG }}
