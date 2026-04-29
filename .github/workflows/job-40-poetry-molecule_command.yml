@@ -16,6 +16,11 @@ on:
         description: "Optional, allows you to troubleshoot failed workflow runs with tmate."
         required: false
         type: boolean
+      DEBUG_ARTIFACT:
+        default: ""
+        description: "Optional, allows you you to troubleshoot failed workflow runs with an artifact from a file path."
+        required: false
+        type: string
       GALAXY_REQUIREMENTS_PATH:
         default: "requirements.yml"
         description: "Optional, allows you to specify a relative path, within the repository, to the Ansible Galaxy requirements file used by this role."
@@ -222,4 +227,5 @@ jobs:
         if: failure() && inputs.TESTING_MODE != true
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-01-generic-debug
         with:
-          ENABLE: ${{ inputs.DEBUG }}
+          ENABLE_SSH: ${{ inputs.DEBUG }}
+          UPLOAD_ARTIFACT: ${{ inputs.DEBUG_ARTIFACT }}
