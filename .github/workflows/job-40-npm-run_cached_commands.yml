@@ -180,3 +180,10 @@ jobs:
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-01-generic-debug
         with:
           ENABLE: ${{ inputs.DEBUG }}
+
+      - name: Upload Build Artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug
+          path: "*.png"
