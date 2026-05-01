@@ -24,6 +24,11 @@ on:
         description: "The maximum allowable parallel executions."
         required: true
         type: number
+      DEBUG:
+        default: false
+        description: "Optional, allows you to troubleshoot failed workflow runs with tmate."
+        required: false
+        type: boolean
       GIT_AUTHOR_NAME:
         default: "Pro Buddy Dev"
         description: "Optional, allows you to define the author name that git will assign to any generated commit."
@@ -173,3 +178,9 @@ jobs:
           NOTIFICATION_MESSAGE: "Pre-commit Hook Test has failed!"
           NOTIFICATION_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           TESTING_MODE: ${{ inputs.TESTING_MODE }}
+
+      - name: Pre-Commit Test -- Troubleshoot on Failure
+        if: failure() && inputs.TESTING_MODE != true
+        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-01-generic-debug
+        with:
+          ENABLE: ${{ inputs.DEBUG }}
