@@ -60,6 +60,11 @@ on:
         description: "Optional, a command to run before the npm commands execute."
         required: false
         type: string
+      REQUIRES_XVFB:
+        default: false
+        description: "Optional, allows setting up a virtual frame buffer display environment."
+        required: false
+        type: boolean
       SECRET_CONTENT_FILENAME:
         default: ""
         description: "Optional, allows you to write the content of 'secrets.FILE_CONTENT' to the given filename before command execution."
@@ -122,6 +127,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
+
+      - name: NPM Command Sequence -- Set up xvfb
+        if: inputs.REQUIRES_XVFB == true
+        uses: coactions/setup-xvfb@v1
 
       - name: NPM Command Sequence -- Install Toolbox
         uses: ./.github/actions/action-00-toolbox
