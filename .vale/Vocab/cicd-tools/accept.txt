@@ -10,3 +10,4 @@ qemu
 shellcheck
 tmate
 ventura
+xvfb
