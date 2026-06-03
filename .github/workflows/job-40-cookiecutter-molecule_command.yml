@@ -76,9 +76,7 @@ env:
   TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
-
   run_molecule:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -90,7 +88,7 @@ jobs:
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Checkout Repository
         uses: actions/checkout@v4
         with:
-          path: 'template'
+          path: "template"
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Setup Environment
         env:
@@ -123,12 +121,11 @@ jobs:
           FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
           PROJECT_ROOT_PATH: "template"
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'ansible' Cache
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
-            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
-            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/molecule
+            ${{ steps.platform_homefolder.outputs.HOME }}/.ansible
           CACHE_KEY: ansible-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
           CACHE_NAME: "ansible_cache"
           PROJECT_ROOT_PATH: "template"
@@ -139,28 +136,10 @@ jobs:
             "${{ inputs.TARGET_PATH }}"
         shell: bash
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Molecule Scenario Folders
-        run: |
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/default
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
-        shell: bash
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize the Dependency Cache
-        run: |
-          mkdir -p ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (COOKIECUTTER) Render Template
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
         with:
           PROJECT_ROOT_PATH: "template"
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Use "default" Scenario Dependencies for the Dependency Cache
-        run: |
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
-        shell: bash
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Run 'molecule ${{ inputs.MOLECULE_COMMAND }}' on the '${{ inputs.MOLECULE_SCENARIO }}' Scenario
         run: |

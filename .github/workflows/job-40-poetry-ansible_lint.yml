@@ -84,13 +84,13 @@ jobs:
         id: platform_homefolder
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
 
-      - name: Ansible Lint -- Initialize Cache Locations
+      - name: Ansible Lint -- Initialize 'ansible' Cache
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
-            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
-          CACHE_KEY: ansible-compat-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "ansible_compat_cache"
+            ${{ steps.platform_homefolder.outputs.HOME }}/.ansible
+          CACHE_KEY: ansible-lint-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_lint_cache"
 
       - name: Ansible Lint -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies

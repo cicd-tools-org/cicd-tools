@@ -123,21 +123,13 @@ jobs:
         id: platform_homefolder
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
 
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Cache Locations
+      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'ansible' Cache
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
-            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/ansible-compat
-          CACHE_KEY: ansible-compat-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "ansible_compat_cache"
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize 'molecule' Cache Locations
-        uses: ./.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
-        with:
-          CACHE_FOLDERS: |
-            ${{ steps.platform_homefolder.outputs.HOME }}/.cache/molecule
-          CACHE_KEY: molecule-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "molecule_cache"
+            ${{ steps.platform_homefolder.outputs.HOME }}/.ansible
+          CACHE_KEY: ansible-${{ hashFiles(inputs.GALAXY_REQUIREMENTS_PATH) }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_cache"
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Project Dependencies
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-poetry-dependencies
@@ -162,30 +154,6 @@ jobs:
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- (Mac OSX) Install Docker
         if: runner.os == 'macOS' && steps.requires_docker.outputs.value == 'true'
         uses: ./.cicd-tools/boxes/active/ci/github/actions/action-05-generic-docker_osx
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize Molecule Scenario Folders
-        run: |
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/default
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
-        shell: bash
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Initialize the Dependency Cache
-        run: |
-          mkdir -p ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Install Molecule Dependencies for "default" Scenario
-        run: |
-          poetry run molecule dependency -s "default"
-        shell: bash
-        working-directory: ${{ inputs.TARGET_PATH }}
-
-      - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- Use "default" Scenario Dependencies for the Dependency Cache
-        run: |
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/"${ROLE_NAME}"/"${{ inputs.MOLECULE_SCENARIO }}"
-        shell: bash
 
       - name: Molecule ${{ inputs.MOLECULE_COMMAND }} -- PRE_COMMAND > '${{ inputs.PRE_COMMAND }}'
         if: inputs.PRE_COMMAND != ''

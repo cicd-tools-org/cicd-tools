@@ -62,9 +62,7 @@ env:
   TEMPLATE_SKIP_PRECOMMIT: 0
 
 jobs:
-
   run_ansible_lint:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -76,7 +74,7 @@ jobs:
       - name: Ansible Lint -- Checkout Repository
         uses: actions/checkout@v4
         with:
-          path: 'template'
+          path: "template"
 
       - name: Ansible Lint -- Setup Environment
         env:
@@ -95,6 +93,12 @@ jobs:
         with:
           PROJECT_ROOT_PATH: "template"
 
+      - name: Ansible Lint -- Calculate Platform Independent Home Folder
+        id: platform_homefolder
+        uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-platform_homefolder
+        with:
+          PROJECT_ROOT_PATH: "template"
+
       - name: Ansible Lint -- Calculate Cache Key
         id: hash
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-generic-conditional_file_hash
@@ -103,14 +107,13 @@ jobs:
           FILE_ROOT_PATH: "{{cookiecutter.project_slug}}"
           PROJECT_ROOT_PATH: "template"
 
-      - name: Ansible Lint -- Initialize Cache Locations
+      - name: Ansible Lint -- Initialize 'ansible' Cache
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-20-generic-cache
         with:
           CACHE_FOLDERS: |
-            /home/runner/.cache/ansible-compat
-            /home/runner/.cache/molecule
-          CACHE_KEY: ansible-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
-          CACHE_NAME: "ansible_cache"
+            ${{ steps.platform_homefolder.outputs.HOME }}/.ansible
+          CACHE_KEY: ansible-lint-${{ steps.hash.outputs.HASH }}-${{ env.CACHE_TTL }}
+          CACHE_NAME: "ansible_lint_cache"
           PROJECT_ROOT_PATH: "template"
 
       - name: Ansible Lint -- Configure The Role Name
@@ -119,26 +122,10 @@ jobs:
             "${{ inputs.TARGET_PATH }}"
         shell: bash
 
-      - name: Ansible Lint -- Initialize Molecule Scenario Folders
-        run: |
-          mkdir -p ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
-      - name: Ansible Lint -- Initialize the Dependency Cache
-        run: |
-          mkdir -p ~/.cache/molecule/__CACHED_DEPENDENCIES
-          rsync -a ~/.cache/molecule/__CACHED_DEPENDENCIES/ ~/.cache/molecule/"${ROLE_NAME}"/default
-        shell: bash
-
       - name: Ansible Lint -- (COOKIECUTTER) Render Template
         uses: ./template/.cicd-tools/boxes/active/ci/github/actions/action-05-cookiecutter-render
         with:
           PROJECT_ROOT_PATH: "template"
-
-      - name: Ansible Lint -- Use "default" Scenario Dependencies for the Dependency Cache
-        run: |
-          rsync -a ~/.cache/molecule/"${ROLE_NAME}"/default/ ~/.cache/molecule/__CACHED_DEPENDENCIES
-        shell: bash
 
       - name: Ansible Lint -- Run 'ansible-lint' via Poetry
         run: |
