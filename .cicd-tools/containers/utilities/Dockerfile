@@ -28,9 +28,9 @@ ENV HADOLINT_VERSION="https://github.com/hadolint/hadolint/releases/download/v2.
 ENV JQ_VERSION="https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-${BUILD_ARG_ARCH_FORMAT_1}"
 ENV SHFMT_VERSION="https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_${BUILD_ARG_ARCH_FORMAT_1}"
 ENV SHELLCHECK_VERSION="https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.${BUILD_ARG_ARCH_FORMAT_3}.tar.xz"
-ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.3.1/tomll_2.3.1_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
+ENV TOMLL_VERSION="https://github.com/pelletier/go-toml/releases/download/v2.4.3/tomll_2.4.3_linux_${BUILD_ARG_ARCH_FORMAT_1}.tar.xz"
 ENV VALE_VERSION="https://github.com/errata-ai/vale/releases/download/v2.30.0/vale_2.30.0_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
-ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.14.2/vale_3.14.2_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
+ENV VALE3_VERSION="https://github.com/errata-ai/vale/releases/download/v3.15.1/vale_3.15.1_Linux_${BUILD_ARG_ARCH_FORMAT_4}.tar.gz"
 ENV YQ_VERSION="https://github.com/mikefarah/yq/releases/download/v4.53.3/yq_linux_${BUILD_ARG_ARCH_FORMAT_1}"
 
 RUN mkdir -p /dist
