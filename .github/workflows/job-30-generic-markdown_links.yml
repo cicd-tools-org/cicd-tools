@@ -57,7 +57,7 @@ jobs:
         uses: ./.github/actions/action-00-toolbox
 
       - name: Documentation Test -- (Template) Check Markdown Links
-        uses: tcort/github-action-markdown-link-check@v1
+        uses: tcort/github-action-markdown-link-check@f3d33029dca1c4a24b87e2df648f9f4604ef6533
         with:
           config-file: '${{ inputs.CONFIG_FILE }}'
           folder-path: ${{ inputs.DOCUMENTATION_PATH }}
