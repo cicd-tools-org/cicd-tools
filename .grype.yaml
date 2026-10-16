@@ -29,3 +29,11 @@ ignore:
     location: /bin/vale3
   - vulnerability: GO-2026-5020
     location: /bin/vale3
+  - vulnerability: GO-2026-6604
+    reason: "Testing only"
+  - vulnerability: GO-2026-6612
+    reason: "Testing only"
+  - vulnerability: CVE-2026-56857
+    reason: "Testing only"
+  - vulnerability: CVE-2026-78663
+    reason: "Testing only"
