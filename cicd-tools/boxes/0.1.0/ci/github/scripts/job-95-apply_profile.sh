@@ -42,7 +42,7 @@ _mac_maker_apply__apply_profile() {
 
   log "DEBUG" "MAC MAKER > Applying Remote Profile ..."
 
-  ./mac_maker apply github "https://github.com/${TEST_PROFILE_ORIGIN}" --branch main
+  ./mac_maker --debug apply github "https://github.com/${TEST_PROFILE_ORIGIN}" --branch main
 
   log "INFO" "MAC MAKER > Profile applied successfully."
 
